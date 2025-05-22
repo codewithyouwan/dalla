@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Split from '../helper/split'; //for splitting the content into 3 options or forms.
 
 export default function MakeResume() {
   const [jlptScores, setJlptScores] = useState({
@@ -37,57 +38,23 @@ export default function MakeResume() {
       });
       
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to generate suggestions');
       }
-      
       // Split the content into three forms
       const content = data.suggestions;
       
-      // Try different possible formats for form separation
-      let forms = [];
-      
-      // Try "### Form 1", "### Form 2", etc. (Markdown heading style)
-      if (content.includes('### Form')) {
-        forms = content.split(/### Form \d+.*?\n/).filter(form => form.trim().length > 0);
-      }
-      // Try "#form1", "#form2", etc.
-      else if (content.includes('#form')) {
-        forms = content.split(/#form\d+/).filter(form => form.trim().length > 0);
-      }
-      // Try "Form 1:", "Form 2:", etc.
-      else if (content.includes('Form') || content.includes('Set')) {
-        forms = content.split(/Form \d+:|Set \d+:/).filter(form => form.trim().length > 0);
-      }
-      // Try numbered sections "1.", "2.", etc. if other patterns don't work
-      else if (forms.length === 0) {
-        // Just split by double newlines as a fallback
-        forms = content.split(/\n\n+/).filter(form => form.trim().length > 0);
-        // If we get more than 3 forms, try to group them into 3 sections
-        if (forms.length > 3) {
-          const grouped = [];
-          const groupSize = Math.ceil(forms.length / 3);
-          
-          for (let i = 0; i < forms.length; i += groupSize) {
-            grouped.push(forms.slice(i, i + groupSize).join('\n\n'));
-          }
-          
-          if (grouped.length > 0) {
-            forms = grouped.slice(0, 3); // Ensure we only get up to 3 forms
-          }
-        }
-      }
-      
+      // Try to parse the new structured format with explicit markers
+      const forms = Split(content);
       // If all else fails, just take the whole content as one form
       if (forms.length === 0) {
-        forms = [content];
+        forms.push(content);
       }
-      
       // Take at most 3 forms
-      forms = forms.slice(0, 3);
+      const finalForms = forms.slice(0, 3);
       
-      setSuggestions(forms.map(form => form.trim()));
+      setSuggestions(finalForms.map(form => form.trim()));
       setSelectedSuggestion(''); // Clear any previous selection
       setSelectedIndex(null);
     } catch (err) {
@@ -109,7 +76,7 @@ export default function MakeResume() {
         <h1 className="text-2xl text-black font-bold mb-6">Resume Builder</h1>
         
         <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">JLPT Experience</h2>
+          <h2 className="text-xl text-black font-semibold mb-3">JLPT Experience</h2>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Total Score (out of 180)</label>
