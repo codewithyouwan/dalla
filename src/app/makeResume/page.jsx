@@ -4,17 +4,20 @@ import { useState } from 'react';
 import Split from '../helper/split'; //for splitting the content into 3 options or forms.
 
 export default function MakeResume() {
-  const [jlptScores, setJlptScores] = useState({
+    const [details,setDetails] = useState({
+        name:''
+    });
+    const [jlptScores, setJlptScores] = useState({
     total: '',
     vocabulary: '',
     reading: '',
     listening: ''
-  });
-  const [suggestions, setSuggestions] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [selectedSuggestion, setSelectedSuggestion] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(null);
+    });
+    const [suggestions, setSuggestions] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [selectedSuggestion, setSelectedSuggestion] = useState('');
+    const [selectedIndex, setSelectedIndex] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
