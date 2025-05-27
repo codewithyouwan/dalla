@@ -1,0 +1,142 @@
+\documentclass[5pt]{article}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{colortbl}
+\usepackage{xcolor}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage[margin=0.8in]{geometry}
+
+% Set Japanese fonts - adjust these based on your system
+\setCJKmainfont{Noto Sans CJK JP}
+% Alternative fonts you can try:
+%\setCJKmainfont{Yu Gothic}
+%\setCJKmainfont{Hiragino Sans}
+% \setCJKmainfont{MS Gothic}
+
+% Define colors
+\definecolor{lightyellow}{RGB}{255,255,204}
+\definecolor{lightblue}{RGB}{204,229,255}
+\definecolor{lightpink}{RGB}{255,204,229}
+\definecolor{lightpurple}{RGB}{229,204,255}
+\definecolor{lightgreen}{RGB}{220,255,220}
+\definecolor{lightgray}{RGB}{240,240,240}
+
+\begin{document}
+
+% Single continuous table that can span multiple pages
+\begin{longtable}{|>{\centering\arraybackslash}p{1cm}|p{2cm}|p{10cm}|p{3cm}|}
+\cline{1-3}
+\textbf{No.} & \multicolumn{2}{c|}{\rule{0pt}{1cm} \textbf{2407039}} 
+& \multirow{6}{*}{\includegraphics[width=3cm,height=3cm]{profile.jpg}} \\
+\cline{1-3}
+\textbf{氏名} & \multicolumn{2}{c|}{
+  \rule{0pt}{1cm} \textbf{プラディオット}
+} \\
+\cline{1-3}
+
+\endfirsthead
+
+\hline
+\multicolumn{4}{|c|}{\textit{続き...}} \\
+\hline
+\endhead
+
+\hline
+\endlastfoot
+
+\multirow{6}{*}{\textbf{志向}} & 開発分野 & 製品開発 & 
+\\
+\cline{2-3}
+& 職種 & 開発エンジニア、データサイエンティスト & \\
+\cline{2-3}
+& 領域 & データサイエンス & \\
+\cline{2-3}
+& タイプ & スペシャリスト & \\
+\hline
+
+\multirow{3}{*}{\textbf{学歴}} & 2024 & インド工科大学デリー校 & 修士 電気通信工学マネジメント \\
+\cline{2-4}
+& 2020 & インディラ・ガンジー・エンジニアリング大学 & 学士 電気工学 \\
+\cline{2-4}
+& 2015 & ババ・シンヘジュワル・カレッジ & 学位 BSEB \\
+\hline
+
+\multicolumn{4}{|>{\centering\arraybackslash}c|}{\cellcolor{lightgray}\textbf{言語/開発ツール}} \\
+\hline
+\multicolumn{2}{|>{\centering\arraybackslash}c|}{\textbf{言語}} & \multicolumn{2}{c|}{Python} \\
+\hline
+\multicolumn{2}{|>{\centering\arraybackslash}c|}{\textbf{開発ツール}} & \multicolumn{2}{p{13cm}|}{Git、Visual Studio Code、TensorFlow、Scikit learn、Keras、Pandas、Numpy、Matplotlib、Seaborn、Streamlit、Tableau、Power BI} \\
+\hline
+
+\multicolumn{4}{|>{\centering\arraybackslash}c|}{\cellcolor{lightgreen}\textbf{プロジェクト（大学のコースの一部）}} \\
+\hline
+\multicolumn{2}{|>{\centering\arraybackslash}c|}{\textbf{担当した役割}} & \multicolumn{2}{c|}{プログラミング、データ分析} \\
+\hline
+\multicolumn{2}{|>{\centering\arraybackslash}c|}{\textbf{具体的な内容}} & \multicolumn{2}{p{13cm}|}{%
+タイトル: 不動産データを用いた機械学習プロジェクト
+
+Pythonとそのライブラリ（NumPy、Pandas、Beautiful Soupなど）を使用した機械学習プロジェクトに取り組んだ。
+
+目的：不動産データから有益な洞察を抽出すること
+
+方法：99acres.comからデータをスクレイピングし、徹底的な前処理（データのクリーニング、変換、整理）を行った。その後、特徴量エンジニアリングと探索的データ分析（EDA）を実施し、単変量および多変量で特徴量の相関を分析。ランダムフォレスト、決定木、SVMモデルのパフォーマンスを分析し、その分析結果を基にStreamlitというツールを使用してウェブサイトを作成。
+
+仕様書について：設計仕様書を作成。データのスクレイピング後、すべての前処理ステップと使用する機械学習モデル、そしてそれらのパフォーマンスをどのように評価するかのパイプラインを設計した。
+
+評価方法：実際のモデルの機能とパフォーマンスを設計仕様書に記載された内容と比較、仮説検定などのテストを実施し、出力を比較することでパフォーマンスをチェックした。
+} \\
+\hline
+\multicolumn{2}{|>{\centering\arraybackslash}c|}{\textbf{直面した課題}} & \multicolumn{2}{p{13cm}|}{%
+主な課題はデータの前処理、データのクリーニング（欠損値が多い場合や無関係な特徴値が含まれている場合）や、出力予測に非常に関連する重要な特徴の抽出が難しかった。また、モデルのハイパーパラメータチューニングも課題の一つだった。
+} \\
+\hline
+\multicolumn{2}{|>{\centering\arraybackslash}c|}{\textbf{リーダー経験}} & \multicolumn{2}{c|}{学生団体、イベント企画、プロジェクトリーダー} \\
+\hline
+
+\multicolumn{4}{|>{\centering\arraybackslash}c|}{\cellcolor{lightyellow}\textbf{製品開発について}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{興味を持つ理由}} & \multicolumn{2}{p{13cm}|}{製品開発は現実世界の問題に対する革新的な解決策を生み出すことができるからだ。} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{果たしたい役割}} & \multicolumn{2}{p{13cm}|}{%
+データサイエンティスト
+
+プロダクト開発が主にプログラミングとテストに焦点を当てていることは理解しているが、データサイエンスの技術や知識も、これらのプロセスにおいて重要だ。そのため、製品開発のサイクルの中で、データサイエンスとの統合に興味がある。
+} \\
+\hline
+
+\multicolumn{4}{|>{\centering\arraybackslash}c|}{\cellcolor{lightblue}\textbf{興味ある分野（左から1番〜3番）}} \\
+\hline
+\multicolumn{4}{|c|}{新分野（Generative AI） \hspace{2cm} その他 \hspace{2cm} テスト・評価・QA} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{その他詳細}} & \multicolumn{2}{p{13cm}|}{%
+機械学習エンジニア、データサイエンティスト
+
+データ分析、機械学習、予測モデリングに興味がある。大規模なデータセットを分析し、ビジネス問題を解決するためのアルゴリズムを開発し、トレンドを予測するモデルを作成するプロジェクトに取り組みたい。これらのスキルを活用して、IITデリーでプロジェクトにも取り組んだ経験がある。
+} \\
+\hline
+
+\multicolumn{4}{|>{\centering\arraybackslash}c|}{\cellcolor{lightpink}\textbf{日本企業について}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{一番興味がある点}} & \multicolumn{2}{c|}{技術力} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{習得したいこと}} & \multicolumn{2}{c|}{労働文化と倫理} \\
+\hline
+
+\multicolumn{4}{|>{\centering\arraybackslash}c|}{\cellcolor{lightpurple}\textbf{キャリアアップについて}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{3大優先要素}} & \multicolumn{2}{p{13cm}|}{継続的な学習と成長、影響力のある仕事、ワークライフバランス} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{興味ある役割}} & \multicolumn{2}{c|}{プロジェクトリーダー、プロジェクトマネージャー} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{日本語レベル}} & \multicolumn{2}{p{13cm}|}{7月のN3試験について、読みが一番良く、語彙とリスニングは半分。ただし、合格には若干頑張りが必要な為、現在行っている集中クラスでの成長に期待。} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{性格}} & \multicolumn{2}{c|}{真面目、素直、明るい、爽やか} \\
+\hline
+
+\end{longtable}
+
+\end{document}
