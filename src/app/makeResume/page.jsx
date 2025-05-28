@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Split from '../helper/split';
+// import '../styles/scrollbar.css';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -47,6 +48,8 @@ export default function MakeResume() {
   const [selectedSuggestion, setSelectedSuggestion] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
 
   // Retrieve and parse extracted text
   useEffect(() => {
@@ -112,6 +115,15 @@ export default function MakeResume() {
     }));
   };
 
+  const removeEducation = (indexToRemove) => {
+    setDetails((prev) => ({
+      ...prev,
+      education: prev.education.length > 1 
+        ? prev.education.filter((_, index) => index !== indexToRemove)
+        : prev.education
+    }));
+  };
+
   const generateSuggestions = async () => {
     setIsLoading(true);
     setError(null);
@@ -167,11 +179,101 @@ export default function MakeResume() {
     }
   };
 
+  const handleResumeDrop = async (e) => {
+  e.preventDefault();
+  const file = e.dataTransfer?.files[0] || e.target.files[0];
+  
+  if (!file || file.type !== 'application/pdf') {
+    setUploadError('Please upload a valid PDF file.');
+    return;
+  }
+
+  setUploading(true);
+  setUploadError(null);
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await fetch('/api/upload-resume', {
+      method: 'POST',
+      body: JSON.stringify({
+        file: await file.arrayBuffer(),
+      }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Upload failed');
+
+    localStorage.setItem('extractedResumeText', result.extractedText);
+    const extractedText = result.extractedText;
+    
+    const nameMatch = extractedText.match(/Name:\s*([^\n]+)/i) || extractedText.match(/^[A-Za-z\s]+(?=\n)/);
+    const educationMatch = extractedText.match(/Education[\s\S]*?(?=\n\n|\n[A-Z])/i);
+    const experienceMatch = extractedText.match(/(Experience|Work)[\s\S]*?(?=\n\n|\n[A-Z])/i);
+    const skillsMatch = extractedText.match(/Skills[\s\S]*?(?=\n\n|\n[A-Z])/i);
+
+    setDetails((prev) => ({
+      ...prev,
+      name: nameMatch ? nameMatch[1]?.trim() : '',
+      education: educationMatch
+        ? [{ year: '', institution: educationMatch[0]?.trim(), degree: '' }]
+        : prev.education,
+      projectDescription: experienceMatch ? experienceMatch[0]?.trim() : '',
+      languages: skillsMatch ? skillsMatch[0]?.match(/Languages:\s*([^\n]+)/i)?.[1]?.trim() : '',
+      devTools: skillsMatch ? skillsMatch[0]?.match(/Tools:\s*([^\n]+)/i)?.[1]?.trim() : '',
+    }));
+  } catch (err) {
+    setUploadError(err.message);
+  } finally {
+    setUploading(false);
+  }
+};
+
   return (
-    <div className="flex flex-col md:flex-row min-h-screen p-4 gap-6">
+    <div className="flex flex-col md:flex-row h-screen p-4 gap-6 overflow-hidden">
       {/* Left side - Form */}
-      <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto">
+      <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full hide-scrollbar">
         <h1 className="text-2xl text-black font-bold mb-6">履歴書ビルダー / Resume Builder</h1>
+
+        {/* Resume Upload Area */}
+        <div className="mb-8">
+          <h2 className="text-xl text-black font-semibold mb-3">英語の履歴書をアップロード（任意） / Upload English Resume (Optional)</h2>
+          <div
+            className={`border-2 border-dashed p-6 rounded-lg text-center ${
+              uploading ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+            }`}
+            onDrop={handleResumeDrop}
+            onDragOver={(e) => e.preventDefault()}
+          >
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={handleResumeDrop}
+              className="hidden"
+              id="resume-upload"
+            />
+            <label
+              htmlFor="resume-upload"
+              className="cursor-pointer text-gray-600 hover:text-blue-500"
+            >
+              <p>
+                PDFファイルをドラッグ＆ドロップ、またはクリックしてアップロード（任意）
+                <br />
+                Drag & drop your English resume (PDF) here, or click to upload (Optional)
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                履歴書をアップロードすると、フォームが自動的に入力されます。後で編集可能です。
+                <br />
+                Uploading a resume will auto-fill the form fields, which you can edit later.
+              </p>
+              <p className="text-sm text-gray-500 mt-2">Max file size: 5MB</p>
+            </label>
+          </div>
+          {uploading && <p className="mt-2 text-blue-500">処理中... / Processing...</p>}
+          {uploadError && <p className="mt-2 text-red-500">{uploadError}</p>}
+        </div>
 
         {/* 1. Personal Information */}
         <div className="mb-8">
@@ -251,7 +353,7 @@ export default function MakeResume() {
         <div className="mb-8">
           <h2 className="text-xl text-black font-semibold mb-3">学歴 / Education</h2>
           {details.education.map((edu, index) => (
-            <div key={index} className="space-y-4 mb-4 border-b pb-4">
+            <div key={index} className="space-y-4 mb-4 border-b pb-4 relative">
               <div>
                 <label className="block text-sm font-medium text-gray-700">年 / Year</label>
                 <input
@@ -279,6 +381,17 @@ export default function MakeResume() {
                   className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 />
               </div>
+              {details.education.length > 1 && (
+                <button
+                  onClick={() => removeEducation(index)}
+                  className="absolute top-0 right-0 text-red-600 hover:text-red-800 p-1"
+                  title="Delete this education entry"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              )}
             </div>
           ))}
           <button
@@ -609,7 +722,7 @@ export default function MakeResume() {
       </div>
 
       {/* Right side - Preview */}
-      <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto">
+      <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full hide-scrollbar">
         <h1 className="text-2xl text-black font-bold mb-6">履歴書プレビュー / Resume Preview</h1>
         <div className="text-black p-4 rounded whitespace-pre-line font-sans">
           <table className="w-full border-collapse border border-gray-300">
