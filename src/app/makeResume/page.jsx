@@ -157,28 +157,6 @@ export default function MakeResume() {
     setSelectedIndex(index);
   };
 
-  const saveResume = async () => {
-    try {
-      const formData = new FormData();
-      formData.append('details', JSON.stringify({ ...details, photo: null, selectedSuggestion }));
-      if (details.photo) {
-        formData.append('photo', details.photo);
-      }
-
-      const response = await fetch('/api/generate-resume', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to generate resume');
-
-      alert('Resume saved successfully!');
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
   const handleResumeDrop = async (e) => {
   e.preventDefault();
   const file = e.dataTransfer?.files[0] || e.target.files[0];
@@ -230,7 +208,35 @@ export default function MakeResume() {
     setUploading(false);
   }
 };
+const saveResume = async () => {
+  setIsLoading(true);
+  setError(null);
 
+  try {
+    const formData = new FormData();
+    formData.append('details', JSON.stringify({ ...details, photo: null, selectedSuggestion }));
+    if (details.photo) {
+      formData.append('photo', details.photo);
+    }
+
+    const response = await fetch('/api/generate-resume', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to generate resume');
+    }
+
+    alert(`Resume saved successfully! Access it here: ${data.resumeLink}`);
+  } catch (err) {
+    setError(err.message);
+    console.error('Error saving resume:', err);
+  } finally {
+    setIsLoading(false);
+  }
+};
   return (
     <div className="flex flex-col md:flex-row h-screen p-4 gap-6 overflow-hidden">
       {/* Left side - Form */}
@@ -714,10 +720,12 @@ export default function MakeResume() {
         <div className="mb-8">
           <button
             onClick={saveResume}
-            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+            disabled={isLoading}
+            className={`px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            履歴書を保存 / Save Resume
+            {isLoading ? '保存中... / Saving...' : '履歴書を保存 / Save Resume'}
           </button>
+          {error && <p className="mt-2 text-red-600 text-sm">{error}</p>}
         </div>
       </div>
 
