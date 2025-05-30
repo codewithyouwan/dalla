@@ -3,39 +3,41 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Split from '../helper/split';
+import { Geist } from 'next/font/google';
 // import '../styles/scrollbar.css';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
-
+const defaultDetails = {
+  name: 'Test User',
+  devField: 'Product Development',
+  jobType: 'Engineer',
+  domain: 'Data Science',
+  type: 'Specialist',
+  education: [{ year: '2024', institution: 'University', degree: 'Masters' }],
+  languages: 'Python',
+  devTools: 'Git, VS Code',
+  projectRole: 'Programmer',
+  projectDescription: 'ML Project',
+  projectChallenges: 'Data Cleaning',
+  leadership: 'Project Leader',
+  productDevReason: 'Problem Solving',
+  productDevRole: 'Data Scientist',
+  interestFields: ['AI', 'Data Analysis', 'Testing'],
+  interestDetails: 'Interested in ML',
+  japanCompanyInterest: 'Technology',
+  japanCompanySkills: 'Work Culture',
+  careerPriorities: ['Growth', 'Impact', 'Balance'],
+  careerRoles: 'Project Manager',
+  japaneseLevel: 'N3',
+  personality: 'Diligent',
+  selectedSuggestion: 'Studying for N3',
+  photo: null,
+};
 export default function MakeResume() {
-  const [details, setDetails] = useState({
-    name: '',
-    photo: null,
-    devField: '',
-    jobType: '',
-    domain: '',
-    type: '',
-    education: [{ year: '', institution: '', degree: '' }],
-    languages: '',
-    devTools: '',
-    projectRole: '',
-    projectDescription: '',
-    projectChallenges: '',
-    leadership: '',
-    productDevReason: '',
-    productDevRole: '',
-    interestFields: ['', '', ''],
-    interestDetails: '',
-    japanCompanyInterest: '',
-    japanCompanySkills: '',
-    careerPriorities: ['', '', ''],
-    careerRoles: '',
-    japaneseLevel: '',
-    personality: '',
-  });
+  const [details, setDetails] = useState(defaultDetails);
   const [jlptScores, setJlptScores] = useState({
     total: '',
     vocabulary: '',
@@ -139,6 +141,7 @@ export default function MakeResume() {
       if (!response.ok) throw new Error(data.error || 'Failed to generate suggestions');
 
       const content = data.suggestions;
+      // const exampleContent="<参考スコア/Reference Scores>\nTotal : 80\nVocabulary : 21\nReading : 23\nListening : 34\n\n<プロンプト/Prompt>\n\nこの人材の日本語能力について、以下の内容をCVに記載します。\n\n### 1. 読み\n\n*   読み力は非常に良く、日常生活中でも多くの文を読むことができるようになりました。\n*   また、書籍や雑誌などの文章を読むこともできますが、主に英語の文章を読むことが多いです。\n*   これらの能力について、以下の3つの文を記載します。\n\n### 2. 語彙\n\n*   語彙は非常に良く、日常生活中でも多くの用語を使用できます。\n*   また、文法や形容詞などの基本的な用語も अच्छく理解しています。\n*   これらの能力について、以下の3つの文を記載します。\n\n### 3. リスニング\n\n*   リスニング力は非常に良く、日常生活中でも多くの音を聞きます。\n*   また、テレビやラジオなどの音源を聞くこともできますが、主に英語の音源を聞むことが多いです。\n*   これらの能力について、以下の3つの文を記載します。\n\n===FORM1-START===\n私は日本語の読み力は非常に良く、日常生活中でも多くの文章を読むことができるようになりました。特に、書籍や雑誌などの文章を読むこともできますが、主に英語の文章を読むことが多いです。\nまた、書籍や雑誌などの文章を読むことで、より深い理解と分析能力も得られます。\nこれらの能力については、以下の3つの文を記載します。\n\n===FORM1-END===\n\n===FORM2-START===\n私は日本語の語彙は非常に良く、日常生活中でも多くの用語を使用できます。特に、基本的な用語や形容詞などの基本的な用語も अच्छく理解しています。\nまた、文法や形容詞などの基本的な用語も अच्छく理解しています。\nこれらの能力については、以下の3つの文を記載します。\n\n===FORM2-END===\n\n===FORM3-START===\n私は日本語の読み力は非常に良く、日常生活中でも多くの文章を読むことができるようになりました。特に、書籍や雑誌などの文章を読むこともできますが、主に英語の文章を読むことが多いです。\nまた、書籍や雑誌などの文章を読むことで、より深い理解と分析能力も得られます。\nこれらの能力については、以下の3つの文を記載します。\n\n===FORM3-END===";
       const forms = Split(content);
       const finalForms = forms.length > 0 ? forms.slice(0, 3) : [content];
 
@@ -209,34 +212,40 @@ export default function MakeResume() {
   }
 };
 const saveResume = async () => {
-  setIsLoading(true);
-  setError(null);
+    setIsLoading(true);
+    setError(null);
 
-  try {
-    const formData = new FormData();
-    formData.append('details', JSON.stringify({ ...details, photo: null, selectedSuggestion }));
-    if (details.photo) {
-      formData.append('photo', details.photo);
+    try {
+      const formData = new FormData();
+      const resumeDetails = { ...defaultDetails, ...details, photo: null };
+      console.log('Sending details:', resumeDetails);
+      formData.append('details', JSON.stringify(resumeDetails));
+      if (details.photo) {
+        formData.append('photo', details.photo);
+      }
+
+      const response = await fetch('/api/generateResume', {
+        method: 'POST',
+        body: formData,
+      });
+
+      console.log('Response status:', response.status);
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error('Response body:', text);
+        throw new Error(`HTTP ${response.status}: ${text}`);
+      }
+
+      const data = await response.json();
+      alert(`Resume saved successfully! Access it here: ${data.resumeLink}`);
+    } catch (err) {
+      console.error('Error saving resume:', err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
-
-    const response = await fetch('/api/generate-resume', {
-      method: 'POST',
-      body: formData,
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to generate resume');
-    }
-
-    alert(`Resume saved successfully! Access it here: ${data.resumeLink}`);
-  } catch (err) {
-    setError(err.message);
-    console.error('Error saving resume:', err);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
   return (
     <div className="flex flex-col md:flex-row h-screen p-4 gap-6 overflow-hidden">
       {/* Left side - Form */}
