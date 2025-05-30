@@ -42,10 +42,8 @@ export async function POST(req) {
     const details = JSON.parse(formData.get('details') || '{}');
     const photo = formData.get('photo');
 
-    // Log incoming details for debugging
     console.log('Received details:', JSON.stringify(details, null, 2));
 
-    // Validate and escape details
     const escapedDetails = {
       name: escapeLatex(details.name),
       devField: escapeLatex(details.devField),
@@ -88,7 +86,6 @@ export async function POST(req) {
     const pdfPath = path.join(tempDir, `resume-${resumeId}.pdf`);
     const logPath = path.join(tempDir, `resume-${resumeId}.log`);
 
-    // Read the LaTeX template
     const templatePath = path.join(process.cwd(), 'src', 'app', 'helper', 'latexTemplate.tex');
     let latexContent;
     try {
@@ -99,7 +96,6 @@ export async function POST(req) {
       throw new Error(`Failed to read LaTeX template: ${err.message}`);
     }
 
-    // Populate placeholders
     latexContent = latexContent
       .replace('{name}', escapedDetails.name)
       .replace('{photo}', photo ? '\\includegraphics[width=3cm,height=3cm]{profile.jpg}' : '')
@@ -124,22 +120,23 @@ export async function POST(req) {
       .replace('{japaneseLevel}', escapedDetails.japaneseLevel)
       .replace('{personality}', escapedDetails.personality);
 
-    // Generate education entries
+    // Generate education entries with proper row termination
     const educationEntries = escapedDetails.education
-      .map(
-        (edu, index) => `
-${index === 0 ? '\\multirow{' + escapedDetails.education.length + '}{*}{\\textbf{学歴}}' : ''} & ${edu.year} & ${edu.institution} & ${edu.degree} \\
-\\hline
-`
-      )
-      .join('');
+      .map((edu, index) => {
+        const multirowPrefix = index === 0 
+          ? `\\multirow{${escapedDetails.education.length}}{*}{\\textbf{学歴}}` 
+          : '';
+        return `${multirowPrefix} & ${edu.year} & ${edu.institution} & ${edu.degree} \\\\ \\hline`;
+      })
+      .join('\n');
     latexContent = latexContent.replace('{education}', educationEntries);
 
-    // Write the .tex file
+    // Add debugging
+    console.log('Final LaTeX content:', latexContent);
+
     console.log('Writing LaTeX file to:', texFilePath);
     await fsPromises.writeFile(texFilePath, latexContent);
 
-    // Handle photo if provided
     let photoPath;
     if (photo) {
       photoPath = path.join(tempDir, 'profile.jpg');
@@ -148,7 +145,6 @@ ${index === 0 ? '\\multirow{' + escapedDetails.education.length + '}{*}{\\textbf
       console.log('Photo saved to:', photoPath);
     }
 
-    // Generate PDF
     console.log('Starting LaTeX compilation...');
     const output = fs.createWriteStream(pdfPath);
     const latexProcess = latex(latexContent, {
@@ -194,7 +190,6 @@ ${index === 0 ? '\\multirow{' + escapedDetails.education.length + '}{*}{\\textbf
       });
     });
 
-    // Upload to Google Drive
     console.log('Uploading PDF to Google Drive...');
     const fileMetadata = {
       name: `resume-${escapedDetails.name || 'unnamed'}-${resumeId}.pdf`,
@@ -208,15 +203,11 @@ ${index === 0 ? '\\multirow{' + escapedDetails.education.length + '}{*}{\\textbf
       resource: fileMetadata,
       media,
       fields: 'id, webViewLink',
-    }).catch((err) => {
-      console.error('Google Drive upload error:', err);
-      throw new Error(`Failed to upload to Google Drive: ${err.message}`);
     });
 
     const resumeLink = driveResponse.data.webViewLink;
     console.log('Uploaded to Google Drive:', resumeLink);
 
-    // Insert into Supabase
     console.log('Inserting into Supabase...');
     const { error } = await supabase.from('resumes').insert([
       {
@@ -230,11 +221,6 @@ ${index === 0 ? '\\multirow{' + escapedDetails.education.length + '}{*}{\\textbf
       console.error('Supabase error:', error);
       throw new Error(`Database error: ${error.message}`);
     }
-
-    // Clean up (commented for debugging)
-    // await fsPromises.unlink(texFilePath);
-    // if (photoPath) await fsPromises.unlink(photoPath);
-    // await fsPromises.unlink(pdfPath);
 
     return NextResponse.json({ message: 'Resume generated successfully', resumeLink }, { status: 200 });
   } catch (error) {

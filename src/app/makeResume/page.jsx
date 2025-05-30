@@ -210,43 +210,43 @@ export default function MakeResume() {
   }
 };
 const saveResume = async () => {
-    setIsLoading(true);
-    setError(null);
+  setIsLoading(true);
+  setError(null);
 
-    try {
-      console.log('saveResume called'); // Debug log
-      const formData = new FormData();
-      const resumeDetails = { ...defaultDetails, ...details, photo: null };
-      console.log('Sending details:', JSON.stringify(resumeDetails, null, 2));
-      formData.append('details', JSON.stringify(resumeDetails));
-      if (details.photo) {
-        formData.append('photo', details.photo);
-        console.log('Photo included in FormData');
-      }
-
-      const response = await fetch('/api/generateResume', {
-        method: 'POST',
-        body: formData,
-      });
-
-      console.log('Response status:', response.status);
-
-      if (!response.ok) {
-        const text = await response.text();
-        console.error('Response body:', text);
-        throw new Error(`HTTP ${response.status}: ${text}`);
-      }
-
-      const data = await response.json();
-      console.log('Resume saved:', data);
-      alert(`Resume saved successfully! Access it here: ${data.resumeLink}`);
-    } catch (err) {
-      console.error('Error saving resume:', err);
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
+  try {
+    console.log('saveResume called');
+    const formData = new FormData();
+    const resumeDetails = { ...defaultDetails, ...details, photo: null };
+    console.log('Sending details:', JSON.stringify(resumeDetails, null, 2));
+    formData.append('details', JSON.stringify(resumeDetails));
+    if (details.photo) {
+      formData.append('photo', details.photo);
+      console.log('Photo included in FormData');
     }
-  };
+
+    const response = await fetch('/api/generateResume', {
+      method: 'POST',
+      body: formData,
+    });
+
+    console.log('Response status:', response.status);
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('Response body:', text);
+      throw new Error(`HTTP ${response.status}: ${text}`);
+    }
+
+    const data = await response.json();
+    console.log('Resume saved:', data);
+    alert(`Resume saved successfully! Access it here: ${data.resumeLink}`);
+  } catch (err) {
+    console.error('Error saving resume:', err);
+    setError(err.message);
+  } finally {
+    setIsLoading(false);
+  }
+};
   return (
     <div className="flex flex-col md:flex-row h-screen p-4 gap-6 overflow-hidden">
       {/* Left side - Form */}
