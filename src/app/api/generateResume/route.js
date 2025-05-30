@@ -83,7 +83,7 @@ export async function POST(req) {
     const tempDir = path.join(process.cwd(), 'temp');
     await fsPromises.mkdir(tempDir, { recursive: true });
     const texFilePath = path.join(tempDir, `resume-${resumeId}.tex`);
-    const pdfPath = path.join(tempDir, `resume-${resumeId}.pdf`); // Fixed pdfPath naming
+    const pdfPath = path.join(tempDir, `resume-${resumeId}.pdf`);
     const logPath = path.join(tempDir, `resume-${resumeId}.log`);
 
     const templatePath = path.join(process.cwd(), 'src', 'app', 'helper', 'latexTemplate.tex');
@@ -100,21 +100,21 @@ export async function POST(req) {
       .replace(/{name}/g, escapedDetails.name)
       .replace('{photo}', photo ? '\\includegraphics[width=3cm,height=3cm]{profile.jpg}' : '')
       .replace('{devField}', escapedDetails.devField)
-      .replace('{jobType}', escapedDetails.jobType) // Fixed: Removed erroneous /g
+      .replace('{jobType}', escapedDetails.jobType)
       .replace('{domain}', escapedDetails.domain)
       .replace('{type}', escapedDetails.type)
       .replace('{languages}', escapedDetails.languages)
       .replace('{devTools}', escapedDetails.devTools)
       .replace('{projectRole}', escapedDetails.projectRole)
       .replace('{projectDescription}', escapedDetails.projectDescription)
-      .replace('{projectChallenges}', escapedDetails.projectChallenges) // Fixed: Correct property
+      .replace('{projectChallenges}', escapedDetails.projectChallenges)
       .replace('{leadership}', escapedDetails.leadership)
       .replace('{productDevReason}', escapedDetails.productDevReason)
       .replace('{productDevRole}', escapedDetails.productDevRole)
       .replace('{interestFields}', escapedDetails.interestFields.join(' \\hspace{2cm} '))
       .replace('{interestDetails}', escapedDetails.interestDetails)
       .replace('{japanCompanyInterest}', escapedDetails.japanCompanyInterest)
-      .replace('{japanCompanySkills}', escapedDetails.japanCompanySkills) // Fixed: Use correct property
+      .replace('{japanCompanySkills}', escapedDetails.japanCompanySkills)
       .replace('{careerPriorities}', escapedDetails.careerPriorities.join(', '))
       .replace('{careerRoles}', escapedDetails.careerRoles)
       .replace('{japaneseLevel}', escapedDetails.japaneseLevel)
@@ -222,23 +222,26 @@ export async function POST(req) {
     }
 
     if (existingUser) {
-      console.log('Existing user found, updating entry...');
+      console.log('Existing user found, deleting old resume...');
       // Extract old file ID from resume_link
       const oldFileIdMatch = existingUser.resume_link.match(/\/file\/d\/([^/]+)/);
       const oldFileId = oldFileIdMatch ? oldFileIdMatch[1] : null;
 
       if (oldFileId) {
-        console.log('Deleting old resume from Google Drive:', oldFileId);
+        console.log('Attempting to delete old resume from Google Drive:', oldFileId);
         try {
           await drive.files.delete({ fileId: oldFileId });
           console.log('Old resume deleted successfully');
         } catch (deleteError) {
-          console.error('Failed to delete old resume:', deleteError);
-          // Continue with update even if deletion fails
+          console.error('Failed to delete old resume:', deleteError.message);
+          throw new Error(`Failed to delete old resume from Google Drive: ${deleteError.message}`);
         }
+      } else {
+        console.warn('No valid file ID found for old resume, proceeding with update');
       }
 
       // Update existing entry
+      console.log('Updating resume entry in Supabase...');
       const { error: updateError } = await supabase
         .from('resumes')
         .update({ resume_link: resumeLink, updated_at: new Date().toISOString() })
