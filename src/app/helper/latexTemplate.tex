@@ -1,0 +1,108 @@
+\documentclass[5pt]{article}
+\usepackage{xeCJK}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{colortbl}
+\usepackage{xcolor}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage[margin=0.8in]{geometry}
+
+% Set Japanese fonts
+% \setCJKmainfont{Noto Sans CJK JP}
+% Fallback font if Noto Sans CJK JP is unavailable
+\setCJKmainfont{DejaVu Sans}
+
+% Define colors
+\definecolor{lightyellow}{RGB}{255,255,204}
+\definecolor{lightblue}{RGB}{204,229,255}
+\definecolor{lightpink}{RGB}{255,204,229}
+\definecolor{lightpurple}{RGB}{229,204,255}
+\definecolor{lightgreen}{RGB}{220,255,220}
+\definecolor{lightgray}{RGB}{240,240,240}
+
+\begin{document}
+
+% Single continuous table that can span multiple pages
+\begin{longtable}{|>{\centering\arraybackslash}p{1cm}|p{2cm}|p{10cm}|p{3cm}|}
+\hline
+\textbf{No.} & \multicolumn{2}{c|}{\textbf{2407039}} & \multirow{2}{*}{{photo}} \\
+\hline
+\textbf{氏名} & \multicolumn{2}{c|}{\textbf{{name}}} & \\
+\hline
+
+\endfirsthead
+
+\hline
+\multicolumn{4}{|c|}{\textit{続き...}} \\
+\hline
+\endhead
+
+\hline
+\endlastfoot
+
+\multirow{4}{*}{\textbf{志向}} & 開発分野 & {devField} & \multirow{4}{*}{} \\
+\cline{2-3}
+& 職種 & {jobType} & \\
+\cline{2-3}
+& 領域 & {domain} & \\
+\cline{2-3}
+& タイプ & {type} & \\
+\hline
+
+{education}
+
+\multicolumn{4}{|c|}{\cellcolor{lightgray}\textbf{言語/開発ツール}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{言語}} & \multicolumn{2}{c|}{{languages}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{開発ツール}} & \multicolumn{2}{p{13cm}|}{{devTools}} \\
+\hline
+
+\multicolumn{4}{|c|}{\cellcolor{lightgreen}\textbf{プロジェクト（大学のコースの一部）}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{担当した役割}} & \multicolumn{2}{c|}{{projectRole}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{具体的な内容}} & \multicolumn{2}{p{13cm}|}{{projectDescription}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{直面した課題}} & \multicolumn{2}{p{13cm}|}{{projectChallenges}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{リーダー経験}} & \multicolumn{2}{c|}{{leadership}} \\
+\hline
+
+\multicolumn{4}{|c|}{\cellcolor{lightyellow}\textbf{製品開発について}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{興味を持つ理由}} & \multicolumn{2}{p{13cm}|}{{productDevReason}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{果たしたい役割}} & \multicolumn{2}{p{13cm}|}{{productDevRole}} \\
+\hline
+
+\multicolumn{4}{|c|}{\cellcolor{lightblue}\textbf{興味ある分野（左から1番〜3番）}} \\
+\hline
+\multicolumn{4}{|c|}{{interestFields}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{その他詳細}} & \multicolumn{2}{p{13cm}|}{{interestDetails}} \\
+\hline
+
+\multicolumn{4}{|c|}{\cellcolor{lightpink}\textbf{日本企業について}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{一番興味がある点}} & \multicolumn{2}{c|}{{japanCompanyInterest}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{習得したいこと}} & \multicolumn{2}{c|}{{japanCompanySkills}} \\
+\hline
+
+\multicolumn{4}{|c|}{\cellcolor{lightpurple}\textbf{キャリアアップについて}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{3大優先要素}} & \multicolumn{2}{p{13cm}|}{{careerPriorities}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{興味ある役割}} & \multicolumn{2}{c|}{{careerRoles}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{日本語レベル}} & \multicolumn{2}{p{13cm}|}{{japaneseLevel}} \\
+\hline
+\multicolumn{2}{|c|}{\textbf{性格}} & \multicolumn{2}{c|}{{personality}} \\
+\hline
+
+\end{longtable}
+
+\end{document}

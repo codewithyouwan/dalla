@@ -5,37 +5,36 @@ import { createClient } from '@supabase/supabase-js';
 import Split from '../helper/split';
 import { Geist } from 'next/font/google';
 // import '../styles/scrollbar.css';
-
+  const defaultDetails = {
+    name: 'Test User',
+    devField: 'Product Development',
+    jobType: 'Engineer',
+    domain: 'Data Science',
+    type: 'Specialist',
+    education: [{ year: '2024', institution: 'University', degree: 'Masters' }],
+    languages: 'Python',
+    devTools: 'Git, VS Code',
+    projectRole: 'Programmer',
+    projectDescription: 'ML Project',
+    projectChallenges: 'Data Cleaning',
+    leadership: 'Project Leader',
+    productDevReason: 'Problem Solving',
+    productDevRole: 'Data Scientist',
+    interestFields: ['AI', 'Data Analysis', 'Testing'],
+    interestDetails: 'Interested in ML',
+    japanCompanyInterest: 'Technology',
+    japanCompanySkills: 'Work Culture',
+    careerPriorities: ['Growth', 'Impact', 'Balance'],
+    careerRoles: 'Project Manager',
+    japaneseLevel: 'N3',
+    personality: 'Diligent',
+    selectedSuggestion: 'Studying for N3',
+    photo: null,
+  };
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
-const defaultDetails = {
-  name: 'Test User',
-  devField: 'Product Development',
-  jobType: 'Engineer',
-  domain: 'Data Science',
-  type: 'Specialist',
-  education: [{ year: '2024', institution: 'University', degree: 'Masters' }],
-  languages: 'Python',
-  devTools: 'Git, VS Code',
-  projectRole: 'Programmer',
-  projectDescription: 'ML Project',
-  projectChallenges: 'Data Cleaning',
-  leadership: 'Project Leader',
-  productDevReason: 'Problem Solving',
-  productDevRole: 'Data Scientist',
-  interestFields: ['AI', 'Data Analysis', 'Testing'],
-  interestDetails: 'Interested in ML',
-  japanCompanyInterest: 'Technology',
-  japanCompanySkills: 'Work Culture',
-  careerPriorities: ['Growth', 'Impact', 'Balance'],
-  careerRoles: 'Project Manager',
-  japaneseLevel: 'N3',
-  personality: 'Diligent',
-  selectedSuggestion: 'Studying for N3',
-  photo: null,
-};
 export default function MakeResume() {
   const [details, setDetails] = useState(defaultDetails);
   const [jlptScores, setJlptScores] = useState({
@@ -85,7 +84,6 @@ export default function MakeResume() {
       setPhotoPreview(null);
     }
   }, [details.photo]);
-
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
     if (type === 'file') {
@@ -216,12 +214,14 @@ const saveResume = async () => {
     setError(null);
 
     try {
+      console.log('saveResume called'); // Debug log
       const formData = new FormData();
       const resumeDetails = { ...defaultDetails, ...details, photo: null };
-      console.log('Sending details:', resumeDetails);
+      console.log('Sending details:', JSON.stringify(resumeDetails, null, 2));
       formData.append('details', JSON.stringify(resumeDetails));
       if (details.photo) {
         formData.append('photo', details.photo);
+        console.log('Photo included in FormData');
       }
 
       const response = await fetch('/api/generateResume', {
@@ -238,6 +238,7 @@ const saveResume = async () => {
       }
 
       const data = await response.json();
+      console.log('Resume saved:', data);
       alert(`Resume saved successfully! Access it here: ${data.resumeLink}`);
     } catch (err) {
       console.error('Error saving resume:', err);

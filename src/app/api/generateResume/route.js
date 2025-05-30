@@ -64,8 +64,7 @@ export async function POST(req) {
       japanCompanyInterest: escapeLatex(details.japanCompanyInterest),
       japanCompanySkills: escapeLatex(details.japanCompanySkills),
       careerRoles: escapeLatex(details.careerRoles),
-      japaneseLevel: escapeLatex(details.japaneseLevel),
-      selectedSuggestion: escapeLatex(details.selectedSuggestion),
+      japaneseLevel: escapeLatex(details.japaneseLevel || details.selectedSuggestion),
       personality: escapeLatex(details.personality),
       education: Array.isArray(details.education)
         ? details.education.map((edu) => ({
@@ -89,20 +88,55 @@ export async function POST(req) {
     const pdfPath = path.join(tempDir, `resume-${resumeId}.pdf`);
     const logPath = path.join(tempDir, `resume-${resumeId}.log`);
 
-    // Minimal LaTeX content for testing
-    const latexContent = `
-\\documentclass{article}
-\\usepackage{xeCJK}
-\\usepackage{graphicx}
-\\usepackage[margin=1in]{geometry}
-\\setCJKmainfont{Arial Unicode MS}
-\\begin{document}
-Hello, ${escapedDetails.name || 'World'}!
-${photo ? `\\includegraphics[width=3cm,height=3cm]{profile.jpg}` : ''}
-\\end{document}
-    `;
+    // Read the LaTeX template
+    const templatePath = path.join(process.cwd(), 'src', 'app', 'helper', 'latexTemplate.tex');
+    let latexContent;
+    try {
+      latexContent = await fsPromises.readFile(templatePath, 'utf8');
+      console.log('Template loaded successfully from:', templatePath);
+    } catch (err) {
+      console.error('Template read error:', err);
+      throw new Error(`Failed to read LaTeX template: ${err.message}`);
+    }
+
+    // Populate placeholders
+    latexContent = latexContent
+      .replace('{name}', escapedDetails.name)
+      .replace('{photo}', photo ? '\\includegraphics[width=3cm,height=3cm]{profile.jpg}' : '')
+      .replace('{devField}', escapedDetails.devField)
+      .replace('{jobType}', escapedDetails.jobType)
+      .replace('{domain}', escapedDetails.domain)
+      .replace('{type}', escapedDetails.type)
+      .replace('{languages}', escapedDetails.languages)
+      .replace('{devTools}', escapedDetails.devTools)
+      .replace('{projectRole}', escapedDetails.projectRole)
+      .replace('{projectDescription}', escapedDetails.projectDescription)
+      .replace('{projectChallenges}', escapedDetails.projectChallenges)
+      .replace('{leadership}', escapedDetails.leadership)
+      .replace('{productDevReason}', escapedDetails.productDevReason)
+      .replace('{productDevRole}', escapedDetails.productDevRole)
+      .replace('{interestFields}', escapedDetails.interestFields.join(' \\hspace{2cm} '))
+      .replace('{interestDetails}', escapedDetails.interestDetails)
+      .replace('{japanCompanyInterest}', escapedDetails.japanCompanyInterest)
+      .replace('{japanCompanySkills}', escapedDetails.japanCompanySkills)
+      .replace('{careerPriorities}', escapedDetails.careerPriorities.join(', '))
+      .replace('{careerRoles}', escapedDetails.careerRoles)
+      .replace('{japaneseLevel}', escapedDetails.japaneseLevel)
+      .replace('{personality}', escapedDetails.personality);
+
+    // Generate education entries
+    const educationEntries = escapedDetails.education
+      .map(
+        (edu, index) => `
+${index === 0 ? '\\multirow{' + escapedDetails.education.length + '}{*}{\\textbf{学歴}}' : ''} & ${edu.year} & ${edu.institution} & ${edu.degree} \\
+\\hline
+`
+      )
+      .join('');
+    latexContent = latexContent.replace('{education}', educationEntries);
 
     // Write the .tex file
+    console.log('Writing LaTeX file to:', texFilePath);
     await fsPromises.writeFile(texFilePath, latexContent);
 
     // Handle photo if provided
@@ -111,14 +145,16 @@ ${photo ? `\\includegraphics[width=3cm,height=3cm]{profile.jpg}` : ''}
       photoPath = path.join(tempDir, 'profile.jpg');
       const photoBuffer = Buffer.from(await photo.arrayBuffer());
       await fsPromises.writeFile(photoPath, photoBuffer);
+      console.log('Photo saved to:', photoPath);
     }
 
     // Generate PDF
+    console.log('Starting LaTeX compilation...');
     const output = fs.createWriteStream(pdfPath);
     const latexProcess = latex(latexContent, {
       cmd: 'xelatex',
-      cwd: tempDir, // Ensure LaTeX runs in tempDir
-      passes: 1, // Single pass for simplicity
+      cwd: tempDir,
+      passes: 1,
     });
 
     let latexError = '';
@@ -144,10 +180,14 @@ ${photo ? `\\includegraphics[width=3cm,height=3cm]{profile.jpg}` : ''}
             reject(new Error(`LaTeX compilation failed: ${latexError}\nLog file not found at ${logPath}`));
           }
         } else {
+          console.log('LaTeX compilation completed successfully');
           resolve();
         }
       });
-      output.on('error', reject);
+      output.on('error', (err) => {
+        console.error('Output stream error:', err);
+        reject(err);
+      });
       latexProcess.on('error', (err) => {
         console.error('LaTeX output:', latexOutput);
         reject(new Error(`LaTeX compilation failed: ${err.message}`));
@@ -155,9 +195,10 @@ ${photo ? `\\includegraphics[width=3cm,height=3cm]{profile.jpg}` : ''}
     });
 
     // Upload to Google Drive
+    console.log('Uploading PDF to Google Drive...');
     const fileMetadata = {
       name: `resume-${escapedDetails.name || 'unnamed'}-${resumeId}.pdf`,
-      parents: ['11XGFyJ5EOwbF9uvU91syjzOCFewHQfCY'], // Hardcode for testing
+      parents: [process.env.GOOGLE_DRIVE_FOLDER_ID || '11XGFyJ5EOwbF9uvU91syjzOCFewHQfCY'],
     };
     const media = {
       mimeType: 'application/pdf',
@@ -173,8 +214,10 @@ ${photo ? `\\includegraphics[width=3cm,height=3cm]{profile.jpg}` : ''}
     });
 
     const resumeLink = driveResponse.data.webViewLink;
+    console.log('Uploaded to Google Drive:', resumeLink);
 
     // Insert into Supabase
+    console.log('Inserting into Supabase...');
     const { error } = await supabase.from('resumes').insert([
       {
         resume_id: uuidv4(),
@@ -184,6 +227,7 @@ ${photo ? `\\includegraphics[width=3cm,height=3cm]{profile.jpg}` : ''}
     ]);
 
     if (error) {
+      console.error('Supabase error:', error);
       throw new Error(`Database error: ${error.message}`);
     }
 
