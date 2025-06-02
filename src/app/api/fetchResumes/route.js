@@ -23,8 +23,7 @@ export async function GET() {
     // Map resumes to include number and fallback for modified_at
     const formattedResumes = (data || []).map((resume, index = 0) => ({
       ...resume,
-      number: index + 1,
-      modified_at: resume.updated_at || "Not Modified After created.", // Fallback to created_at
+      number: index + 1, // Fallback to created_at
     }));
 
     console.log('Fetched resumes:', formattedResumes);

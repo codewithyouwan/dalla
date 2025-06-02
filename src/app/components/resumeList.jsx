@@ -46,7 +46,7 @@ export default function ResumeList({ resumes , number }) {
                 {formatDate(resume.created_at)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {formatDate(resume.updated_at)}
+                {resume.updated_at?formatDate(resume.updated_at):"Not Modified Yet"}
               </td>
             </tr>
           ))}
