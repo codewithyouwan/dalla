@@ -1,13 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import ResumeList from '../components/resumeList';
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
 
 export default function ShowResume() {
   const [resumes, setResumes] = useState([]);
@@ -17,21 +10,24 @@ export default function ShowResume() {
   useEffect(() => {
     const fetchResumes = async () => {
       try {
-        console.log('Fetching resumes from Supabase...');
-        const { data, error } = await supabase
-          .from('resumes')
-          .select('*')
-          .order('created_at', { ascending: false });
+        console.log('Fetching resumes from /api/fetchResumes at');
+        const response = await fetch('/api/fetchResumes', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
 
-        if (error) {
-          throw new Error(`Supabase error: ${error.message}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || `HTTP ${response.status}: Failed to fetch resumes`);
         }
 
+        // Data is an array (empty or populated)
         console.log('Fetched resumes:', data);
-        setResumes(data || []);
+        setResumes(data);
       } catch (err) {
-        console.error('Error fetching resumes:', err);
-        setError(err.message);
+        console.error('Error fetching resumes:', err.message);
+        setError(`Unable to load resumes: ${err.message}`);
       } finally {
         setIsLoading(false);
       }
@@ -49,7 +45,7 @@ export default function ShowResume() {
         <p className="text-gray-600">No resumes found.</p>
       )}
       {!isLoading && resumes.length > 0 && (
-        <ResumeList resumes={resumes} number={1} />
+        <ResumeList resumes={resumes} />
       )}
     </div>
   );

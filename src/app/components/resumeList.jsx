@@ -37,7 +37,7 @@ export default function ResumeList({ resumes , number }) {
               onClick={() => window.open(resume.resume_link, '_blank', 'noopener,noreferrer')}
             >
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {number++}
+                {resume.number}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {resume.name || 'Unnamed Resume'}
