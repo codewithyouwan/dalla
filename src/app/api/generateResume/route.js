@@ -270,6 +270,21 @@ export async function POST(req) {
       console.log('Resume inserted into Supabase');
     }
 
+    // Clean up temporary files
+    console.log('Cleaning up temporary files...');
+    try {
+      if (photoPath) {
+        await fsPromises.unlink(photoPath);
+        console.log('Deleted temporary photo file:', photoPath);
+      }
+      await fsPromises.unlink(texFilePath);
+      await fsPromises.unlink(pdfPath);
+      console.log('Deleted temporary LaTeX and PDF files');
+    } catch (cleanupError) {
+      console.warn('Failed to clean up some temporary files:', cleanupError);
+      // Don't throw error here as the main operation was successful
+    }
+
     return NextResponse.json({ message: 'Resume generated successfully', resumeLink }, { status: 200 });
   } catch (error) {
     console.error('Error generating resume:', error);
