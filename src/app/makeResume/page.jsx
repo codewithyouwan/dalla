@@ -1,40 +1,37 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import Split from '../helper/split';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+const defaultDetails = {
+  name: 'Test User',
+  devField: 'Product Development',
+  jobType: 'Engineer',
+  domain: 'Data Science',
+  type: 'Specialist',
+  education: [{ year: '2024', institution: 'University', degree: 'Masters' }],
+  languages: 'Python',
+  devTools: 'Git, VS Code',
+  projectRole: 'Programmer',
+  projectDescription: 'ML Project',
+  projectChallenges: 'Data Cleaning',
+  leadership: 'Project Leader',
+  productDevReason: 'Problem Solving',
+  productDevRole: 'Data Scientist',
+  interestFields: ['AI', 'Data Analysis', 'Testing'],
+  interestDetails: 'Interested in ML',
+  japanCompanyInterest: 'Technology',
+  japanCompanySkills: 'Work Culture',
+  careerPriorities: ['Growth', 'Impact', 'Balance'],
+  careerRoles: 'Project Manager',
+  japaneseLevel: 'N3',
+  personality: 'Diligent',
+  selectedSuggestion: 'Studying for N3',
+  photo: null,
+};
 
 export default function MakeResume() {
-  const [details, setDetails] = useState({
-    name: '',
-    photo: null,
-    devField: '',
-    jobType: '',
-    domain: '',
-    type: '',
-    education: [{ year: '', institution: '', degree: '' }],
-    languages: '',
-    devTools: '',
-    projectRole: '',
-    projectDescription: '',
-    projectChallenges: '',
-    leadership: '',
-    productDevReason: '',
-    productDevRole: '',
-    interestFields: ['', '', ''],
-    interestDetails: '',
-    japanCompanyInterest: '',
-    japanCompanySkills: '',
-    careerPriorities: ['', '', ''],
-    careerRoles: '',
-    japaneseLevel: '',
-    personality: '',
-  });
+  const [details, setDetails] = useState(defaultDetails);
   const [jlptScores, setJlptScores] = useState({
     total: '',
     vocabulary: '',
@@ -47,8 +44,9 @@ export default function MakeResume() {
   const [selectedSuggestion, setSelectedSuggestion] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
 
-  // Retrieve and parse extracted text
   useEffect(() => {
     const extractedText = localStorage.getItem('extractedResumeText');
     if (extractedText) {
@@ -70,7 +68,6 @@ export default function MakeResume() {
     }
   }, []);
 
-  // Update photo preview when a new photo is selected
   useEffect(() => {
     if (details.photo) {
       const objectUrl = URL.createObjectURL(details.photo);
@@ -84,7 +81,12 @@ export default function MakeResume() {
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
     if (type === 'file') {
-      setDetails((prev) => ({ ...prev, [name]: files[0] }));
+      const file = files[0];
+      if (file && file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) {
+        setDetails((prev) => ({ ...prev, [name]: file }));
+      } else {
+        alert('Please upload a JPEG image under 5MB');
+      }
     } else if (name in jlptScores) {
       setJlptScores((prev) => ({ ...prev, [name]: value }));
     } else {
@@ -109,6 +111,15 @@ export default function MakeResume() {
     setDetails((prev) => ({
       ...prev,
       education: [...prev.education, { year: '', institution: '', degree: '' }],
+    }));
+  };
+
+  const removeEducation = (indexToRemove) => {
+    setDetails((prev) => ({
+      ...prev,
+      education: prev.education.length > 1 
+        ? prev.education.filter((_, index) => index !== indexToRemove)
+        : prev.education
     }));
   };
 
@@ -145,33 +156,137 @@ export default function MakeResume() {
     setSelectedIndex(index);
   };
 
-  const saveResume = async () => {
-    try {
-      const formData = new FormData();
-      formData.append('details', JSON.stringify({ ...details, photo: null, selectedSuggestion }));
-      if (details.photo) {
-        formData.append('photo', details.photo);
-      }
+  const handleResumeDrop = async (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.files[0] || e.target.files[0];
+    
+    if (!file || file.type !== 'application/pdf') {
+      setUploadError('Please upload a valid PDF file.');
+      return;
+    }
 
-      const response = await fetch('/api/generate-resume', {
+    setUploading(true);
+    setUploadError(null);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('/api/upload-resume', {
         method: 'POST',
         body: formData,
       });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to generate resume');
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Upload failed');
 
-      alert('Resume saved successfully!');
+      localStorage.setItem('extractedResumeText', result.extractedText);
+      const extractedText = result.extractedText;
+      
+      const nameMatch = extractedText.match(/Name:\s*([^\n]+)/i) || extractedText.match(/^[A-Za-z\s]+(?=\n)/);
+      const educationMatch = extractedText.match(/Education[\s\S]*?(?=\n\n|\n[A-Z])/i);
+      const experienceMatch = extractedText.match(/(Experience|Work)[\s\S]*?(?=\n\n|\n[A-Z])/i);
+      const skillsMatch = extractedText.match(/Skills[\s\S]*?(?=\n\n|\n[A-Z])/i);
+
+      setDetails((prev) => ({
+        ...prev,
+        name: nameMatch ? nameMatch[1]?.trim() : '',
+        education: educationMatch
+          ? [{ year: '', institution: educationMatch[0]?.trim(), degree: '' }]
+          : prev.education,
+        projectDescription: experienceMatch ? experienceMatch[0]?.trim() : '',
+        languages: skillsMatch ? skillsMatch[0]?.match(/Languages:\s*([^\n]+)/i)?.[1]?.trim() : '',
+        devTools: skillsMatch ? skillsMatch[0]?.match(/Tools:\s*([^\n]+)/i)?.[1]?.trim() : '',
+      }));
     } catch (err) {
+      setUploadError(err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const saveResume = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      console.log('saveResume called');
+      const formData = new FormData();
+      const resumeDetails = { ...defaultDetails, ...details, photo: null };
+      console.log('Sending details:', JSON.stringify(resumeDetails, null, 2));
+      formData.append('details', JSON.stringify(resumeDetails));
+      if (details.photo) {
+        formData.append('photo', details.photo);
+        console.log('Photo included in FormData:', details.photo.name);
+      }
+
+      const response = await fetch('/api/generateResume', {
+        method: 'POST',
+        body: formData,
+      });
+
+      console.log('Response status:', response.status);
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error('Response body:', text);
+        throw new Error(`HTTP ${response.status}: ${text}`);
+      }
+
+      const data = await response.json();
+      console.log('Resume saved:', data);
+      alert(`Resume saved successfully! Access it here: ${data.resumeLink}`);
+    } catch (err) {
+      console.error('Error saving resume:', err);
       setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen p-4 gap-6">
+    <div className="flex flex-col md:flex-row h-screen p-4 gap-6 overflow-hidden">
       {/* Left side - Form */}
-      <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto">
+      <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full">
         <h1 className="text-2xl text-black font-bold mb-6">履歴書ビルダー / Resume Builder</h1>
+
+        {/* Resume Upload Area */}
+        <div className="mb-8">
+          <h2 className="text-xl text-black font-semibold mb-3">英語の履歴書をアップロード（任意） / Upload English Resume (Optional)</h2>
+          <div
+            className={`border-2 border-dashed p-6 rounded-lg text-center ${
+              uploading ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+            }`}
+            onDrop={handleResumeDrop}
+            onDragOver={(e) => e.preventDefault()}
+          >
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={handleResumeDrop}
+              className="hidden"
+              id="resume-upload"
+            />
+            <label
+              htmlFor="resume-upload"
+              className="cursor-pointer text-gray-600 hover:text-blue-500"
+            >
+              <p>
+                PDFファイルをドラッグ&ドロップ、またはクリックしてアップロード（任意）
+                <br />
+                Drag & drop your English resume (PDF) here, or click to upload (Optional)
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                履歴書をアップロードすると、フォームが自動的に入力されます。後で編集可能です。
+                <br />
+                Uploading a resume will auto-fill the form fields, which you can edit later.
+              </p>
+              <p className="text-sm text-gray-500 mt-2">Max file size: 5MB</p>
+            </label>
+          </div>
+          {uploading && <p className="mt-2 text-blue-500">処理中... / Processing...</p>}
+          {uploadError && <p className="mt-2 text-red-500">{uploadError}</p>}
+        </div>
 
         {/* 1. Personal Information */}
         <div className="mb-8">
@@ -192,7 +307,7 @@ export default function MakeResume() {
               <input
                 type="file"
                 name="photo"
-                accept="image/*"
+                accept="image/jpeg"
                 onChange={handleInputChange}
                 className="mt-1 block w-full text-black"
               />
@@ -251,7 +366,7 @@ export default function MakeResume() {
         <div className="mb-8">
           <h2 className="text-xl text-black font-semibold mb-3">学歴 / Education</h2>
           {details.education.map((edu, index) => (
-            <div key={index} className="space-y-4 mb-4 border-b pb-4">
+            <div key={index} className="space-y-4 mb-4 border-b pb-4 relative">
               <div>
                 <label className="block text-sm font-medium text-gray-700">年 / Year</label>
                 <input
@@ -279,6 +394,17 @@ export default function MakeResume() {
                   className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 />
               </div>
+              {details.education.length > 1 && (
+                <button
+                  onClick={() => removeEducation(index)}
+                  className="absolute top-0 right-0 text-red-600 hover:text-red-800 p-1"
+                  title="Delete this education entry"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              )}
             </div>
           ))}
           <button
@@ -601,15 +727,17 @@ export default function MakeResume() {
         <div className="mb-8">
           <button
             onClick={saveResume}
-            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+            disabled={isLoading}
+            className={`px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            履歴書を保存 / Save Resume
+            {isLoading ? '保存中... / Saving...' : '履歴書を保存 / Save Resume'}
           </button>
+          {error && <p className="mt-2 text-red-600 text-sm">{error}</p>}
         </div>
       </div>
 
       {/* Right side - Preview */}
-      <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto">
+      <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full">
         <h1 className="text-2xl text-black font-bold mb-6">履歴書プレビュー / Resume Preview</h1>
         <div className="text-black p-4 rounded whitespace-pre-line font-sans">
           <table className="w-full border-collapse border border-gray-300">
@@ -625,28 +753,28 @@ export default function MakeResume() {
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-bold">氏名</td>
-                <td className="border border-gray-300 p-2 text-center font-bold" colSpan="2">{details.name || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2 text-center font-bold" colSpan="2">{details.name || '未入力'}</td>
                 <td className="border border-gray-300"></td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-bold" rowSpan="4">志向</td>
                 <td className="border border-gray-300 p-2 font-medium w-32">開発分野</td>
-                <td className="border border-gray-300 p-2">{details.devField || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2">{details.devField || '未入力'}</td>
                 <td className="border border-gray-300"></td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 font-medium">職種</td>
-                <td className="border border-gray-300 p-2">{details.jobType || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2">{details.jobType || '未入力'}</td>
                 <td className="border border-gray-300"></td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 font-medium">領域</td>
-                <td className="border border-gray-300 p-2">{details.domain || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2">{details.domain || '未入力'}</td>
                 <td className="border border-gray-300"></td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 font-medium">タイプ</td>
-                <td className="border border-gray-300 p-2">{details.type || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2">{details.type || '未入力'}</td>
                 <td className="border border-gray-300"></td>
               </tr>
               {details.education.map((edu, index) => (
@@ -654,9 +782,9 @@ export default function MakeResume() {
                   {index === 0 && (
                     <td className="border border-gray-300 p-2 text-center font-bold" rowSpan={details.education.length}>学歴</td>
                   )}
-                  <td className="border border-gray-300 p-2 font-medium">{edu.year || '未入力 / Not entered'}</td>
-                  <td className="border border-gray-300 p-2">{edu.institution || '未入力 / Not entered'}</td>
-                  <td className="border border-gray-300 p-2">{edu.degree || '未入力 / Not entered'}</td>
+                  <td className="border border-gray-300 p-2">{edu.year || '-'}</td>
+                  <td className="border border-gray-300 p-2">{edu.institution || '-'}</td>
+                  <td className="border border-gray-300 p-2">{edu.degree || '-'}</td>
                 </tr>
               ))}
               <tr className="bg-gray-100">
@@ -664,81 +792,81 @@ export default function MakeResume() {
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">言語</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.languages || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="2">{details.languages || '未入力'}</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">開発ツール</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.devTools || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="2">{details.devTools || '未入力'}</td>
               </tr>
               <tr className="bg-green-100">
                 <td className="border border-gray-300 p-2 text-center font-bold" colSpan="4">プロジェクト（大学のコースの一部）</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">担当した役割</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.projectRole || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="2">{details.projectRole || '未入力'}</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">具体的な内容</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.projectDescription || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="2">{details.projectDescription || '未入力'}</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">直面した課題</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.projectChallenges || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="2">{details.projectChallenges || '未入力'}</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">リーダー経験</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.leadership || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="2">{details.leadership || '未入力'}</td>
               </tr>
               <tr className="bg-yellow-100">
                 <td className="border border-gray-300 p-2 text-center font-bold" colSpan="4">製品開発について</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">興味を持つ理由</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.productDevReason || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="2">{details.productDevReason || '未入力'}</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">果たしたい役割</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.productDevRole || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="2">{details.productDevRole || '未入力'}</td>
               </tr>
               <tr className="bg-blue-100">
                 <td className="border border-gray-300 p-2 text-center font-bold" colSpan="4">興味ある分野（左から1番〜3番）</td>
               </tr>
               <tr>
-                <td className="border border-gray-300 p-2" colSpan="4">{details.interestFields.join('  ') || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="4">{details.interestFields.join('  ') || '未入力'}</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">その他詳細</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.interestDetails || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="2">{details.interestDetails || '未入力'}</td>
               </tr>
               <tr className="bg-pink-100">
                 <td className="border border-gray-300 p-2 text-center font-bold" colSpan="4">日本企業について</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">一番興味がある点</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.japanCompanyInterest || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="2">{details.japanCompanyInterest || '未入力'}</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">習得したいこと</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.japanCompanySkills || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="2">{details.japanCompanySkills || '未入力'}</td>
               </tr>
               <tr className="bg-purple-100">
                 <td className="border border-gray-300 p-2 text-center font-bold" colSpan="4">キャリアアップについて</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">3大優先要素</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.careerPriorities.join(', ') || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="2">{details.careerPriorities.join(', ') || '未入力'}</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">興味ある役割</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.careerRoles || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="2">{details.careerRoles || '未入力'}</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">日本語レベル</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{selectedSuggestion || details.japaneseLevel || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="2">{selectedSuggestion || details.japaneseLevel || '未入力'}</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">性格</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.personality || '未入力 / Not entered'}</td>
+                <td className="border border-gray-300 p-2" colSpan="2">{details.personality || '未入力'}</td>
               </tr>
             </tbody>
           </table>
