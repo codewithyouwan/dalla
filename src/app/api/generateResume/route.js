@@ -46,6 +46,7 @@ export async function POST(req) {
     console.log('Received details:', JSON.stringify(details, null, 2));
 
     const escapedDetails = {
+      employeeNumber: escapeLatex(details.employeeNumber),
       name: escapeLatex(details.name),
       devField: escapeLatex(details.devField),
       jobType: escapeLatex(details.jobType),
@@ -122,6 +123,7 @@ export async function POST(req) {
     }
 
     latexContent = latexContent
+      .replace('{employeeNumber}', escapedDetails.employeeNumber)
       .replace(/{name}/g, escapedDetails.name)
       .replace('{devField}', escapedDetails.devField)
       .replace('{jobType}', escapedDetails.jobType)

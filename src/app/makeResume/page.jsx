@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Split from '../helper/split';
 
 const defaultDetails = {
+  employeeNumber: '',
   name: 'Test User',
   devField: 'Product Development',
   jobType: 'Engineer',
@@ -44,29 +45,6 @@ export default function MakeResume() {
   const [selectedSuggestion, setSelectedSuggestion] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState(null);
-
-  useEffect(() => {
-    const extractedText = localStorage.getItem('extractedResumeText');
-    if (extractedText) {
-      const nameMatch = extractedText.match(/Name:\s*([^\n]+)/i) || extractedText.match(/^[A-Za-z\s]+(?=\n)/);
-      const educationMatch = extractedText.match(/Education[\s\S]*?(?=\n\n|\n[A-Z])/i);
-      const experienceMatch = extractedText.match(/(Experience|Work)[\s\S]*?(?=\n\n|\n[A-Z])/i);
-      const skillsMatch = extractedText.match(/Skills[\s\S]*?(?=\n\n|\n[A-Z])/i);
-
-      setDetails((prev) => ({
-        ...prev,
-        name: nameMatch ? nameMatch[1]?.trim() : '',
-        education: educationMatch
-          ? [{ year: '', institution: educationMatch[0]?.trim(), degree: '' }]
-          : prev.education,
-        projectDescription: experienceMatch ? experienceMatch[0]?.trim() : '',
-        languages: skillsMatch ? skillsMatch[0]?.match(/Languages:\s*([^\n]+)/i)?.[1]?.trim() : '',
-        devTools: skillsMatch ? skillsMatch[0]?.match(/Tools:\s*([^\n]+)/i)?.[1]?.trim() : '',
-      }));
-    }
-  }, []);
 
   useEffect(() => {
     if (details.photo) {
@@ -156,55 +134,6 @@ export default function MakeResume() {
     setSelectedIndex(index);
   };
 
-  const handleResumeDrop = async (e) => {
-    e.preventDefault();
-    const file = e.dataTransfer?.files[0] || e.target.files[0];
-    
-    if (!file || file.type !== 'application/pdf') {
-      setUploadError('Please upload a valid PDF file.');
-      return;
-    }
-
-    setUploading(true);
-    setUploadError(null);
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const response = await fetch('/api/upload-resume', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Upload failed');
-
-      localStorage.setItem('extractedResumeText', result.extractedText);
-      const extractedText = result.extractedText;
-      
-      const nameMatch = extractedText.match(/Name:\s*([^\n]+)/i) || extractedText.match(/^[A-Za-z\s]+(?=\n)/);
-      const educationMatch = extractedText.match(/Education[\s\S]*?(?=\n\n|\n[A-Z])/i);
-      const experienceMatch = extractedText.match(/(Experience|Work)[\s\S]*?(?=\n\n|\n[A-Z])/i);
-      const skillsMatch = extractedText.match(/Skills[\s\S]*?(?=\n\n|\n[A-Z])/i);
-
-      setDetails((prev) => ({
-        ...prev,
-        name: nameMatch ? nameMatch[1]?.trim() : '',
-        education: educationMatch
-          ? [{ year: '', institution: educationMatch[0]?.trim(), degree: '' }]
-          : prev.education,
-        projectDescription: experienceMatch ? experienceMatch[0]?.trim() : '',
-        languages: skillsMatch ? skillsMatch[0]?.match(/Languages:\s*([^\n]+)/i)?.[1]?.trim() : '',
-        devTools: skillsMatch ? skillsMatch[0]?.match(/Tools:\s*([^\n]+)/i)?.[1]?.trim() : '',
-      }));
-    } catch (err) {
-      setUploadError(err.message);
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const saveResume = async () => {
     setIsLoading(true);
     setError(null);
@@ -250,48 +179,20 @@ export default function MakeResume() {
       <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full">
         <h1 className="text-2xl text-black font-bold mb-6">履歴書ビルダー / Resume Builder</h1>
 
-        {/* Resume Upload Area */}
-        <div className="mb-8">
-          <h2 className="text-xl text-black font-semibold mb-3">英語の履歴書をアップロード（任意） / Upload English Resume (Optional)</h2>
-          <div
-            className={`border-2 border-dashed p-6 rounded-lg text-center ${
-              uploading ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-            }`}
-            onDrop={handleResumeDrop}
-            onDragOver={(e) => e.preventDefault()}
-          >
-            <input
-              type="file"
-              accept=".pdf"
-              onChange={handleResumeDrop}
-              className="hidden"
-              id="resume-upload"
-            />
-            <label
-              htmlFor="resume-upload"
-              className="cursor-pointer text-gray-600 hover:text-blue-500"
-            >
-              <p>
-                PDFファイルをドラッグ&ドロップ、またはクリックしてアップロード（任意）
-                <br />
-                Drag & drop your English resume (PDF) here, or click to upload (Optional)
-              </p>
-              <p className="text-sm text-gray-500 mt-2">
-                履歴書をアップロードすると、フォームが自動的に入力されます。後で編集可能です。
-                <br />
-                Uploading a resume will auto-fill the form fields, which you can edit later.
-              </p>
-              <p className="text-sm text-gray-500 mt-2">Max file size: 5MB</p>
-            </label>
-          </div>
-          {uploading && <p className="mt-2 text-blue-500">処理中... / Processing...</p>}
-          {uploadError && <p className="mt-2 text-red-500">{uploadError}</p>}
-        </div>
-
         {/* 1. Personal Information */}
         <div className="mb-8">
           <h2 className="text-xl text-black font-semibold mb-3">個人情報 / Personal Information</h2>
           <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">社員番号 / Employee Number</label>
+              <input
+                type="text"
+                name="employeeNumber"
+                value={details.employeeNumber}
+                onChange={handleInputChange}
+                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              />
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">名前 / Name</label>
               <input
@@ -607,7 +508,7 @@ export default function MakeResume() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">性格 / Personality</label>
+              < label className="block text-sm font-medium text-gray-700">性格 / Personality</label>
               <input
                 type="text"
                 name="personality"
@@ -744,7 +645,7 @@ export default function MakeResume() {
             <tbody>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-bold w-12">No.</td>
-                <td className="border border-gray-300 p-2 text-center font-bold" colSpan="2">2407039</td>
+                <td className="border border-gray-300 p-2 text-center font-bold" colSpan="2">{details.employeeNumber || '未入力'}</td>
                 <td className="border border-gray-300 p-2 w-24">
                   {photoPreview && (
                     <img src={photoPreview} alt="Profile" className="w-12 h-12 object-cover" />
@@ -788,7 +689,7 @@ export default function MakeResume() {
                 </tr>
               ))}
               <tr className="bg-gray-100">
-                <td className="border border-gray-300 p-2 text-center font-bold" colSpan="4">言語/開発ツール</td>
+                <td className="border border-gray-300 p-0 text-center font-bold" colSpan="4">言語/開発ツール</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">言語</td>
@@ -872,7 +773,7 @@ export default function MakeResume() {
           </table>
         </div>
         <div className="text-black italic mt-4">
-          {!details.name && !selectedSuggestion && !photoPreview && 'フォームに入力すると履歴書プレビューがここに表示されます。 / Your resume preview will appear as you fill out the form.'}
+          {!details.name && !details.employeeNumber && !selectedSuggestion && !photoPreview && 'フォームに入力すると履歴書プレビューがここに表示されます。 / Your resume preview will appear as you fill out the form.'}
         </div>
       </div>
     </div>
