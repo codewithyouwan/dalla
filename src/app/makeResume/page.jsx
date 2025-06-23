@@ -45,6 +45,7 @@ export default function MakeResume() {
   const [selectedSuggestion, setSelectedSuggestion] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [previewLink, setPreviewLink] = useState(null);
 
   useEffect(() => {
     if (details.photo) {
@@ -104,21 +105,17 @@ export default function MakeResume() {
   const generateSuggestions = async () => {
     setIsLoading(true);
     setError(null);
-
     try {
       const response = await fetch('/api/grok3', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(jlptScores),
       });
-
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to generate suggestions');
-
       const content = data.suggestions;
       const forms = Split(content);
       const finalForms = forms.length > 0 ? forms.slice(0, 3) : [content];
-
       setSuggestions(finalForms.map((form) => form.trim()));
       setSelectedSuggestion('');
       setSelectedIndex(null);
@@ -134,43 +131,46 @@ export default function MakeResume() {
     setSelectedIndex(index);
   };
 
-  const saveResume = async () => {
+  const compileResume = async () => {
     setIsLoading(true);
     setError(null);
-
     try {
-      console.log('saveResume called');
       const formData = new FormData();
-      const resumeDetails = { ...defaultDetails, ...details, photo: null };
-      console.log('Sending details:', JSON.stringify(resumeDetails, null, 2));
+      const resumeDetails = { ...details, photo: null };
       formData.append('details', JSON.stringify(resumeDetails));
       if (details.photo) {
         formData.append('photo', details.photo);
-        console.log('Photo included in FormData:', details.photo.name);
       }
-
       const response = await fetch('/api/generateResume', {
         method: 'POST',
         body: formData,
       });
-
-      console.log('Response status:', response.status);
-
       if (!response.ok) {
         const text = await response.text();
-        console.error('Response body:', text);
         throw new Error(`HTTP ${response.status}: ${text}`);
       }
-
       const data = await response.json();
-      console.log('Resume saved:', data);
-      alert(`Resume saved successfully! Access it here: ${data.resumeLink}`);
+      setPreviewLink(data.resumeLink);
+      return data.resumeLink;
     } catch (err) {
-      console.error('Error saving resume:', err);
       setError(err.message);
+      throw err;
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const saveResume = async () => {
+    try {
+      const link = await compileResume();
+      alert(`Resume saved successfully! Access it here: ${link}`);
+    } catch (err) {
+      // Error is already set in compileResume
+    }
+  };
+
+  const handleRefresh = async () => {
+    await compileResume();
   };
 
   return (
@@ -179,7 +179,7 @@ export default function MakeResume() {
       <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full">
         <h1 className="text-2xl text-black font-bold mb-6">履歴書ビルダー / Resume Builder</h1>
 
-        {/* 1. Personal Information */}
+        {/* Personal Information */}
         <div className="mb-8">
           <h2 className="text-xl text-black font-semibold mb-3">個人情報 / Personal Information</h2>
           <div className="space-y-4">
@@ -216,7 +216,7 @@ export default function MakeResume() {
           </div>
         </div>
 
-        {/* 2. Career Aspirations */}
+        {/* Career Aspirations */}
         <div className="mb-8">
           <h2 className="text-xl text-black font-semibold mb-3">志向 / Career Aspirations</h2>
           <div className="space-y-4">
@@ -263,7 +263,7 @@ export default function MakeResume() {
           </div>
         </div>
 
-        {/* 3. Education */}
+        {/* Education */}
         <div className="mb-8">
           <h2 className="text-xl text-black font-semibold mb-3">学歴 / Education</h2>
           {details.education.map((edu, index) => (
@@ -316,7 +316,7 @@ export default function MakeResume() {
           </button>
         </div>
 
-        {/* 4. Languages and Tools */}
+        {/* Languages and Tools */}
         <div className="mb-8">
           <h2 className="text-xl text-black font-semibold mb-3">言語/開発ツール / Languages & Tools</h2>
           <div className="space-y-4">
@@ -343,7 +343,7 @@ export default function MakeResume() {
           </div>
         </div>
 
-        {/* 5. Projects */}
+        {/* Projects */}
         <div className="mb-8">
           <h2 className="text-xl text-black font-semibold mb-3">プロジェクト / Projects</h2>
           <div className="space-y-4">
@@ -390,7 +390,7 @@ export default function MakeResume() {
           </div>
         </div>
 
-        {/* 6. Product Development */}
+        {/* Product Development */}
         <div className="mb-8">
           <h2 className="text-xl text-black font-semibold mb-3">製品開発について / Product Development</h2>
           <div className="space-y-4">
@@ -417,7 +417,7 @@ export default function MakeResume() {
           </div>
         </div>
 
-        {/* 7. Fields of Interest */}
+        {/* Fields of Interest */}
         <div className="mb-8">
           <h2 className="text-xl text-black font-semibold mb-3">興味ある分野 / Fields of Interest</h2>
           <div className="space-y-4">
@@ -445,7 +445,7 @@ export default function MakeResume() {
           </div>
         </div>
 
-        {/* 8. Japanese Companies */}
+        {/* Japanese Companies */}
         <div className="mb-8">
           <h2 className="text-xl text-black font-semibold mb-3">日本企業について / Japanese Companies</h2>
           <div className="space-y-4">
@@ -472,7 +472,7 @@ export default function MakeResume() {
           </div>
         </div>
 
-        {/* 9. Career Development */}
+        {/* Career Development */}
         <div className="mb-8">
           <h2 className="text-xl text-black font-semibold mb-3">キャリアアップについて / Career Development</h2>
           <div className="space-y-4">
@@ -508,7 +508,7 @@ export default function MakeResume() {
               />
             </div>
             <div>
-              < label className="block text-sm font-medium text-gray-700">性格 / Personality</label>
+              <label className="block text-sm font-medium text-gray-700">性格 / Personality</label>
               <input
                 type="text"
                 name="personality"
@@ -520,7 +520,7 @@ export default function MakeResume() {
           </div>
         </div>
 
-        {/* 10. JLPT Experience */}
+        {/* JLPT Experience */}
         <div className="mb-8">
           <h2 className="text-xl text-black font-semibold mb-3">JLPT経験 / JLPT Experience</h2>
           <div className="space-y-4">
@@ -639,141 +639,32 @@ export default function MakeResume() {
 
       {/* Right side - Preview */}
       <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full">
-        <h1 className="text-2xl text-black font-bold mb-6">履歴書プレビュー / Resume Preview</h1>
-        <div className="text-black p-4 rounded whitespace-pre-line font-sans">
-          <table className="w-full border-collapse border border-gray-300">
-            <tbody>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-bold w-12">No.</td>
-                <td className="border border-gray-300 p-2 text-center font-bold" colSpan="2">{details.employeeNumber || '未入力'}</td>
-                <td className="border border-gray-300 p-2 w-24">
-                  {photoPreview && (
-                    <img src={photoPreview} alt="Profile" className="w-12 h-12 object-cover" />
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-bold">氏名</td>
-                <td className="border border-gray-300 p-2 text-center font-bold" colSpan="2">{details.name || '未入力'}</td>
-                <td className="border border-gray-300"></td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-bold" rowSpan="4">志向</td>
-                <td className="border border-gray-300 p-2 font-medium w-32">開発分野</td>
-                <td className="border border-gray-300 p-2">{details.devField || '未入力'}</td>
-                <td className="border border-gray-300"></td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 font-medium">職種</td>
-                <td className="border border-gray-300 p-2">{details.jobType || '未入力'}</td>
-                <td className="border border-gray-300"></td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 font-medium">領域</td>
-                <td className="border border-gray-300 p-2">{details.domain || '未入力'}</td>
-                <td className="border border-gray-300"></td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 font-medium">タイプ</td>
-                <td className="border border-gray-300 p-2">{details.type || '未入力'}</td>
-                <td className="border border-gray-300"></td>
-              </tr>
-              {details.education.map((edu, index) => (
-                <tr key={index}>
-                  {index === 0 && (
-                    <td className="border border-gray-300 p-2 text-center font-bold" rowSpan={details.education.length}>学歴</td>
-                  )}
-                  <td className="border border-gray-300 p-2">{edu.year || '-'}</td>
-                  <td className="border border-gray-300 p-2">{edu.institution || '-'}</td>
-                  <td className="border border-gray-300 p-2">{edu.degree || '-'}</td>
-                </tr>
-              ))}
-              <tr className="bg-gray-100">
-                <td className="border border-gray-300 p-0 text-center font-bold" colSpan="4">言語/開発ツール</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">言語</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.languages || '未入力'}</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">開発ツール</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.devTools || '未入力'}</td>
-              </tr>
-              <tr className="bg-green-100">
-                <td className="border border-gray-300 p-2 text-center font-bold" colSpan="4">プロジェクト（大学のコースの一部）</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">担当した役割</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.projectRole || '未入力'}</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">具体的な内容</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.projectDescription || '未入力'}</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">直面した課題</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.projectChallenges || '未入力'}</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">リーダー経験</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.leadership || '未入力'}</td>
-              </tr>
-              <tr className="bg-yellow-100">
-                <td className="border border-gray-300 p-2 text-center font-bold" colSpan="4">製品開発について</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">興味を持つ理由</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.productDevReason || '未入力'}</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">果たしたい役割</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.productDevRole || '未入力'}</td>
-              </tr>
-              <tr className="bg-blue-100">
-                <td className="border border-gray-300 p-2 text-center font-bold" colSpan="4">興味ある分野（左から1番〜3番）</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2" colSpan="4">{details.interestFields.join('  ') || '未入力'}</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">その他詳細</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.interestDetails || '未入力'}</td>
-              </tr>
-              <tr className="bg-pink-100">
-                <td className="border border-gray-300 p-2 text-center font-bold" colSpan="4">日本企業について</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">一番興味がある点</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.japanCompanyInterest || '未入力'}</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">習得したいこと</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.japanCompanySkills || '未入力'}</td>
-              </tr>
-              <tr className="bg-purple-100">
-                <td className="border border-gray-300 p-2 text-center font-bold" colSpan="4">キャリアアップについて</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">3大優先要素</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.careerPriorities.join(', ') || '未入力'}</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">興味ある役割</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.careerRoles || '未入力'}</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">日本語レベル</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{selectedSuggestion || details.japaneseLevel || '未入力'}</td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-center font-medium" colSpan="2">性格</td>
-                <td className="border border-gray-300 p-2" colSpan="2">{details.personality || '未入力'}</td>
-              </tr>
-            </tbody>
-          </table>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl text-black font-bold">履歴書プレビュー / Resume Preview</h1>
+          <button
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className={`px-4 py-2 rounded-md text-white ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+          >
+            {isLoading ? 'Compiling...' : 'Refresh'}
+          </button>
         </div>
-        <div className="text-black italic mt-4">
-          {!details.name && !details.employeeNumber && !selectedSuggestion && !photoPreview && 'フォームに入力すると履歴書プレビューがここに表示されます。 / Your resume preview will appear as you fill out the form.'}
+        <div className="border border-gray-300 rounded-md h-[calc(100%-4rem)]">
+          {isLoading ? (
+            <div className="flex justify-center items-center h-full">
+              <p className="text-gray-600">Compiling resume...</p>
+            </div>
+          ) : previewLink ? (
+            <iframe
+              src={previewLink.replace('/view', '/preview')}
+              className="w-full h-full border-none"
+              title="Resume Preview"
+            />
+          ) : (
+            <div className="flex justify-center items-center h-full">
+              <p className="text-gray-600">Preview will appear here after compilation.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
