@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Split from '../helper/split';
 import { v4 as uuidv4 } from 'uuid';
+import Cropper from 'react-cropper';
+import 'cropperjs/dist/cropper.css';
 
 const defaultDetails = {
   employeeNumber: '',
@@ -32,7 +34,7 @@ const defaultDetails = {
   photo: null,
 };
 
-export default function MakeResume() {
+export default function Page() {
   const [details, setDetails] = useState(defaultDetails);
   const [jlptScores, setJlptScores] = useState({
     total: '',
@@ -49,6 +51,9 @@ export default function MakeResume() {
   const [previewLink, setPreviewLink] = useState(null);
   const [tempPdfPath, setTempPdfPath] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
+  const [cropper, setCropper] = useState(null);
+  const [showCropper, setShowCropper] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState(null);
 
   useEffect(() => {
     if (details.photo) {
@@ -73,7 +78,12 @@ export default function MakeResume() {
     if (type === 'file') {
       const file = files[0];
       if (file && file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) {
-        setDetails((prev) => ({ ...prev, [name]: file }));
+        const reader = new FileReader();
+        reader.onload = () => {
+          setImageToCrop(reader.result);
+          setShowCropper(true);
+        };
+        reader.readAsDataURL(file);
       } else {
         alert('Please upload a JPEG image under 5MB');
       }
@@ -81,6 +91,20 @@ export default function MakeResume() {
       setJlptScores((prev) => ({ ...prev, [name]: value }));
     } else {
       setDetails((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleCrop = () => {
+    if (cropper) {
+      cropper.getCroppedCanvas({
+        width: 280,
+        height: 360,
+      }).toBlob((blob) => {
+        const croppedFile = new File([blob], 'cropped-photo.jpg', { type: 'image/jpeg' });
+        setDetails((prev) => ({ ...prev, photo: croppedFile }));
+        setShowCropper(false);
+        setImageToCrop(null);
+      }, 'image/jpeg');
     }
   };
 
@@ -107,9 +131,9 @@ export default function MakeResume() {
   const removeEducation = (indexToRemove) => {
     setDetails((prev) => ({
       ...prev,
-      education: prev.education.length > 1 
+      education: prev.education.length > 1
         ? prev.education.filter((_, index) => index !== indexToRemove)
-        : prev.education
+        : prev.education,
     }));
   };
 
@@ -253,6 +277,32 @@ export default function MakeResume() {
                 onChange={handleInputChange}
                 className="mt-1 block w-full text-black"
               />
+              {showCropper && (
+                <div className="mt-4">
+                  <h3 className="text-lg font-medium mb-2">Crop Image to 280x360 pixels</h3>
+                  <Cropper
+                    style={{ height: 400, width: '100%' }}
+                    aspectRatio={280 / 360}
+                    src={imageToCrop}
+                    viewMode={1}
+                    guides={true}
+                    minCropBoxWidth={280}
+                    minCropBoxHeight={360}
+                    cropBoxResizable={false}
+                    background={false}
+                    responsive={true}
+                    autoCropArea={1}
+                    checkOrientation={false}
+                    onInitialized={(instance) => setCropper(instance)}
+                  />
+                  <button
+                    onClick={handleCrop}
+                    className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  >
+                    Crop Image
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
