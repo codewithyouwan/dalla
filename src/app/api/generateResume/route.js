@@ -65,7 +65,6 @@ export async function POST(req) {
         : ['未入力', '未入力', '未入力'],
     };
 
-    const resumeId = uuidv4();
     const tempDir = path.join(process.cwd(), 'temp');
     await fsPromises.mkdir(tempDir, { recursive: true });
     texFilePath = path.join(tempDir, `resume-${sessionId}.tex`);
@@ -122,8 +121,8 @@ export async function POST(req) {
       .replace('{productDevRole}', escapedDetails.productDevRole)
       .replace('{interestFields}', escapedDetails.interestFields.join(' \\hspace{2cm} '))
       .replace('{interestDetails}', escapedDetails.interestDetails)
-      .replace('{japanCompanyInterest}', '*')
-      .replace('{japanCompanySkills}', '.')
+      .replace('{japanCompanyInterest}', escapedDetails.japanCompanyInterest)
+      .replace('{japanCompanySkills}', escapedDetails.japanCompanySkills)
       .replace('{careerPriorities}', escapedDetails.careerPriorities.join(', '))
       .replace('{careerRoles}', escapedDetails.careerRoles)
       .replace('{japaneseLevel}', escapedDetails.japaneseLevel)
@@ -163,7 +162,7 @@ export async function POST(req) {
             console.error('LaTeX log:', logContent);
             reject(new Error(`LaTeX compilation failed: ${latexError}\nLog: ${logContent}`));
           } catch (err) {
-            console.error('Log file err:', err.message);
+            console.error('Log file error:', err.message);
             reject(new Error(`LaTeX compilation failed: ${latexError}\nLog file not found at ${logPath}`));
           }
         } else {
@@ -171,25 +170,34 @@ export async function POST(req) {
         }
       });
       output.on('error', (err) => {
-        console.error('Output error:', err);
+        console.error('Output error:', err.message);
         reject(err);
       });
       latexProcess.on('error', (err) => {
-        console.error('LaTeX error:', latexOutput);
+        console.error('LaTeX error:', err.message);
         reject(new Error(`LaTeX compilation failed: ${err.message}`));
       });
     });
+
     const previewUrl = `resume-${sessionId}.pdf`;
-    return NextResponse.json({ message: 'Resume preview generated', previewUrl, tempPdfPath: pdfPath, sessionId }, { status: 200 });
+    return NextResponse.json({
+      message: 'Resume preview generated',
+      previewUrl,
+      tempPdfPath: pdfPath,
+      sessionId,
+    }, { status: 200 });
   } catch (error) {
+    console.error('Error generating resume:', error.message);
     return NextResponse.json({ error: `Failed to generate resume: ${error.message}` }, { status: 500 });
   } finally {
-    console.log('Cleaning up...');
+    console.log('Cleaning up temporary files...');
     try {
       if (photoPath) await fsPromises.unlink(photoPath);
       if (texFilePath) await fsPromises.unlink(texFilePath);
-      if (pdfPath) await fsPromises.unlink(pdfPath);
-      console.log('Temporary files deleted');
+      if (logPath && await fsPromises.access(logPath).then(() => true).catch(() => false)) {
+        await fsPromises.unlink(logPath);
+      }
+      console.log('Temporary files (.tex, .jpg, .log) deleted');
     } catch (err) {
       console.warn('Cleanup failed:', err.message);
     }
