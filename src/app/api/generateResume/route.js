@@ -51,17 +51,17 @@ export async function POST(req) {
       japaneseLevel: escapeLatex(details.japaneseLevel || details.selectedSuggestion),
       personality: escapeLatex(details.personality),
       education: Array.isArray(details.education)
-        ? details.education.map((edu) => ({
+        ? details.education.slice(0, 4).map((edu) => ({
             year: escapeLatex(edu.year),
             institution: escapeLatex(edu.institution),
             degree: escapeLatex(edu.degree),
           }))
         : [{ year: '未入力', institution: '未入力', degree: '未入力' }],
       interestFields: Array.isArray(details.interestFields)
-        ? details.interestFields.map(escapeLatex)
+        ? details.interestFields.map(escapeLatex).slice(0, 3).concat(Array(3).fill('未入力')).slice(0, 3)
         : ['未入力', '未入力', '未入力'],
       careerPriorities: Array.isArray(details.careerPriorities)
-        ? details.careerPriorities.map(escapeLatex)
+        ? details.careerPriorities.map(escapeLatex).slice(0, 3).concat(Array(3).fill('未入力')).slice(0, 3)
         : ['未入力', '未入力', '未入力'],
     };
 
@@ -95,6 +95,7 @@ export async function POST(req) {
         throw new Error('Photo exceeds 5MB limit');
       }
       await fsPromises.writeFile(photoPath, photoBuffer);
+      console.log('Photo saved to:', photoPath);
       const latexPhotoPath = photoPath.replace(/\\/g, '/');
       latexContent = latexContent.replace(
         '{photo}',
@@ -121,8 +122,8 @@ export async function POST(req) {
       .replace('{productDevRole}', escapedDetails.productDevRole)
       .replace('{interestFields}', escapedDetails.interestFields.join(' \\hspace{2cm} '))
       .replace('{interestDetails}', escapedDetails.interestDetails)
-      .replace('{japanCompanyInterest}', escapedDetails.japanCompanyInterest)
-      .replace('{japanCompanySkills}', escapedDetails.japanCompanySkills)
+      .replace('{japanCompanyInterest}', '*')
+      .replace('{japanCompanySkills}', '.')
       .replace('{careerPriorities}', escapedDetails.careerPriorities.join(', '))
       .replace('{careerRoles}', escapedDetails.careerRoles)
       .replace('{japaneseLevel}', escapedDetails.japaneseLevel)
@@ -157,38 +158,40 @@ export async function POST(req) {
     await new Promise((resolve, reject) => {
       output.on('finish', async () => {
         if (latexError) {
-          const logContent = await fsPromises.readFile(logPath, 'utf8').catch(() => 'No log file');
-          reject(new Error(`LaTeX compilation failed: ${latexError}\nLog: ${logContent}`));
+          try {
+            const logContent = await fsPromises.readFile(logPath, 'utf8');
+            console.error('LaTeX log:', logContent);
+            reject(new Error(`LaTeX compilation failed: ${latexError}\nLog: ${logContent}`));
+          } catch (err) {
+            console.error('Log file err:', err.message);
+            reject(new Error(`LaTeX compilation failed: ${latexError}\nLog file not found at ${logPath}`));
+          }
         } else {
           resolve();
         }
       });
       output.on('error', (err) => {
+        console.error('Output error:', err);
         reject(err);
       });
       latexProcess.on('error', (err) => {
+        console.error('LaTeX error:', latexOutput);
         reject(new Error(`LaTeX compilation failed: ${err.message}`));
       });
     });
-
     const previewUrl = `resume-${sessionId}.pdf`;
     return NextResponse.json({ message: 'Resume preview generated', previewUrl, tempPdfPath: pdfPath, sessionId }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: `Failed to generate resume: ${error.message}` }, { status: 500 });
   } finally {
+    console.log('Cleaning up...');
     try {
-      const unlinkIfExists = async (file) => {
-        if (file && (await fsPromises.access(file).then(() => true).catch(() => false))) {
-          await fsPromises.unlink(file);
-        }
-      };
-      await Promise.all([
-        unlinkIfExists(photoPath),
-        unlinkIfExists(texFilePath),
-        unlinkIfExists(logPath),
-      ]);
-    } catch (cleanupError) {
-      console.warn('Failed to clean up temporary files:', cleanupError.message);
+      if (photoPath) await fsPromises.unlink(photoPath);
+      if (texFilePath) await fsPromises.unlink(texFilePath);
+      if (pdfPath) await fsPromises.unlink(pdfPath);
+      console.log('Temporary files deleted');
+    } catch (err) {
+      console.warn('Cleanup failed:', err.message);
     }
   }
 }
