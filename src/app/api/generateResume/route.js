@@ -1,5 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
-import { google } from 'googleapis';
 import latex from 'node-latex';
 import fs from 'fs';
 import { promises as fsPromises } from 'fs';
@@ -23,27 +21,13 @@ const escapeLatex = (str) => {
     .replace(/\\/g, '\\textbackslash{}');
 };
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
-
-// Initialize Google Drive client
-const auth = new google.auth.GoogleAuth({
-  credentials: JSON.parse(Buffer.from(process.env.GOOGLE_DRIVE_SERVICE_ACCOUNT_BASE64, 'base64').toString()),
-  scopes: ['https://www.googleapis.com/auth/drive.file'],
-});
-const drive = google.drive({ version: 'v3', auth });
-
 export async function POST(req) {
   let texFilePath, pdfPath, photoPath, logPath;
   try {
     const formData = await req.formData();
     const details = JSON.parse(formData.get('details') || '{}');
     const photo = formData.get('photo');
-
-    console.log('Received details:', JSON.stringify(details, null, 2));
+    const sessionId = formData.get('sessionId') || uuidv4();
 
     const escapedDetails = {
       employeeNumber: escapeLatex(details.employeeNumber),
@@ -67,56 +51,54 @@ export async function POST(req) {
       japaneseLevel: escapeLatex(details.japaneseLevel || details.selectedSuggestion),
       personality: escapeLatex(details.personality),
       education: Array.isArray(details.education)
-        ? details.education.map((edu) => ({
+        ? details.education.slice(0, 4).map((edu) => ({
             year: escapeLatex(edu.year),
             institution: escapeLatex(edu.institution),
             degree: escapeLatex(edu.degree),
           }))
         : [{ year: '未入力', institution: '未入力', degree: '未入力' }],
       interestFields: Array.isArray(details.interestFields)
-        ? details.interestFields.map(escapeLatex)
+        ? details.interestFields.map(escapeLatex).slice(0, 3).concat(Array(3).fill('未入力')).slice(0, 3)
         : ['未入力', '未入力', '未入力'],
       careerPriorities: Array.isArray(details.careerPriorities)
-        ? details.careerPriorities.map(escapeLatex)
+        ? details.careerPriorities.map(escapeLatex).slice(0, 3).concat(Array(3).fill('未入力')).slice(0, 3)
         : ['未入力', '未入力', '未入力'],
     };
 
-    const resumeId = uuidv4();
     const tempDir = path.join(process.cwd(), 'temp');
     await fsPromises.mkdir(tempDir, { recursive: true });
-    texFilePath = path.join(tempDir, `resume-${resumeId}.tex`);
-    pdfPath = path.join(tempDir, `resume-${resumeId}.pdf`);
-    logPath = path.join(tempDir, `resume-${resumeId}.log`);
+    texFilePath = path.join(tempDir, `resume-${sessionId}.tex`);
+    pdfPath = path.join(tempDir, `resume-${sessionId}.pdf`);
+    logPath = path.join(tempDir, `resume-${sessionId}.log`);
+
+    // Delete existing PDF for this session, if any
+    try {
+      if (await fsPromises.access(pdfPath).then(() => true).catch(() => false)) {
+        await fsPromises.unlink(pdfPath);
+      }
+    } catch (deleteError) {
+      console.warn('Failed to delete existing PDF:', deleteError.message);
+    }
 
     const templatePath = path.join(process.cwd(), 'src', 'app', 'helper', 'latexTemplate.tex');
-    let latexContent;
-    try {
-      latexContent = await fsPromises.readFile(templatePath, 'utf8');
-      console.log('Template loaded successfully from:', templatePath);
-    } catch (err) {
-      console.error('Template read error:', err);
-      throw new Error(`Failed to read LaTeX template: ${err.message}`);
-    }
+    let latexContent = await fsPromises.readFile(templatePath, 'utf8');
 
     // Handle photo
     if (photo) {
-      photoPath = path.join(tempDir, `profile-${resumeId}.jpg`);
+      photoPath = path.join(tempDir, `profile-${sessionId}.jpg`);
       const photoBuffer = Buffer.from(await photo.arrayBuffer());
-      // Validate photo as JPEG (check header)
       if (!photoBuffer.slice(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff]))) {
         throw new Error('Invalid JPEG image provided');
       }
-      // Validate file size (max 5MB)
       if (photoBuffer.length > 5 * 1024 * 1024) {
         throw new Error('Photo exceeds 5MB limit');
       }
       await fsPromises.writeFile(photoPath, photoBuffer);
       console.log('Photo saved to:', photoPath);
-      // Use absolute path for LaTeX, normalized for compatibility
       const latexPhotoPath = photoPath.replace(/\\/g, '/');
       latexContent = latexContent.replace(
         '{photo}',
-        `\\includegraphics[width=3cm,height=3cm]{${latexPhotoPath}}`
+        `\\includegraphics[width=3.5cm,height=4.5cm,keepaspectratio]{${latexPhotoPath}}`
       );
     } else {
       latexContent = latexContent.replace('{photo}', '');
@@ -146,7 +128,6 @@ export async function POST(req) {
       .replace('{japaneseLevel}', escapedDetails.japaneseLevel)
       .replace('{personality}', escapedDetails.personality);
 
-    // Generate education entries
     const educationEntries = escapedDetails.education
       .map((edu, index) => {
         const multirowPrefix = index === 0 
@@ -157,22 +138,16 @@ export async function POST(req) {
       .join('\n');
     latexContent = latexContent.replace('{education}', educationEntries);
 
-    console.log('Writing LaTeX file to:', texFilePath);
     await fsPromises.writeFile(texFilePath, latexContent);
 
-    console.log('Starting LaTeX compilation...');
     const output = fs.createWriteStream(pdfPath);
     const latexProcess = latex(latexContent, {
       cmd: 'xelatex',
       cwd: tempDir,
-      passes: 2, // Increase passes for better rendering
+      passes: 2,
     });
 
     let latexError = '';
-    let latexOutput = '';
-    latexProcess.on('data', (data) => {
-      latexOutput += data.toString();
-    });
     latexProcess.on('error', (err) => {
       latexError = err.message;
     });
@@ -186,132 +161,45 @@ export async function POST(req) {
             const logContent = await fsPromises.readFile(logPath, 'utf8');
             console.error('LaTeX log:', logContent);
             reject(new Error(`LaTeX compilation failed: ${latexError}\nLog: ${logContent}`));
-          } catch (logErr) {
-            console.error('Log file error:', logErr.message);
+          } catch (err) {
+            console.error('Log file error:', err.message);
             reject(new Error(`LaTeX compilation failed: ${latexError}\nLog file not found at ${logPath}`));
           }
         } else {
-          console.log('LaTeX compilation completed successfully');
           resolve();
         }
       });
       output.on('error', (err) => {
-        console.error('Output stream error:', err);
+        console.error('Output error:', err.message);
         reject(err);
       });
       latexProcess.on('error', (err) => {
-        console.error('LaTeX output:', latexOutput);
+        console.error('LaTeX error:', err.message);
         reject(new Error(`LaTeX compilation failed: ${err.message}`));
       });
     });
 
-    console.log('Uploading PDF to Google Drive...');
-    const fileMetadata = {
-      name: `resume-${escapedDetails.name || 'unnamed'}-${resumeId}.pdf`,
-      parents: [process.env.GOOGLE_DRIVE_FOLDER_ID || '11XGFyJ5EOwbF9uvU91syjzOCFewHQfCY'],
-    };
-    const media = {
-      mimeType: 'application/pdf',
-      body: fs.createReadStream(pdfPath),
-    };
-    const driveResponse = await drive.files.create({
-      resource: fileMetadata,
-      media,
-      fields: 'id, webViewLink',
-    });
-
-    const resumeLink = driveResponse.data.webViewLink;
-    const newFileId = driveResponse.data.id;
-    console.log('Uploaded to Google Drive:', resumeLink);
-
-    // Check if user exists in Supabase
-    console.log('Checking for existing user in Supabase...');
-    const { data: existingUser, error: fetchError } = await supabase
-      .from('resumes')
-      .select('resume_id, resume_link')
-      .eq('name', escapedDetails.name)
-      .single();
-
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      console.error('Supabase fetch error:', fetchError);
-      throw new Error(`Failed to check existing user: ${fetchError.message}`);
-    }
-
-    if (existingUser) {
-      console.log('Existing user found, deleting old resume...');
-      const oldFileIdMatch = existingUser.resume_link.match(/\/file\/d\/([^/]+)/);
-      const oldFileId = oldFileIdMatch ? oldFileIdMatch[1] : null;
-
-      if (oldFileId) {
-        console.log('Attempting to delete old resume from Google Drive:', oldFileId);
-        try {
-          await drive.files.delete({ fileId: oldFileId });
-          console.log('Old resume deleted successfully');
-        } catch (deleteError) {
-          console.error('Failed to delete old resume:', deleteError.message);
-          throw new Error(`Failed to delete old resume from Google Drive: ${deleteError.message}`);
-        }
-      } else {
-        console.warn('No valid file ID found for old resume, proceeding with update');
-      }
-
-      console.log('Updating resume entry in Supabase...');
-      const { error: updateError } = await supabase
-        .from('resumes')
-        .update({ resume_link: resumeLink, updated_at: new Date().toISOString() })
-        .eq('resume_id', existingUser.resume_id);
-
-      if (updateError) {
-        console.error('Supabase update error:', updateError);
-        throw new Error(`Failed to update resume: ${updateError.message}`);
-      }
-      console.log('Resume updated in Supabase');
-    } else {
-      console.log('No existing user found, inserting new entry...');
-      const { error: insertError } = await supabase.from('resumes').insert([
-        {
-          resume_id: uuidv4(),
-          name: escapedDetails.name || 'Unnamed',
-          resume_link: resumeLink,
-        },
-      ]);
-
-      if (insertError) {
-        console.error('Supabase insert error:', insertError);
-        throw new Error(`Failed to insert resume: ${insertError.message}`);
-      }
-      console.log('Resume inserted into Supabase');
-    }
-
-    // Clean up temporary files
-    console.log('Cleaning up temporary files...');
-    try {
-      if (photoPath) {
-        await fsPromises.unlink(photoPath);
-        console.log('Deleted temporary photo file:', photoPath);
-      }
-      await fsPromises.unlink(texFilePath);
-      await fsPromises.unlink(pdfPath);
-      console.log('Deleted temporary LaTeX and PDF files');
-    } catch (cleanupError) {
-      console.warn('Failed to clean up some temporary files:', cleanupError);
-      // Don't throw error here as the main operation was successful
-    }
-
-    return NextResponse.json({ message: 'Resume generated successfully', resumeLink }, { status: 200 });
+    const previewUrl = `resume-${sessionId}.pdf`;
+    return NextResponse.json({
+      message: 'Resume preview generated',
+      previewUrl,
+      tempPdfPath: pdfPath,
+      sessionId,
+    }, { status: 200 });
   } catch (error) {
-    console.error('Error generating resume:', error);
+    console.error('Error generating resume:', error.message);
     return NextResponse.json({ error: `Failed to generate resume: ${error.message}` }, { status: 500 });
   } finally {
-    // Clean up temporary files
     console.log('Cleaning up temporary files...');
     try {
       if (photoPath) await fsPromises.unlink(photoPath);
       if (texFilePath) await fsPromises.unlink(texFilePath);
-      if (pdfPath) await fsPromises.unlink(pdfPath);
-      console.log('Temporary files deleted');
-    } catch (cleanupError) {
-      console.warn('Failed to clean up temporary files:', cleanupError.message);
+      if (logPath && await fsPromises.access(logPath).then(() => true).catch(() => false)) {
+        await fsPromises.unlink(logPath);
+      }
+      console.log('Temporary files (.tex, .jpg, .log) deleted');
+    } catch (err) {
+      console.warn('Cleanup failed:', err.message);
     }
   }
 }
