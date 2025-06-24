@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Split from '../helper/split';
+import { v4 as uuidv4 } from 'uuid';
 
 const defaultDetails = {
   employeeNumber: '',
@@ -46,6 +47,8 @@ export default function MakeResume() {
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [previewLink, setPreviewLink] = useState(null);
+  const [tempPdfPath, setTempPdfPath] = useState(null);
+  const [sessionId, setSessionId] = useState(uuidv4());
 
   useEffect(() => {
     if (details.photo) {
@@ -56,6 +59,14 @@ export default function MakeResume() {
       setPhotoPreview(null);
     }
   }, [details.photo]);
+
+  useEffect(() => {
+    console.log('Current previewLink:', previewLink);
+    if (previewLink && !previewLink.startsWith('resume-') && !previewLink.endsWith('.pdf')) {
+      console.warn('Invalid previewLink detected, resetting:', previewLink);
+      setPreviewLink(null);
+    }
+  }, [previewLink]);
 
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
@@ -141,6 +152,7 @@ export default function MakeResume() {
       if (details.photo) {
         formData.append('photo', details.photo);
       }
+      formData.append('sessionId', sessionId);
       const response = await fetch('/api/generateResume', {
         method: 'POST',
         body: formData,
@@ -150,22 +162,51 @@ export default function MakeResume() {
         throw new Error(`HTTP ${response.status}: ${text}`);
       }
       const data = await response.json();
-      setPreviewLink(data.resumeLink);
-      return data.resumeLink;
+      console.log('Response from /api/generateResume:', data);
+      if (!data.previewUrl || !data.previewUrl.startsWith('resume-') || !data.previewUrl.endsWith('.pdf')) {
+        throw new Error(`Invalid preview URL: ${data.previewUrl}`);
+      }
+      setPreviewLink(data.previewUrl);
+      setTempPdfPath(data.tempPdfPath);
+      setSessionId(data.sessionId);
     } catch (err) {
-      setError(err.message);
-      throw err;
+      setError(`Failed to generate preview: ${err.message}`);
+      setPreviewLink(null);
     } finally {
       setIsLoading(false);
     }
   };
 
   const saveResume = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
-      const link = await compileResume();
-      alert(`Resume saved successfully! Access it here: ${link}`);
+      const formData = new FormData();
+      const resumeDetails = { ...details, photo: null };
+      formData.append('details', JSON.stringify(resumeDetails));
+      if (details.photo) {
+        formData.append('photo', details.photo);
+      }
+      if (tempPdfPath) {
+        formData.append('tempPdfPath', tempPdfPath);
+      }
+      formData.append('sessionId', sessionId);
+      const response = await fetch('/api/uploadResume', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`HTTP ${response.status}: ${text}`);
+      }
+      const data = await response.json();
+      alert(`Resume saved successfully! Access it here: ${data.resumeLink}`);
+      setPreviewLink(data.resumeLink.replace('/view', '/preview').split('/temp/')[1]);
+      setTempPdfPath(null);
     } catch (err) {
-      // Error is already set in compileResume
+      setError(`Failed to save resume: ${err.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -654,15 +695,17 @@ export default function MakeResume() {
             <div className="flex justify-center items-center h-full">
               <p className="text-gray-600">Compiling resume...</p>
             </div>
-          ) : previewLink ? (
+          ) : previewLink && previewLink.startsWith('resume-') && previewLink.endsWith('.pdf') ? (
             <iframe
-              src={previewLink.replace('/view', '/preview')}
+              src={`/api/serveTemp?path=${previewLink}`}
               className="w-full h-full border-none"
               title="Resume Preview"
             />
           ) : (
-            <div className="flex justify-center items-center h-full">
+            <div className="flex justify-center items-center h-full flex-col">
               <p className="text-gray-600">Preview will appear here after compilation.</p>
+              {previewLink && <p className="text-red-600 text-sm mt-2">Invalid preview URL: {previewLink}</p>}
+              {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
             </div>
           )}
         </div>
