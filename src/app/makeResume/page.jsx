@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import 'react-image-crop/dist/ReactCrop.css'; // Add this line
+import { useState, useEffect, useRef } from 'react';
 import Split from '../helper/split';
 import { v4 as uuidv4 } from 'uuid';
-import Cropper from 'react-cropper';
-import 'cropperjs/dist/cropper.css';
+import ReactCrop from 'react-image-crop';
 
 const defaultDetails = {
   employeeNumber: '',
@@ -51,17 +51,21 @@ export default function Page() {
   const [previewLink, setPreviewLink] = useState(null);
   const [tempPdfPath, setTempPdfPath] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
-  const [cropper, setCropper] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
   const [imageToCrop, setImageToCrop] = useState(null);
+  const [crop, setCrop] = useState({ unit: 'px', x: 0, y: 0, width: 280, height: 360 });
+  const previewCanvasRef = useRef(null);
+  const cropRef = useRef(null);
 
   useEffect(() => {
     if (details.photo) {
       const objectUrl = URL.createObjectURL(details.photo);
       setPhotoPreview(objectUrl);
+      console.log('Photo preview set:', objectUrl);
       return () => URL.revokeObjectURL(objectUrl);
     } else {
       setPhotoPreview(null);
+      console.log('Photo preview cleared');
     }
   }, [details.photo]);
 
@@ -73,14 +77,22 @@ export default function Page() {
     }
   }, [previewLink]);
 
+  useEffect(() => {
+    if (showCropper && imageToCrop && cropRef.current) {
+      console.log('Cropper rendered, checking crop:', crop);
+    }
+  }, [showCropper, imageToCrop, crop]);
+
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
+    console.log('Input change triggered:', { name, type, files });
     if (type === 'file') {
       const file = files[0];
       if (file && file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) {
         const reader = new FileReader();
-        reader.onload = () => {
-          setImageToCrop(reader.result);
+        reader.onload = (e) => {
+          console.log('File loaded as data URL');
+          setImageToCrop(e.target.result);
           setShowCropper(true);
         };
         reader.readAsDataURL(file);
@@ -94,18 +106,49 @@ export default function Page() {
     }
   };
 
+  const onCropComplete = (completedCrop) => {
+    console.log('Crop complete:', completedCrop);
+    setCrop(completedCrop);
+  };
+
   const handleCrop = () => {
-    if (cropper) {
-      cropper.getCroppedCanvas({
-        width: 280,
-        height: 360,
-      }).toBlob((blob) => {
+    console.log('Crop button clicked');
+    const image = new Image();
+    image.src = imageToCrop;
+    const canvas = previewCanvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    image.onload = () => {
+      console.log('Image loaded for cropping:', image.width, image.height);
+      canvas.width = 280;
+      canvas.height = 360;
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+      ctx.drawImage(
+        image,
+        crop.x * scaleX,
+        crop.y * scaleY,
+        crop.width * scaleX,
+        crop.height * scaleY,
+        0,
+        0,
+        280,
+        360
+      );
+      canvas.toBlob((blob) => {
+        console.log('Blob created');
         const croppedFile = new File([blob], 'cropped-photo.jpg', { type: 'image/jpeg' });
         setDetails((prev) => ({ ...prev, photo: croppedFile }));
         setShowCropper(false);
         setImageToCrop(null);
-      }, 'image/jpeg');
-    }
+      }, 'image/jpeg', 1);
+    };
+  };
+
+  const handleCancelCrop = () => {
+    console.log('Cancel button clicked');
+    setShowCropper(false);
+    setImageToCrop(null);
   };
 
   const handleArrayInputChange = (e, index, field, arrayName) => {
@@ -277,30 +320,47 @@ export default function Page() {
                 onChange={handleInputChange}
                 className="mt-1 block w-full text-black"
               />
+              {photoPreview && !showCropper && (
+                <div className="mt-2">
+                  <img src={photoPreview} alt="Photo Preview" className="max-w-[140px] h-auto border" />
+                </div>
+              )}
               {showCropper && (
-                <div className="mt-4">
-                  <h3 className="text-lg font-medium mb-2">Crop Image to 280x360 pixels</h3>
-                  <Cropper
-                    style={{ height: 400, width: '100%' }}
-                    aspectRatio={280 / 360}
-                    src={imageToCrop}
-                    viewMode={1}
-                    guides={true}
-                    minCropBoxWidth={280}
-                    minCropBoxHeight={360}
-                    cropBoxResizable={false}
-                    background={false}
-                    responsive={true}
-                    autoCropArea={1}
-                    checkOrientation={false}
-                    onInitialized={(instance) => setCropper(instance)}
-                  />
-                  <button
-                    onClick={handleCrop}
-                    className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  >
-                    Crop Image
-                  </button>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white p-4 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                    <h3 className="text-lg font-medium mb-2">Crop Image to 280x360 pixels</h3>
+                    <div className="relative" style={{ maxHeight: '60vh', width: '100%' }}>
+                      <ReactCrop
+                        ref={cropRef}
+                        crop={crop}
+                        onChange={(newCrop) => {
+                          console.log('Crop changed:', newCrop);
+                          setCrop(newCrop);
+                        }}
+                        onComplete={onCropComplete}
+                        aspect={280 / 360}
+                        minWidth={280}
+                        minHeight={360}
+                      >
+                        <img src={imageToCrop} alt="Crop Area" style={{ maxHeight: '60vh', width: '100%', objectFit: 'contain' }} onLoad={() => console.log('Image loaded in cropper')} />
+                      </ReactCrop>
+                    </div>
+                    <canvas ref={previewCanvasRef} style={{ display: 'none' }} />
+                    <div className="flex justify-end gap-2 mt-4">
+                      <button
+                        onClick={handleCancelCrop}
+                        className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleCrop}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        Crop Image
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
