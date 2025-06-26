@@ -26,7 +26,9 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.8",
+    "react-easy-crop": "^5.4.2",
     "rimraf": "^6.0.1",
+    "sharp": "^0.34.2",
     "url": "^0.11.4",
     "uuid": "^11.1.0",
     "xlsx": "^0.18.5"

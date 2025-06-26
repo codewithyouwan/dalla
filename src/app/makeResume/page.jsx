@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import '../../../node_modules/react-easy-crop/react-easy-crop.css';
+import { useState, useEffect, useRef } from 'react';
 import Split from '../helper/split';
 import { v4 as uuidv4 } from 'uuid';
+import Cropper from 'react-easy-crop';
+import { getCroppedImg } from '../helper/ImageCrop/cropUtils';
 
 const defaultDetails = {
   employeeNumber: '',
@@ -32,7 +35,7 @@ const defaultDetails = {
   photo: null,
 };
 
-export default function MakeResume() {
+export default function Page() {
   const [details, setDetails] = useState(defaultDetails);
   const [jlptScores, setJlptScores] = useState({
     total: '',
@@ -49,14 +52,22 @@ export default function MakeResume() {
   const [previewLink, setPreviewLink] = useState(null);
   const [tempPdfPath, setTempPdfPath] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
+  const [showCropper, setShowCropper] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const previewCanvasRef = useRef(null);
 
   useEffect(() => {
     if (details.photo) {
       const objectUrl = URL.createObjectURL(details.photo);
       setPhotoPreview(objectUrl);
+      console.log('Photo preview set:', objectUrl);
       return () => URL.revokeObjectURL(objectUrl);
     } else {
       setPhotoPreview(null);
+      console.log('Photo preview cleared');
     }
   }, [details.photo]);
 
@@ -68,12 +79,26 @@ export default function MakeResume() {
     }
   }, [previewLink]);
 
+  useEffect(() => {
+    if (showCropper && imageToCrop) {
+      console.log('Cropper rendered');
+    }
+  }, [showCropper, imageToCrop]);
+
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
+    console.log('Input change triggered:', { name, type, files });
     if (type === 'file') {
       const file = files[0];
       if (file && file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) {
-        setDetails((prev) => ({ ...prev, [name]: file }));
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          console.log('File loaded as data URL');
+          setImageToCrop(e.target.result);
+          setShowCropper(true);
+          setZoom(1);
+        };
+        reader.readAsDataURL(file);
       } else {
         alert('Please upload a JPEG image under 5MB');
       }
@@ -82,6 +107,55 @@ export default function MakeResume() {
     } else {
       setDetails((prev) => ({ ...prev, [name]: value }));
     }
+  };
+
+  const handleRemovePhoto = () => {
+    console.log('Remove photo clicked');
+    setDetails((prev) => ({ ...prev, photo: null }));
+    setPhotoPreview(null);
+    setImageToCrop(null);
+    setShowCropper(false);
+  };
+
+  const onCropComplete = (croppedArea, croppedAreaPixels) => {
+    console.log('Crop complete:', croppedAreaPixels);
+    setCroppedAreaPixels(croppedAreaPixels);
+  };
+
+  const handleCrop = async () => {
+    console.log('Crop button clicked');
+    try {
+      const croppedImage = await getCroppedImg(imageToCrop, croppedAreaPixels, 'jpeg');
+      const croppedFile = new File([croppedImage], 'cropped-photo.jpg', { type: 'image/jpeg' });
+      
+      // Verify image dimensions
+      const img = new Image();
+      img.src = URL.createObjectURL(croppedFile);
+      await new Promise((resolve) => (img.onload = resolve));
+      if (img.width !== 280 || img.height !== 360) {
+        throw new Error(`Cropped image dimensions are ${img.width}x${img.height}, expected 280x360`);
+      }
+
+      setDetails((prev) => ({ ...prev, photo: croppedFile }));
+      setShowCropper(false);
+      setImageToCrop(null);
+      setZoom(1);
+    } catch (err) {
+      console.error('Error cropping image:', err);
+      alert('Failed to crop image. Please try again.');
+    }
+  };
+
+  const handleCancelCrop = () => {
+    console.log('Cancel button clicked');
+    setShowCropper(false);
+    setImageToCrop(null);
+    setZoom(1);
+  };
+
+  const handleZoomChange = (e) => {
+    const newZoom = parseFloat(e.target.value);
+    setZoom(newZoom);
   };
 
   const handleArrayInputChange = (e, index, field, arrayName) => {
@@ -107,9 +181,9 @@ export default function MakeResume() {
   const removeEducation = (indexToRemove) => {
     setDetails((prev) => ({
       ...prev,
-      education: prev.education.length > 1 
+      education: prev.education.length > 1
         ? prev.education.filter((_, index) => index !== indexToRemove)
-        : prev.education
+        : prev.education,
     }));
   };
 
@@ -253,6 +327,66 @@ export default function MakeResume() {
                 onChange={handleInputChange}
                 className="mt-1 block w-full text-black"
               />
+              {photoPreview && !showCropper && (
+                <div className="mt-2 flex items-center gap-2">
+                  <img src={photoPreview} alt="Photo Preview" className="max-w-[140px] h-auto border" />
+                  <button
+                    onClick={handleRemovePhoto}
+                    className="px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+              {showCropper && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white p-4 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                    <h3 className="text-lg font-medium text-black mb-2">Crop Image to 280x360 pixels</h3>
+                    <div className="relative" style={{ height: '60vh', width: '100%' }}>
+                      <Cropper
+                        image={imageToCrop}
+                        crop={crop}
+                        zoom={zoom}
+                        aspect={280 / 360}
+                        onCropChange={setCrop}
+                        onZoomChange={setZoom}
+                        onCropComplete={onCropComplete}
+                        minZoom={0.5}
+                        maxZoom={3}
+                        cropSize={{ width: 280, height: 360 }}
+                        style={{ containerStyle: { height: '100%', width: '100%' } }}
+                      />
+                    </div>
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700">Zoom</label>
+                      <input
+                        type="range"
+                        min="0.5"
+                        max="3"
+                        step="0.1"
+                        value={zoom}
+                        onChange={handleZoomChange}
+                        className="w-full"
+                      />
+                    </div>
+                    <canvas ref={previewCanvasRef} style={{ display: 'none' }} />
+                    <div className="flex justify-end gap-2 mt-4">
+                      <button
+                        onClick={handleCancelCrop}
+                        className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleCrop}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        Crop Image
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

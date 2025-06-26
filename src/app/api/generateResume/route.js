@@ -4,6 +4,7 @@ import { promises as fsPromises } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { NextResponse } from 'next/server';
+import sharp from 'sharp';
 
 // Function to escape special LaTeX characters
 const escapeLatex = (str) => {
@@ -87,12 +88,19 @@ export async function POST(req) {
     if (photo) {
       photoPath = path.join(tempDir, `profile-${sessionId}.jpg`);
       const photoBuffer = Buffer.from(await photo.arrayBuffer());
-      if (!photoBuffer.slice(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff]))) {
-        throw new Error('Invalid JPEG image provided');
+
+      // Validate and process with sharp
+      const metadata = await sharp(photoBuffer).metadata();
+      if (metadata.format !== 'jpeg') {
+        throw new Error('Invalid image format. Only JPEG is supported.');
+      }
+      if (metadata.width !== 280 || metadata.height !== 360) {
+        throw new Error('Image dimensions must be exactly 280x360 pixels.');
       }
       if (photoBuffer.length > 5 * 1024 * 1024) {
-        throw new Error('Photo exceeds 5MB limit');
+        throw new Error('Photo exceeds 5MB limit.');
       }
+
       await fsPromises.writeFile(photoPath, photoBuffer);
       console.log('Photo saved to:', photoPath);
       const latexPhotoPath = photoPath.replace(/\\/g, '/');
