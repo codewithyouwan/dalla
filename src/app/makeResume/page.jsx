@@ -1,6 +1,6 @@
 'use client';
 
-import 'react-image-crop/dist/ReactCrop.css'; // Add this line
+import 'react-image-crop/dist/ReactCrop.css';
 import { useState, useEffect, useRef } from 'react';
 import Split from '../helper/split';
 import { v4 as uuidv4 } from 'uuid';
@@ -54,8 +54,10 @@ export default function Page() {
   const [showCropper, setShowCropper] = useState(false);
   const [imageToCrop, setImageToCrop] = useState(null);
   const [crop, setCrop] = useState({ unit: 'px', x: 0, y: 0, width: 280, height: 360 });
+  const [zoom, setZoom] = useState(1);
   const previewCanvasRef = useRef(null);
   const cropRef = useRef(null);
+  const imgRef = useRef(null);
 
   useEffect(() => {
     if (details.photo) {
@@ -94,6 +96,7 @@ export default function Page() {
           console.log('File loaded as data URL');
           setImageToCrop(e.target.result);
           setShowCropper(true);
+          setZoom(1); // Reset zoom on new image upload
         };
         reader.readAsDataURL(file);
       } else {
@@ -113,42 +116,52 @@ export default function Page() {
 
   const handleCrop = () => {
     console.log('Crop button clicked');
-    const image = new Image();
-    image.src = imageToCrop;
+    const image = imgRef.current;
     const canvas = previewCanvasRef.current;
     const ctx = canvas.getContext('2d');
 
-    image.onload = () => {
-      console.log('Image loaded for cropping:', image.width, image.height);
-      canvas.width = 280;
-      canvas.height = 360;
-      const scaleX = image.naturalWidth / image.width;
-      const scaleY = image.naturalHeight / image.height;
-      ctx.drawImage(
-        image,
-        crop.x * scaleX,
-        crop.y * scaleY,
-        crop.width * scaleX,
-        crop.height * scaleY,
-        0,
-        0,
-        280,
-        360
-      );
-      canvas.toBlob((blob) => {
-        console.log('Blob created');
-        const croppedFile = new File([blob], 'cropped-photo.jpg', { type: 'image/jpeg' });
-        setDetails((prev) => ({ ...prev, photo: croppedFile }));
-        setShowCropper(false);
-        setImageToCrop(null);
-      }, 'image/jpeg', 1);
-    };
+    if (!image || !canvas) {
+      console.error('Image or canvas not available');
+      return;
+    }
+
+    canvas.width = 280;
+    canvas.height = 360;
+    const scaleX = image.naturalWidth / (image.width / zoom);
+    const scaleY = image.naturalHeight / (image.height / zoom);
+    
+    ctx.drawImage(
+      image,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      crop.width * scaleX,
+      crop.height * scaleY,
+      0,
+      0,
+      280,
+      360
+    );
+
+    canvas.toBlob((blob) => {
+      console.log('Blob created');
+      const croppedFile = new File([blob], 'cropped-photo.jpg', { type: 'image/jpeg' });
+      setDetails((prev) => ({ ...prev, photo: croppedFile }));
+      setShowCropper(false);
+      setImageToCrop(null);
+      setZoom(1);
+    }, 'image/jpeg', 1);
   };
 
   const handleCancelCrop = () => {
     console.log('Cancel button clicked');
     setShowCropper(false);
     setImageToCrop(null);
+    setZoom(1);
+  };
+
+  const handleZoomChange = (e) => {
+    const newZoom = parseFloat(e.target.value);
+    setZoom(newZoom);
   };
 
   const handleArrayInputChange = (e, index, field, arrayName) => {
@@ -341,9 +354,31 @@ export default function Page() {
                         aspect={280 / 360}
                         minWidth={280}
                         minHeight={360}
+                        maxWidth={280}
+                        maxHeight={360}
+                        keepSelection={true}
+                        locked={true} // Locks the crop box size
                       >
-                        <img src={imageToCrop} alt="Crop Area" style={{ maxHeight: '60vh', width: '100%', objectFit: 'contain' }} onLoad={() => console.log('Image loaded in cropper')} />
+                        <img
+                          ref={imgRef}
+                          src={imageToCrop}
+                          alt="Crop Area"
+                          style={{ maxHeight: '60vh', width: '100%', objectFit: 'contain', transform: `scale(${zoom})` }}
+                          onLoad={() => console.log('Image loaded in cropper')}
+                        />
                       </ReactCrop>
+                    </div>
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700">Zoom</label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="3"
+                        step="0.1"
+                        value={zoom}
+                        onChange={handleZoomChange}
+                        className="w-full"
+                      />
                     </div>
                     <canvas ref={previewCanvasRef} style={{ display: 'none' }} />
                     <div className="flex justify-end gap-2 mt-4">
@@ -478,7 +513,7 @@ export default function Page() {
                 name="languages"
                 value={details.languages}
                 onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigounion-500"
               />
             </div>
             <div>
