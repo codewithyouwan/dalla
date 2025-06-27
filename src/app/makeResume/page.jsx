@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
+import CryptoJS from 'crypto-js';
 import PersonalInfo from '../components/resume/PersonalInfo';
 import Education from '../components/resume/Education';
 import CareerAspirations from '../components/resume/CareerAspirations';
@@ -59,6 +61,26 @@ export default function Page() {
   const [previewLink, setPreviewLink] = useState(null);
   const [tempPdfPath, setTempPdfPath] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const encryptedId = searchParams.get('encrypted_id');
+    if (encryptedId) {
+      try {
+        const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET || 'default-secure-key-32chars1234567';
+        const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedId), secretKey);
+        const idNumber = bytes.toString(CryptoJS.enc.Utf8);
+        if (idNumber) {
+          console.log('Selected employee ID:', idNumber);
+          // Future: Fetch employee details using idNumber
+        } else {
+          console.error('Failed to decrypt id_number');
+        }
+      } catch (err) {
+        console.error('Decryption error:', err.message);
+      }
+    }
+  }, [searchParams]);
 
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
