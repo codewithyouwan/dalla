@@ -34,11 +34,7 @@ export default function Employees() {
 
   const handleProceed = (idNumber) => {
     if (idNumber) {
-      // Encrypt the id_number
-      const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET;
-      if(!secretKey) {
-        console.error('Encryption secret key is not set in environment variables.');
-      }
+      const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET || 'default-secure-key-32chars1234567';
       const encryptedId = CryptoJS.AES.encrypt(idNumber, secretKey).toString();
       const encodedId = encodeURIComponent(encryptedId);
       router.push(`/makeResume?encrypted_id=${encodedId}`);
