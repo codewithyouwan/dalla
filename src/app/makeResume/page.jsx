@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
@@ -62,17 +62,70 @@ export default function Page() {
   const [tempPdfPath, setTempPdfPath] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
   const searchParams = useSearchParams();
+  const hasFetchedCareerData = useRef(false);
+
+  const fetchCareerAspirations = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const careerData = {
+        preferred_industry: details.preferred_industry || [],
+        job_role_priority_1: details.job_role_priority_1 || '',
+        future_career_goals: details.future_career_goals || [],
+        work_style_preference: details.work_style_preference || [],
+      };
+      console.log('Sending career data to API:', careerData);
+      const res = await fetch('/api/careerAspirations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(careerData),
+      });
+      if (!res.ok) throw new Error(`Career aspirations API error: ${res.statusText}`);
+      const gptData = await res.json();
+      console.log('Career aspirations response:', gptData);
+      if (gptData.suggestions) {
+        const form2Match = gptData.suggestions.match(/===FORM2-START===\n([\s\S]*?)\n===FORM2-END===/);
+        if (form2Match) {
+          const lines = form2Match[1].trim().split('\n').map(line => line.trim());
+          console.log('Parsed FORM2 lines:', lines);
+          if (lines.length >= 4) {
+            setDetails((prev) => ({
+              ...prev,
+              devField: lines[0] || '',
+              jobType: lines[1] || '',
+              domain: lines[2] || '',
+              type: lines[3] || '',
+            }));
+          } else {
+            setError('Invalid career aspirations response format: Insufficient lines');
+            console.error('Expected 4 lines, got:', lines);
+          }
+        } else {
+          setError('Failed to parse career aspirations response: FORM2 not found');
+          console.error('No FORM2 in response:', gptData.suggestions);
+        }
+      } else {
+        setError('Failed to generate career aspirations: No suggestions in response');
+        console.error('No suggestions in GPT response:', gptData);
+      }
+    } catch (err) {
+      setError(`Career aspirations fetch error: ${err.message}`);
+      console.error('Career aspirations fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     const encryptedId = searchParams.get('encrypted_id');
-    if (encryptedId) {
+    if (encryptedId && !hasFetchedCareerData.current) {
+      hasFetchedCareerData.current = true;
       try {
         const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET || 'default-secure-key-32chars1234567';
         const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedId), secretKey);
         const idNumber = bytes.toString(CryptoJS.enc.Utf8);
         if (idNumber) {
           console.log('Selected employee ID:', idNumber);
-          // Fetch employee details
           setIsLoading(true);
           fetch(`/api/fetchDetails?id_number=${encodeURIComponent(idNumber)}`)
             .then((res) => {
@@ -82,7 +135,6 @@ export default function Page() {
             .then((data) => {
               if (data.employee) {
                 console.log('Employee data fetched:', data.employee);
-                // Validate career aspiration fields
                 const careerFields = {
                   preferred_industry: data.employee.preferred_industry || [],
                   job_role_priority_1: data.employee.job_role_priority_1 || '',
@@ -90,7 +142,6 @@ export default function Page() {
                   work_style_preference: data.employee.work_style_preference || [],
                 };
                 console.log('Validated career fields:', careerFields);
-                // Check for empty or null career data
                 const hasValidCareerData = Object.values(careerFields).some(
                   (value) => (Array.isArray(value) && value.length > 0) || (typeof value === 'string' && value.trim() !== '')
                 );
@@ -100,76 +151,26 @@ export default function Page() {
                   setIsLoading(false);
                   return;
                 }
-                // Map employee data to details
                 setDetails((prev) => ({
                   ...prev,
                   employeeNumber: data.employee.id_number || '',
                   name: data.employee.full_name_english || '',
                   japaneseLevel: data.employee.japanese_jlpt_level || 'N/A',
-                }));
-                // Prepare data for career aspirations
-                const careerData = {
                   preferred_industry: careerFields.preferred_industry,
                   job_role_priority_1: careerFields.job_role_priority_1,
                   future_career_goals: careerFields.future_career_goals,
                   work_style_preference: careerFields.work_style_preference,
-                };
-                console.log('Sending career data to API:', careerData);
-                // Call GPT API for career aspirations
-                fetch('/api/careerAspirations', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(careerData),
-                })
-                  .then((res) => {
-                    if (!res.ok) throw new Error(`Career aspirations API error: ${res.statusText}`);
-                    return res.json();
-                  })
-                  .then((gptData) => {
-                    console.log('Career aspirations response:', gptData);
-                    if (gptData.suggestions) {
-                      // Parse GPT response (select FORM2 for medium-length values)
-                      const form2Match = gptData.suggestions.match(/===FORM2-START===\n([\s\S]*?)\n===FORM2-END===/);
-                      if (form2Match) {
-                        const lines = form2Match[1].trim().split('\n').map(line => line.trim());
-                        console.log('Parsed FORM2 lines:', lines);
-                        if (lines.length >= 4) {
-                          setDetails((prev) => ({
-                            ...prev,
-                            devField: lines[0] || '',
-                            jobType: lines[1] || '',
-                            domain: lines[2] || '',
-                            type: lines[3] || '',
-                          }));
-                        } else {
-                          setError('Invalid career aspirations response format: Insufficient lines');
-                          console.error('Expected 4 lines, got:', lines);
-                        }
-                      } else {
-                        setError('Failed to parse career aspirations response: FORM2 not found');
-                        console.error('No FORM2 in response:', gptData.suggestions);
-                      }
-                    } else {
-                      setError('Failed to generate career aspirations: No suggestions in response');
-                      console.error('No suggestions in GPT response:', gptData);
-                    }
-                  })
-                  .catch((err) => {
-                    setError(`Career aspirations fetch error: ${err.message}`);
-                    console.error('Career aspirations fetch error:', err);
-                  })
-                  .finally(() => setIsLoading(false));
+                }));
               } else {
                 setError('Employee not found');
                 console.error('No employee data in response:', data);
-                setIsLoading(false);
               }
             })
             .catch((err) => {
               setError(`Fetch error: ${err.message}`);
               console.error('Fetch error:', err);
-              setIsLoading(false);
-            });
+            })
+            .finally(() => setIsLoading(false));
         } else {
           console.error('Failed to decrypt id_number');
           setError('Invalid employee ID');
@@ -180,7 +181,7 @@ export default function Page() {
         setError('Decryption error');
         setIsLoading(false);
       }
-    } else {
+    } else if (!encryptedId) {
       console.error('No encrypted_id in URL');
       setError('No employee ID provided');
       setIsLoading(false);
@@ -304,11 +305,15 @@ export default function Page() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen p-4 gap-6 overflow-hidden">
-      {/* Left side - Form */}
       <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full">
         <h1 className="text-2xl text-black font-bold mb-6">履歴書ビルダー / Resume Builder</h1>
         <PersonalInfo details={details} handleInputChange={handleInputChange} />
-        <CareerAspirations details={details} handleInputChange={handleInputChange} />
+        <CareerAspirations 
+          details={details} 
+          handleInputChange={handleInputChange} 
+          fetchCareerAspirations={fetchCareerAspirations}
+          isLoading={isLoading}
+        />
         <Education
           education={details.education}
           handleArrayInputChange={handleArrayInputChange}
@@ -357,7 +362,6 @@ export default function Page() {
           {error && <p className="mt-2 text-red-600 text-sm">{error}</p>}
         </div>
       </div>
-      {/* Right side - Preview */}
       <ResumePreview
         isLoading={isLoading}
         previewLink={previewLink}
