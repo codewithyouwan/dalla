@@ -1,16 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Split from '../helper/split';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
+import CryptoJS from 'crypto-js';
+import PersonalInfo from '../components/resume/PersonalInfo';
+import Education from '../components/resume/Education';
+import CareerAspirations from '../components/resume/CareerAspirations';
+import LanguagesAndTools from '../components/resume/LanguagesAndTools';
+import Projects from '../components/resume/Projects';
+import ProductDevelopment from '../components/resume/ProductDevelopment';
+import FieldsOfInterest from '../components/resume/FieldsOfInterest';
+import JapaneseCompanies from '../components/resume/JapaneseCompanies';
+import CareerDevelopment from '../components/resume/CareerDevelopment';
+import JLPTExperience from '../components/resume/JLPTExperience';
+import Suggestions from '../components/resume/Suggestions';
+import ResumePreview from '../components/resume/ResumePreview';
 
 const defaultDetails = {
   employeeNumber: '',
   name: 'Test User',
-  devField: 'Product Development',
-  jobType: 'Engineer',
-  domain: 'Data Science',
-  type: 'Specialist',
+  devField: '',
+  jobType: '',
+  domain: '',
+  type: '',
   education: [{ year: '2024', institution: 'University', degree: 'Masters' }],
   languages: 'Python',
   devTools: 'Git, VS Code',
@@ -32,7 +45,7 @@ const defaultDetails = {
   photo: null,
 };
 
-export default function MakeResume() {
+export default function Page() {
   const [details, setDetails] = useState(defaultDetails);
   const [jlptScores, setJlptScores] = useState({
     total: '',
@@ -45,35 +58,143 @@ export default function MakeResume() {
   const [error, setError] = useState(null);
   const [selectedSuggestion, setSelectedSuggestion] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [photoPreview, setPhotoPreview] = useState(null);
   const [previewLink, setPreviewLink] = useState(null);
   const [tempPdfPath, setTempPdfPath] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
+  const searchParams = useSearchParams();
+  const hasFetchedCareerData = useRef(false);
+
+  const fetchCareerAspirations = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const careerData = {
+        preferred_industry: details.preferred_industry || [],
+        job_role_priority_1: details.job_role_priority_1 || '',
+        future_career_goals: details.future_career_goals || [],
+        work_style_preference: details.work_style_preference || [],
+      };
+      console.log('Sending career data to API:', careerData);
+      const res = await fetch('/api/careerAspirations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(careerData),
+      });
+      if (!res.ok) throw new Error(`Career aspirations API error: ${res.statusText}`);
+      const gptData = await res.json();
+      console.log('Career aspirations response:', gptData);
+      if (gptData.suggestions) {
+        const form2Match = gptData.suggestions.match(/===FORM2-START===\n([\s\S]*?)\n===FORM2-END===/);
+        if (form2Match) {
+          const lines = form2Match[1].trim().split('\n').map(line => line.trim());
+          console.log('Parsed FORM2 lines:', lines);
+          if (lines.length >= 4) {
+            setDetails((prev) => ({
+              ...prev,
+              devField: lines[0] || '',
+              jobType: lines[1] || '',
+              domain: lines[2] || '',
+              type: lines[3] || '',
+            }));
+          } else {
+            setError('Invalid career aspirations response format: Insufficient lines');
+            console.error('Expected 4 lines, got:', lines);
+          }
+        } else {
+          setError('Failed to parse career aspirations response: FORM2 not found');
+          console.error('No FORM2 in response:', gptData.suggestions);
+        }
+      } else {
+        setError('Failed to generate career aspirations: No suggestions in response');
+        console.error('No suggestions in GPT response:', gptData);
+      }
+    } catch (err) {
+      setError(`Career aspirations fetch error: ${err.message}`);
+      console.error('Career aspirations fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (details.photo) {
-      const objectUrl = URL.createObjectURL(details.photo);
-      setPhotoPreview(objectUrl);
-      return () => URL.revokeObjectURL(objectUrl);
-    } else {
-      setPhotoPreview(null);
+    const encryptedId = searchParams.get('encrypted_id');
+    if (encryptedId && !hasFetchedCareerData.current) {
+      hasFetchedCareerData.current = true;
+      try {
+        const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET || 'default-secure-key-32chars1234567';
+        const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedId), secretKey);
+        const idNumber = bytes.toString(CryptoJS.enc.Utf8);
+        if (idNumber) {
+          console.log('Selected employee ID:', idNumber);
+          setIsLoading(true);
+          fetch(`/api/fetchDetails?id_number=${encodeURIComponent(idNumber)}`)
+            .then((res) => {
+              if (!res.ok) throw new Error(`Fetch error: ${res.statusText}`);
+              return res.json();
+            })
+            .then((data) => {
+              if (data.employee) {
+                console.log('Employee data fetched:', data.employee);
+                const careerFields = {
+                  preferred_industry: data.employee.preferred_industry || [],
+                  job_role_priority_1: data.employee.job_role_priority_1 || '',
+                  future_career_goals: data.employee.future_career_goals || [],
+                  work_style_preference: data.employee.work_style_preference || [],
+                };
+                console.log('Validated career fields:', careerFields);
+                const hasValidCareerData = Object.values(careerFields).some(
+                  (value) => (Array.isArray(value) && value.length > 0) || (typeof value === 'string' && value.trim() !== '')
+                );
+                if (!hasValidCareerData) {
+                  console.warn('Career data is empty or invalid:', careerFields);
+                  setError('No valid career aspiration data available for this employee');
+                  setIsLoading(false);
+                  return;
+                }
+                setDetails((prev) => ({
+                  ...prev,
+                  employeeNumber: data.employee.id_number || '',
+                  name: data.employee.full_name_english || '',
+                  japaneseLevel: data.employee.japanese_jlpt_level || 'N/A',
+                  preferred_industry: careerFields.preferred_industry,
+                  job_role_priority_1: careerFields.job_role_priority_1,
+                  future_career_goals: careerFields.future_career_goals,
+                  work_style_preference: careerFields.work_style_preference,
+                }));
+              } else {
+                setError('Employee not found');
+                console.error('No employee data in response:', data);
+              }
+            })
+            .catch((err) => {
+              setError(`Fetch error: ${err.message}`);
+              console.error('Fetch error:', err);
+            })
+            .finally(() => setIsLoading(false));
+        } else {
+          console.error('Failed to decrypt id_number');
+          setError('Invalid employee ID');
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.error('Decryption error:', err.message);
+        setError('Decryption error');
+        setIsLoading(false);
+      }
+    } else if (!encryptedId) {
+      console.error('No encrypted_id in URL');
+      setError('No employee ID provided');
+      setIsLoading(false);
     }
-  }, [details.photo]);
-
-  useEffect(() => {
-    console.log('Current previewLink:', previewLink);
-    if (previewLink && !previewLink.startsWith('resume-') && !previewLink.endsWith('.pdf')) {
-      console.warn('Invalid previewLink detected, resetting:', previewLink);
-      setPreviewLink(null);
-    }
-  }, [previewLink]);
+  }, [searchParams]);
 
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
+    console.log('Input change triggered:', { name, type, value });
     if (type === 'file') {
       const file = files[0];
       if (file && file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) {
-        setDetails((prev) => ({ ...prev, [name]: file }));
+        setDetails((prev) => ({ ...prev, photo: file }));
       } else {
         alert('Please upload a JPEG image under 5MB');
       }
@@ -86,6 +207,7 @@ export default function MakeResume() {
 
   const handleArrayInputChange = (e, index, field, arrayName) => {
     const { value } = e.target;
+    console.log('Array input change:', { arrayName, index, field, value });
     setDetails((prev) => {
       const newArray = [...prev[arrayName]];
       if (arrayName === 'interestFields' || arrayName === 'careerPriorities') {
@@ -107,39 +229,10 @@ export default function MakeResume() {
   const removeEducation = (indexToRemove) => {
     setDetails((prev) => ({
       ...prev,
-      education: prev.education.length > 1 
+      education: prev.education.length > 1
         ? prev.education.filter((_, index) => index !== indexToRemove)
-        : prev.education
+        : prev.education,
     }));
-  };
-
-  const generateSuggestions = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/grok3', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(jlptScores),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to generate suggestions');
-      const content = data.suggestions;
-      const forms = Split(content);
-      const finalForms = forms.length > 0 ? forms.slice(0, 3) : [content];
-      setSuggestions(finalForms.map((form) => form.trim()));
-      setSelectedSuggestion('');
-      setSelectedIndex(null);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const selectSuggestion = (suggestion, index) => {
-    setSelectedSuggestion(suggestion);
-    setSelectedIndex(index);
   };
 
   const compileResume = async () => {
@@ -210,462 +303,54 @@ export default function MakeResume() {
     }
   };
 
-  const handleRefresh = async () => {
-    await compileResume();
-  };
-
   return (
     <div className="flex flex-col md:flex-row h-screen p-4 gap-6 overflow-hidden">
-      {/* Left side - Form */}
       <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full">
         <h1 className="text-2xl text-black font-bold mb-6">履歴書ビルダー / Resume Builder</h1>
-
-        {/* Personal Information */}
-        <div className="mb-8">
-          <h2 className="text-xl text-black font-semibold mb-3">個人情報 / Personal Information</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">社員番号 / Employee Number</label>
-              <input
-                type="text"
-                name="employeeNumber"
-                value={details.employeeNumber}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">名前 / Name</label>
-              <input
-                type="text"
-                name="name"
-                value={details.name}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">プロフィール写真 / Profile Photo (Optional)</label>
-              <input
-                type="file"
-                name="photo"
-                accept="image/jpeg"
-                onChange={handleInputChange}
-                className="mt-1 block w-full text-black"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Career Aspirations */}
-        <div className="mb-8">
-          <h2 className="text-xl text-black font-semibold mb-3">志向 / Career Aspirations</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">開発分野 / Development Field</label>
-              <input
-                type="text"
-                name="devField"
-                value={details.devField}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">職種 / Job Type</label>
-              <input
-                type="text"
-                name="jobType"
-                value={details.jobType}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">領域 / Domain</label>
-              <input
-                type="text"
-                name="domain"
-                value={details.domain}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">タイプ / Type</label>
-              <input
-                type="text"
-                name="type"
-                value={details.type}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Education */}
-        <div className="mb-8">
-          <h2 className="text-xl text-black font-semibold mb-3">学歴 / Education</h2>
-          {details.education.map((edu, index) => (
-            <div key={index} className="space-y-4 mb-4 border-b pb-4 relative">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">年 / Year</label>
-                <input
-                  type="text"
-                  value={edu.year}
-                  onChange={(e) => handleArrayInputChange(e, index, 'year', 'education')}
-                  className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">機関 / Institution</label>
-                <input
-                  type="text"
-                  value={edu.institution}
-                  onChange={(e) => handleArrayInputChange(e, index, 'institution', 'education')}
-                  className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">学位 / Degree</label>
-                <input
-                  type="text"
-                  value={edu.degree}
-                  onChange={(e) => handleArrayInputChange(e, index, 'degree', 'education')}
-                  className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                />
-              </div>
-              {details.education.length > 1 && (
-                <button
-                  onClick={() => removeEducation(index)}
-                  className="absolute top-0 right-0 text-red-600 hover:text-red-800 p-1"
-                  title="Delete this education entry"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              )}
-            </div>
-          ))}
-          <button
-            onClick={addEducation}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-          >
-            学歴を追加 / Add Education
-          </button>
-        </div>
-
-        {/* Languages and Tools */}
-        <div className="mb-8">
-          <h2 className="text-xl text-black font-semibold mb-3">言語/開発ツール / Languages & Tools</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">言語 / Languages</label>
-              <input
-                type="text"
-                name="languages"
-                value={details.languages}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">開発ツール / Development Tools</label>
-              <textarea
-                name="devTools"
-                value={details.devTools}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                rows="3"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Projects */}
-        <div className="mb-8">
-          <h2 className="text-xl text-black font-semibold mb-3">プロジェクト / Projects</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">担当した役割 / Role</label>
-              <input
-                type="text"
-                name="projectRole"
-                value={details.projectRole}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">具体的な内容 / Description</label>
-              <textarea
-                name="projectDescription"
-                value={details.projectDescription}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                rows="5"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">直面した課題 / Challenges</label>
-              <textarea
-                name="projectChallenges"
-                value={details.projectChallenges}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                rows="3"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">リーダー経験 / Leadership Experience</label>
-              <input
-                type="text"
-                name="leadership"
-                value={details.leadership}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Product Development */}
-        <div className="mb-8">
-          <h2 className="text-xl text-black font-semibold mb-3">製品開発について / Product Development</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">興味を持つ理由 / Reason for Interest</label>
-              <textarea
-                name="productDevReason"
-                value={details.productDevReason}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                rows="3"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">果たしたい役割 / Desired Role</label>
-              <textarea
-                name="productDevRole"
-                value={details.productDevRole}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                rows="3"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Fields of Interest */}
-        <div className="mb-8">
-          <h2 className="text-xl text-black font-semibold mb-3">興味ある分野 / Fields of Interest</h2>
-          <div className="space-y-4">
-            {details.interestFields.map((field, index) => (
-              <div key={index}>
-                <label className="block text-sm font-medium text-gray-700">分野 {index + 1} / Field {index + 1}</label>
-                <input
-                  type="text"
-                  value={field}
-                  onChange={(e) => handleArrayInputChange(e, index, 'value', 'interestFields')}
-                  className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                />
-              </div>
-            ))}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">詳細 / Additional Details</label>
-              <textarea
-                name="interestDetails"
-                value={details.interestDetails}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                rows="3"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Japanese Companies */}
-        <div className="mb-8">
-          <h2 className="text-xl text-black font-semibold mb-3">日本企業について / Japanese Companies</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">一番興味がある点 / Most Interesting Aspect</label>
-              <input
-                type="text"
-                name="japanCompanyInterest"
-                value={details.japanCompanyInterest}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">習得したいこと / Skills to Acquire</label>
-              <input
-                type="text"
-                name="japanCompanySkills"
-                value={details.japanCompanySkills}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Career Development */}
-        <div className="mb-8">
-          <h2 className="text-xl text-black font-semibold mb-3">キャリアアップについて / Career Development</h2>
-          <div className="space-y-4">
-            {details.careerPriorities.map((priority, index) => (
-              <div key={index}>
-                <label className="block text-sm font-medium text-gray-700">優先要素 {index + 1} / Priority {index + 1}</label>
-                <input
-                  type="text"
-                  value={priority}
-                  onChange={(e) => handleArrayInputChange(e, index, 'value', 'careerPriorities')}
-                  className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                />
-              </div>
-            ))}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">興味ある役割 / Desired Roles</label>
-              <input
-                type="text"
-                name="careerRoles"
-                value={details.careerRoles}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">日本語レベル / Japanese Level</label>
-              <textarea
-                name="japaneseLevel"
-                value={details.japaneseLevel}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                rows="3"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">性格 / Personality</label>
-              <input
-                type="text"
-                name="personality"
-                value={details.personality}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* JLPT Experience */}
-        <div className="mb-8">
-          <h2 className="text-xl text-black font-semibold mb-3">JLPT経験 / JLPT Experience</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">総合スコア / Total Score (out of 180)</label>
-              <input
-                type="number"
-                name="total"
-                value={jlptScores.total}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">語彙スコア / Vocabulary Score</label>
-              <input
-                type="number"
-                name="vocabulary"
-                value={jlptScores.vocabulary}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">読解スコア / Reading Score</label>
-              <input
-                type="number"
-                name="reading"
-                value={jlptScores.reading}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">聴解スコア / Listening Score</label>
-              <input
-                type="number"
-                name="listening"
-                value={jlptScores.listening}
-                onChange={handleInputChange}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <button
-                onClick={generateSuggestions}
-                disabled={isLoading}
-                className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-              >
-                {isLoading ? '生成中... / Generating...' : '提案を生成 / Generate Suggestions'}
-              </button>
-              {error && <p className="mt-2 text-red-600 text-sm">{error}</p>}
-            </div>
-          </div>
-        </div>
-
-        {/* Japanese Suggestions Section */}
-        {suggestions.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-lg text-black font-medium mb-2">選択肢 / Choose a Japanese Description:</h3>
-            <div className="space-y-4">
-              {suggestions.map((suggestion, index) => {
-                const formLabels = ['Form 1 (最長 / Longest)', 'Form 2 (短め / Shorter)', 'Form 3 (最短 / Shortest)'];
-                const formLabel = formLabels[index] || `Form ${index + 1}`;
-                return (
-                  <div
-                    key={index}
-                    onClick={() => selectSuggestion(suggestion, index)}
-                    className={`p-4 border text-black rounded-md cursor-pointer transition-all hover:border-blue-500 ${
-                      selectedIndex === index ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-                    }`}
-                  >
-                    <div className="flex items-center mb-2">
-                      <div
-                        className={`w-5 h-5 rounded-full flex items-center justify-center mr-2 ${
-                          selectedIndex === index ? 'bg-blue-500 text-white' : 'bg-gray-200'
-                        }`}
-                      >
-                        {selectedIndex === index && (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-3 w-3"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        )}
-                      </div>
-                      <h4 className="font-medium">{formLabel}</h4>
-                    </div>
-                    <div className="whitespace-pre-line text-sm">{suggestion}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Save Resume */}
+        <PersonalInfo details={details} handleInputChange={handleInputChange} />
+        <CareerAspirations 
+          details={details} 
+          handleInputChange={handleInputChange} 
+          fetchCareerAspirations={fetchCareerAspirations}
+          isLoading={isLoading}
+        />
+        <Education
+          education={details.education}
+          handleArrayInputChange={handleArrayInputChange}
+          addEducation={addEducation}
+          removeEducation={removeEducation}
+        />
+        <LanguagesAndTools details={details} handleInputChange={handleInputChange} />
+        <Projects details={details} handleInputChange={handleInputChange} />
+        <ProductDevelopment details={details} handleInputChange={handleInputChange} />
+        <FieldsOfInterest
+          interestFields={details.interestFields}
+          interestDetails={details.interestDetails}
+          handleInputChange={handleInputChange}
+          handleArrayInputChange={handleArrayInputChange}
+        />
+        <JapaneseCompanies details={details} handleInputChange={handleInputChange} />
+        <CareerDevelopment
+          careerPriorities={details.careerPriorities}
+          details={details}
+          handleInputChange={handleInputChange}
+          handleArrayInputChange={handleArrayInputChange}
+        />
+        <JLPTExperience
+          jlptScores={jlptScores}
+          handleInputChange={handleInputChange}
+          isLoading={isLoading}
+          error={error}
+          setSuggestions={setSuggestions}
+          setError={setError}
+          setIsLoading={setIsLoading}
+        />
+        <Suggestions
+          suggestions={suggestions}
+          selectedIndex={selectedIndex}
+          setSelectedSuggestion={setSelectedSuggestion}
+          setSelectedIndex={setSelectedIndex}
+        />
         <div className="mb-8">
           <button
             onClick={saveResume}
@@ -677,39 +362,12 @@ export default function MakeResume() {
           {error && <p className="mt-2 text-red-600 text-sm">{error}</p>}
         </div>
       </div>
-
-      {/* Right side - Preview */}
-      <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl text-black font-bold">履歴書プレビュー / Resume Preview</h1>
-          <button
-            onClick={handleRefresh}
-            disabled={isLoading}
-            className={`px-4 py-2 rounded-md text-white ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
-          >
-            {isLoading ? 'Compiling...' : 'Refresh'}
-          </button>
-        </div>
-        <div className="border border-gray-300 rounded-md h-[calc(100%-4rem)]">
-          {isLoading ? (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-gray-600">Compiling resume...</p>
-            </div>
-          ) : previewLink && previewLink.startsWith('resume-') && previewLink.endsWith('.pdf') ? (
-            <iframe
-              src={`/api/serveTemp?path=${previewLink}`}
-              className="w-full h-full border-none"
-              title="Resume Preview"
-            />
-          ) : (
-            <div className="flex justify-center items-center h-full flex-col">
-              <p className="text-gray-600">Preview will appear here after compilation.</p>
-              {previewLink && <p className="text-red-600 text-sm mt-2">Invalid preview URL: {previewLink}</p>}
-              {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
-            </div>
-          )}
-        </div>
-      </div>
+      <ResumePreview
+        isLoading={isLoading}
+        previewLink={previewLink}
+        error={error}
+        handleRefresh={compileResume}
+      />
     </div>
   );
 }
