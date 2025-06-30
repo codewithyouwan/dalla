@@ -11,6 +11,7 @@ export default function CareerAspirations({ details, handleInputChange }) {
             value={details.devField}
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            placeholder="例: テクノロジー業界"
           />
         </div>
         <div>
@@ -21,6 +22,7 @@ export default function CareerAspirations({ details, handleInputChange }) {
             value={details.jobType}
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            placeholder="例: エンジニア"
           />
         </div>
         <div>
@@ -31,6 +33,7 @@ export default function CareerAspirations({ details, handleInputChange }) {
             value={details.domain}
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            placeholder="例: データサイエンス"
           />
         </div>
         <div>
@@ -41,6 +44,7 @@ export default function CareerAspirations({ details, handleInputChange }) {
             value={details.type}
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            placeholder="例: スペシャリスト"
           />
         </div>
       </div>

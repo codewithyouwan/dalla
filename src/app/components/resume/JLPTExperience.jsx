@@ -5,7 +5,7 @@ export default function JLPTExperience({ jlptScores, handleInputChange, isLoadin
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/grok3', {
+      const response = await fetch('/api/gpt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(jlptScores),
