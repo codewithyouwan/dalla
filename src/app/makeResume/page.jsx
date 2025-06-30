@@ -16,6 +16,7 @@ import CareerDevelopment from '../components/resume/CareerDevelopment';
 import JLPTExperience from '../components/resume/JLPTExperience';
 import Suggestions from '../components/resume/Suggestions';
 import ResumePreview from '../components/resume/ResumePreview';
+import Loader from '../components/Loader';
 
 const defaultDetails = {
   employeeNumber: '',
@@ -120,13 +121,13 @@ export default function Page() {
     const encryptedId = searchParams.get('encrypted_id');
     if (encryptedId && !hasFetchedCareerData.current) {
       hasFetchedCareerData.current = true;
+      setIsLoading(true);
       try {
         const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET || 'default-secure-key-32chars1234567';
         const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedId), secretKey);
         const idNumber = bytes.toString(CryptoJS.enc.Utf8);
         if (idNumber) {
           console.log('Selected employee ID:', idNumber);
-          setIsLoading(true);
           fetch(`/api/fetchDetails?id_number=${encodeURIComponent(idNumber)}`)
             .then((res) => {
               if (!res.ok) throw new Error(`Fetch error: ${res.statusText}`);
@@ -148,7 +149,6 @@ export default function Page() {
                 if (!hasValidCareerData) {
                   console.warn('Career data is empty or invalid:', careerFields);
                   setError('No valid career aspiration data available for this employee');
-                  setIsLoading(false);
                   return;
                 }
                 setDetails((prev) => ({
@@ -190,7 +190,7 @@ export default function Page() {
 
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
-    console.log('Input change triggered:', { name, type, value });
+    console.log('Input change triggered:', { name, type, value, files: files?.length });
     if (type === 'file') {
       const file = files[0];
       if (file && file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) {
@@ -243,6 +243,7 @@ export default function Page() {
       const resumeDetails = { ...details, photo: null };
       formData.append('details', JSON.stringify(resumeDetails));
       if (details.photo) {
+        console.log('Appending photo to FormData:', details.photo.name, details.photo.size);
         formData.append('photo', details.photo);
       }
       formData.append('sessionId', sessionId);
@@ -264,6 +265,7 @@ export default function Page() {
       setSessionId(data.sessionId);
     } catch (err) {
       setError(`Failed to generate preview: ${err.message}`);
+      console.error('Generate resume error:', err);
       setPreviewLink(null);
     } finally {
       setIsLoading(false);
@@ -278,6 +280,7 @@ export default function Page() {
       const resumeDetails = { ...details, photo: null };
       formData.append('details', JSON.stringify(resumeDetails));
       if (details.photo) {
+        console.log('Appending photo to FormData for save:', details.photo.name, details.photo.size);
         formData.append('photo', details.photo);
       }
       if (tempPdfPath) {
@@ -298,13 +301,15 @@ export default function Page() {
       setTempPdfPath(null);
     } catch (err) {
       setError(`Failed to save resume: ${err.message}`);
+      console.error('Save resume error:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen p-4 gap-6 overflow-hidden">
+    <div className="relative flex flex-col md:flex-row h-screen p-4 gap-6 overflow-hidden">
+      {isLoading && <Loader />}
       <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full">
         <h1 className="text-2xl text-black font-bold mb-6">履歴書ビルダー / Resume Builder</h1>
         <PersonalInfo details={details} handleInputChange={handleInputChange} />
