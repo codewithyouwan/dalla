@@ -48,7 +48,6 @@ const defaultDetails = {
 };
 
 export default function Page() {
-  // #region State Variables
   const [details, setDetails] = useState(defaultDetails);
   const [jlptScores, setJlptScores] = useState({
     total: '',
@@ -66,17 +65,16 @@ export default function Page() {
   const [sessionId, setSessionId] = useState(uuidv4());
   const searchParams = useSearchParams();
   const hasFetchedCareerData = useRef(false);
-  // #endregion
 
   const fetchCareerAspirations = async () => {
     setIsLoading(true);
     setError(null);
     try {
       const careerData = {
-        preferred_industry: details.preferred_industry || [],
-        job_role_priority_1: details.job_role_priority_1 || '',
-        future_career_goals: details.future_career_goals || [],
-        work_style_preference: details.work_style_preference || [],
+        preferred_industry: details.interestFields || [],
+        job_role_priority_1: details.careerRoles || '',
+        future_career_goals: details.careerPriorities || [],
+        work_style_preference: details.japanCompanySkills ? [details.japanCompanySkills] : [],
       };
       console.log('Sending career data to API:', careerData);
       const res = await fetch('/api/careerAspirations', {
