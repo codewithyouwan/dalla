@@ -2,7 +2,7 @@
     This is a helper function for different types of prompts.
     In the whatFor array we have defined the types for which we have the prompts.
 */
-const whatForTypes = ['cvFormatting', 'careerAspirations', 'others'];
+const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'others'];
 
 export default function Prompt(data, whatFor) {
   if (whatFor === whatForTypes[0]) {
@@ -70,7 +70,7 @@ export default function Prompt(data, whatFor) {
         - 中くらいのフレーズ (2-3語) には ===FORM2-START=== と ===FORM2-END=== を使用してください。  
         - 最も簡潔な値 (1-2語) には ===FORM3-START=== と ===FORM3-END=== を使用してください。
 
-        【各パターンの構成ルール】
+        【各パターの構成ルール】
 
         - 4つの項目 (希望業界、優先職種、将来のキャリア目標、ワークスタイル) について、それぞれ1行ずつ、**日本語で簡潔に**記載してください。
         - 各パターンは4行で構成してください (希望業界→優先職種→将来のキャリア目標→ワークスタイルの順）。
@@ -99,6 +99,53 @@ export default function Prompt(data, whatFor) {
         機械学習
         フレキシブル
         ===FORM3-END===
+        `;
+    // #endregion
+    return prompt;
+  } else if (whatFor === whatForTypes[2]) {
+    const { programming_languages, databases_querying, version_control, code_editors_ides, ml_frameworks } = data;
+    // #region languagesAndTools
+    const prompt = `
+        ＜従業員情報/Employee Information>
+        プログラミング言語/Programming Languages: ${programming_languages || 'なし'}
+        データベースクエリ/Databases Querying: ${databases_querying || 'なし'}
+        バージョン管理/Version Control: ${version_control || 'なし'}
+        コードエディタ・IDE/Code Editors & IDEs: ${code_editors_ides || 'なし'}
+        機械学習フレームワーク/ML Frameworks: ${ml_frameworks || 'なし'}
+
+        <プロンプト/Prompt>
+        この従業員情報を元に、CVの「言語/開発ツール」セクションに記載するための簡潔でビジネスに適した値を生成してください。
+        以下の2つの項目について、適切な値を生成してください :
+        - プログラミング言語/Languages: プログラミング言語（${programming_languages}）をカンマ区切りで簡潔に記述。
+        - 開発ツール/Development Tools: データベースクエリ（${databases_querying}）、バージョン管理（${version_control})、コードエディタ・IDE（${code_editors_ides}）、機械学習フレームワーク（${ml_frameworks}）を統合し、適切な開発ツールをカンマ区切りで簡潔に記述。
+        企業がこの人材の技術的スキルを適切に理解できるように、**簡潔かつ正確に**記載してください。
+        2パターンの値セットを作成し、各パターンは2つの値 (プログラミング言語→開発ツールの順) で構成してください。
+        各値は改行で区切り、**日本語で簡潔かつ正確に**記載してください。
+        各行の先頭に「プログラミング言語: 」および「開発ツール: 」のラベルを付けてください。
+
+        出力は以下のフォーマットに**厳密に**従ってください。各パターンの出力は、それぞれ次のようにマーカーで囲ってください：
+
+        - 詳細な記述 (複数のスキル/ツールを詳細に) には ===FORM1-START=== と ===FORM1-END=== を使用してください。
+        - 中程度の記述 (主要なスキル/ツールに絞る) には ===FORM2-START=== と ===FORM2-END=== を使用してください。
+
+        【各パターの構成ルール】
+
+        - 2つの項目 (プログラミング言語、開発ツール) について、それぞれ1行ずつ、**日本語で簡潔に**記載してください。
+        - 各パターンは2行で構成してください (プログラミング言語→開発ツールの順)。
+        - 入力データをそのまま記載せず、適切に変換してください。開発ツールは、データベースクエリ、バージョン管理、コードエディタ・IDE、機械学習フレームワークから適切に選択・統合してください。
+        - CVにふさわしいビジネス的な表現を使用し、専門性を強調してください。
+
+        【出力形式の例】
+
+        ===FORM1-START===
+        プログラミング言語: Python, JavaScript, Java, SQL
+        開発ツール: Git, VS Code, Docker, TensorFlow
+        ===FORM1-END===
+
+        ===FORM2-START===
+        プログラミング言語: Python, JavaScript
+        開発ツール: Git, VS Code
+        ===FORM2-END===
         `;
     // #endregion
     return prompt;
