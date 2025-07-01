@@ -71,10 +71,10 @@ export default function Page() {
     setError(null);
     try {
       const careerData = {
-        preferred_industry: details.preferred_industry || [],
-        job_role_priority_1: details.job_role_priority_1 || '',
-        future_career_goals: details.future_career_goals || [],
-        work_style_preference: details.work_style_preference || [],
+        preferred_industry: details.interestFields || [],
+        job_role_priority_1: details.careerRoles || '',
+        future_career_goals: details.careerPriorities || [],
+        work_style_preference: details.japanCompanySkills ? [details.japanCompanySkills] : [],
       };
       console.log('Sending career data to API:', careerData);
       const res = await fetch('/api/careerAspirations', {
@@ -122,6 +122,7 @@ export default function Page() {
     setIsLoading(true);
     setError(null);
     try {
+      console.log('Sending id_number to /api/languagesAndTools:', details.id_number);
       const res = await fetch('/api/languagesAndTools', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -178,44 +179,17 @@ export default function Page() {
               return res.json();
             })
             .then((data) => {
-              if (data.employee) {
-                console.log('Employee data fetched:', data.employee);
-                const careerFields = {
-                  preferred_industry: data.employee.preferred_industry || [],
-                  job_role_priority_1: data.employee.job_role_priority_1 || '',
-                  future_career_goals: data.employee.future_career_goals || [],
-                  work_style_preference: data.employee.work_style_preference || [],
-                };
-                console.log('Validated career fields:', careerFields);
-                const hasValidCareerData = Object.values(careerFields).some(
-                  (value) => (Array.isArray(value) && value.length > 0) || (typeof value === 'string' && value.trim() !== '')
-                );
-                if (!hasValidCareerData) {
-                  console.warn('Career data is empty or invalid:', careerFields);
-                  setError('No valid career aspiration data available for this employee');
-                  return;
-                }
+              if (data.name) {
+                console.log('Fetched name:', data.name);
                 setDetails((prev) => ({
                   ...prev,
-                  id_number: data.employee.id_number || '',
-                  employeeNumber: data.employee.id_number || '',
-                  name: data.employee.full_name_english || '',
-                  japaneseLevel: data.employee.japanese_jlpt_level || 'N/A',
-                  preferred_industry: careerFields.preferred_industry,
-                  job_role_priority_1: careerFields.job_role_priority_1,
-                  future_career_goals: careerFields.future_career_goals,
-                  work_style_preference: careerFields.work_style_preference,
-                  languages: data.employee.programming_languages ? data.employee.programming_languages.join(', ') : '',
-                  devTools: [
-                    ...(data.employee.databases_querying || []),
-                    ...(data.employee.version_control || []),
-                    ...(data.employee.code_editors_ides || []),
-                    ...(data.employee.ml_frameworks || []),
-                  ].join(', ') || '',
+                  id_number: idNumber,
+                  employeeNumber: idNumber,
+                  name: data.name,
                 }));
               } else {
-                setError('Employee not found');
-                console.error('No employee data in response:', data);
+                setError('Employee name not found');
+                console.error('No name in response:', data);
               }
             })
             .catch((err) => {
