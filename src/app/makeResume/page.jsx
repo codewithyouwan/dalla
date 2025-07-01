@@ -86,7 +86,7 @@ export default function Page() {
       const gptData = await res.json();
       console.log('Career aspirations response:', gptData);
       if (gptData.suggestions) {
-        const form2Match = gptData.suggestions.match(/===FORM2-START===\n([\s\S]*?)\n===FORM2-END===/);
+        const form2Match = gptData.suggestions.match(/===FORM2-START===[\s\S]*?\n([\s\S]*?)\n===FORM2-END===/);
         if (form2Match) {
           const lines = form2Match[1].trim().split('\n').map(line => line.trim());
           console.log('Parsed FORM2 lines:', lines);
