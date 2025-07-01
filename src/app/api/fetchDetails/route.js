@@ -15,21 +15,30 @@ export async function GET(request) {
       return NextResponse.json({ error: 'id_number is required' }, { status: 400 });
     }
 
-    // Fetch employee details from the data table
+    // Fetch only full_name_english from the data table
     const { data, error } = await supabase
       .from('data')
-      .select('*')
+      .select('full_name_english')
       .eq('id_number', idNumber)
       .single();
 
     if (error || !data) {
-      console.error('Supabase error:', error?.message || 'No employee found');
+      console.error('Supabase error:', error?.message || 'No employee found', { id_number: idNumber });
       return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ employee: data }, { status: 200 });
+    // Preprocess the name
+    const name = data.full_name_english ? data.full_name_english.trim() : 'Unknown Employee';
+
+    console.log('Fetched and processed name:', name); // Log for debugging
+
+    return NextResponse.json({ name }, { status: 200 });
   } catch (error) {
-    console.error('Error fetching employee details:', error.message);
+    console.error('Error fetching employee name:', {
+      message: error.message,
+      stack: error.stack,
+      id_number: idNumber || 'undefined',
+    });
     return NextResponse.json({ error: `Server error: ${error.message}` }, { status: 500 });
   }
 }
