@@ -19,6 +19,7 @@ import ResumePreview from '../components/resume/ResumePreview';
 import Loader from '../components/Loader';
 
 const defaultDetails = {
+  id_number: '',
   employeeNumber: '',
   name: 'Test User',
   devField: '',
@@ -85,7 +86,7 @@ export default function Page() {
       const gptData = await res.json();
       console.log('Career aspirations response:', gptData);
       if (gptData.suggestions) {
-        const form2Match = gptData.suggestions.match(/===FORM2-START===\n([\s\S]*?)\n===FORM2-END===/);
+        const form2Match = gptData.suggestions.match(/===FORM2-START===[\s\S]*?\n([\s\S]*?)\n===FORM2-END===/);
         if (form2Match) {
           const lines = form2Match[1].trim().split('\n').map(line => line.trim());
           console.log('Parsed FORM2 lines:', lines);
@@ -112,6 +113,49 @@ export default function Page() {
     } catch (err) {
       setError(`Career aspirations fetch error: ${err.message}`);
       console.error('Career aspirations fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchLanguagesAndTools = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/languagesAndTools', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_number: details.id_number }),
+      });
+      if (!res.ok) throw new Error(`Languages and tools API error: ${res.statusText}`);
+      const gptData = await res.json();
+      console.log('Languages and tools response:', gptData);
+      if (gptData.suggestions) {
+        const form2Match = gptData.suggestions.match(/===FORM2-START===[\s\S]*?\n([\s\S]*?)\n===FORM2-END===/);
+        if (form2Match) {
+          const lines = form2Match[1].trim().split('\n').map(line => line.trim());
+          console.log('Parsed FORM2 lines:', lines);
+          if (lines.length >= 2) {
+            setDetails((prev) => ({
+              ...prev,
+              languages: lines[0].replace('プログラミング言語: ', '') || '',
+              devTools: lines[1].replace('開発ツール: ', '') || '',
+            }));
+          } else {
+            setError('Invalid languages and tools response format: Insufficient lines');
+            console.error('Expected 2 lines, got:', lines);
+          }
+        } else {
+          setError('Failed to parse languages and tools response: FORM2 not found');
+          console.error('No FORM2 in response:', gptData.suggestions);
+        }
+      } else {
+        setError('Failed to generate languages and tools: No suggestions in response');
+        console.error('No suggestions in GPT response:', gptData);
+      }
+    } catch (err) {
+      setError(`Languages and tools fetch error: ${err.message}`);
+      console.error('Languages and tools fetch error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -153,6 +197,7 @@ export default function Page() {
                 }
                 setDetails((prev) => ({
                   ...prev,
+                  id_number: data.employee.id_number || '',
                   employeeNumber: data.employee.id_number || '',
                   name: data.employee.full_name_english || '',
                   japaneseLevel: data.employee.japanese_jlpt_level || 'N/A',
@@ -160,6 +205,13 @@ export default function Page() {
                   job_role_priority_1: careerFields.job_role_priority_1,
                   future_career_goals: careerFields.future_career_goals,
                   work_style_preference: careerFields.work_style_preference,
+                  languages: data.employee.programming_languages ? data.employee.programming_languages.join(', ') : '',
+                  devTools: [
+                    ...(data.employee.databases_querying || []),
+                    ...(data.employee.version_control || []),
+                    ...(data.employee.code_editors_ides || []),
+                    ...(data.employee.ml_frameworks || []),
+                  ].join(', ') || '',
                 }));
               } else {
                 setError('Employee not found');
@@ -325,7 +377,12 @@ export default function Page() {
           addEducation={addEducation}
           removeEducation={removeEducation}
         />
-        <LanguagesAndTools details={details} handleInputChange={handleInputChange} />
+        <LanguagesAndTools 
+          details={details} 
+          handleInputChange={handleInputChange} 
+          fetchLanguagesAndTools={fetchLanguagesAndTools}
+          isLoading={isLoading}
+        />
         <Projects details={details} handleInputChange={handleInputChange} />
         <ProductDevelopment details={details} handleInputChange={handleInputChange} />
         <FieldsOfInterest
