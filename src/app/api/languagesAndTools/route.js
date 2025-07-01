@@ -60,7 +60,12 @@ export async function POST(request) {
     // Call NVIDIA API with streaming
     const completion = await openai.chat.completions.create({
     model: "nvidia/llama-3.1-nemotron-ultra-253b-v1",
-    messages: [{"role":"system","content":"detailed thinking on"},{"role":"user","content":prompt}],
+    messages:[ 
+    { 
+      role: "system", 
+      content: "Provide only the final answer in the specified format without any reasoning or explanation." 
+    },
+    { role: "user", content: prompt }],
     temperature: 0,
     top_p: 0.95,
     max_tokens: 4096,
