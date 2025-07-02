@@ -16,8 +16,10 @@ import CareerDevelopment from '../components/resume/CareerDevelopment';
 import JLPTExperience from '../components/resume/JLPTExperience';
 import Suggestions from '../components/resume/Suggestions';
 import ResumePreview from '../components/resume/ResumePreview';
+import Loader from '../components/Loader';
 
 const defaultDetails = {
+  id_number: '',
   employeeNumber: '',
   name: 'Test User',
   devField: '',
@@ -69,10 +71,10 @@ export default function Page() {
     setError(null);
     try {
       const careerData = {
-        preferred_industry: details.preferred_industry || [],
-        job_role_priority_1: details.job_role_priority_1 || '',
-        future_career_goals: details.future_career_goals || [],
-        work_style_preference: details.work_style_preference || [],
+        preferred_industry: details.interestFields || [],
+        job_role_priority_1: details.careerRoles || '',
+        future_career_goals: details.careerPriorities || [],
+        work_style_preference: details.japanCompanySkills ? [details.japanCompanySkills] : [],
       };
       console.log('Sending career data to API:', careerData);
       const res = await fetch('/api/careerAspirations', {
@@ -84,7 +86,7 @@ export default function Page() {
       const gptData = await res.json();
       console.log('Career aspirations response:', gptData);
       if (gptData.suggestions) {
-        const form2Match = gptData.suggestions.match(/===FORM2-START===\n([\s\S]*?)\n===FORM2-END===/);
+        const form2Match = gptData.suggestions.match(/===FORM2-START===[\s\S]*?\n([\s\S]*?)\n===FORM2-END===/);
         if (form2Match) {
           const lines = form2Match[1].trim().split('\n').map(line => line.trim());
           console.log('Parsed FORM2 lines:', lines);
@@ -116,54 +118,78 @@ export default function Page() {
     }
   };
 
+  const fetchLanguagesAndTools = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      console.log('Sending id_number to /api/languagesAndTools:', details.id_number);
+      const res = await fetch('/api/languagesAndTools', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_number: details.id_number }),
+      });
+      if (!res.ok) throw new Error(`Languages and tools API error: ${res.statusText}`);
+      const gptData = await res.json();
+      console.log('Languages and tools response:', gptData);
+      if (gptData.suggestions) {
+        const form2Match = gptData.suggestions.match(/===FORM2-START===[\s\S]*?\n([\s\S]*?)\n===FORM2-END===/);
+        if (form2Match) {
+          const lines = form2Match[1].trim().split('\n').map(line => line.trim());
+          console.log('Parsed FORM2 lines:', lines);
+          if (lines.length >= 2) {
+            setDetails((prev) => ({
+              ...prev,
+              languages: lines[0].replace('プログラミング言語: ', '') || '',
+              devTools: lines[1].replace('開発ツール: ', '') || '',
+            }));
+          } else {
+            setError('Invalid languages and tools response format: Insufficient lines');
+            console.error('Expected 2 lines, got:', lines);
+          }
+        } else {
+          setError('Failed to parse languages and tools response: FORM2 not found');
+          console.error('No FORM2 in response:', gptData.suggestions);
+        }
+      } else {
+        setError('Failed to generate languages and tools: No suggestions in response');
+        console.error('No suggestions in GPT response:', gptData);
+      }
+    } catch (err) {
+      setError(`Languages and tools fetch error: ${err.message}`);
+      console.error('Languages and tools fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const encryptedId = searchParams.get('encrypted_id');
     if (encryptedId && !hasFetchedCareerData.current) {
       hasFetchedCareerData.current = true;
+      setIsLoading(true);
       try {
         const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET || 'default-secure-key-32chars1234567';
         const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedId), secretKey);
         const idNumber = bytes.toString(CryptoJS.enc.Utf8);
         if (idNumber) {
           console.log('Selected employee ID:', idNumber);
-          setIsLoading(true);
           fetch(`/api/fetchDetails?id_number=${encodeURIComponent(idNumber)}`)
             .then((res) => {
               if (!res.ok) throw new Error(`Fetch error: ${res.statusText}`);
               return res.json();
             })
             .then((data) => {
-              if (data.employee) {
-                console.log('Employee data fetched:', data.employee);
-                const careerFields = {
-                  preferred_industry: data.employee.preferred_industry || [],
-                  job_role_priority_1: data.employee.job_role_priority_1 || '',
-                  future_career_goals: data.employee.future_career_goals || [],
-                  work_style_preference: data.employee.work_style_preference || [],
-                };
-                console.log('Validated career fields:', careerFields);
-                const hasValidCareerData = Object.values(careerFields).some(
-                  (value) => (Array.isArray(value) && value.length > 0) || (typeof value === 'string' && value.trim() !== '')
-                );
-                if (!hasValidCareerData) {
-                  console.warn('Career data is empty or invalid:', careerFields);
-                  setError('No valid career aspiration data available for this employee');
-                  setIsLoading(false);
-                  return;
-                }
+              if (data.name) {
+                console.log('Fetched name:', data.name);
                 setDetails((prev) => ({
                   ...prev,
-                  employeeNumber: data.employee.id_number || '',
-                  name: data.employee.full_name_english || '',
-                  japaneseLevel: data.employee.japanese_jlpt_level || 'N/A',
-                  preferred_industry: careerFields.preferred_industry,
-                  job_role_priority_1: careerFields.job_role_priority_1,
-                  future_career_goals: careerFields.future_career_goals,
-                  work_style_preference: careerFields.work_style_preference,
+                  id_number: idNumber,
+                  employeeNumber: idNumber,
+                  name: data.name,
                 }));
               } else {
-                setError('Employee not found');
-                console.error('No employee data in response:', data);
+                setError('Employee name not found');
+                console.error('No name in response:', data);
               }
             })
             .catch((err) => {
@@ -190,7 +216,7 @@ export default function Page() {
 
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
-    console.log('Input change triggered:', { name, type, value });
+    console.log('Input change triggered:', { name, type, value, files: files?.length });
     if (type === 'file') {
       const file = files[0];
       if (file && file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) {
@@ -243,6 +269,7 @@ export default function Page() {
       const resumeDetails = { ...details, photo: null };
       formData.append('details', JSON.stringify(resumeDetails));
       if (details.photo) {
+        console.log('Appending photo to FormData:', details.photo.name, details.photo.size);
         formData.append('photo', details.photo);
       }
       formData.append('sessionId', sessionId);
@@ -264,6 +291,7 @@ export default function Page() {
       setSessionId(data.sessionId);
     } catch (err) {
       setError(`Failed to generate preview: ${err.message}`);
+      console.error('Generate resume error:', err);
       setPreviewLink(null);
     } finally {
       setIsLoading(false);
@@ -278,6 +306,7 @@ export default function Page() {
       const resumeDetails = { ...details, photo: null };
       formData.append('details', JSON.stringify(resumeDetails));
       if (details.photo) {
+        console.log('Appending photo to FormData for save:', details.photo.name, details.photo.size);
         formData.append('photo', details.photo);
       }
       if (tempPdfPath) {
@@ -298,13 +327,15 @@ export default function Page() {
       setTempPdfPath(null);
     } catch (err) {
       setError(`Failed to save resume: ${err.message}`);
+      console.error('Save resume error:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen p-4 gap-6 overflow-hidden">
+    <div className="relative flex flex-col md:flex-row h-screen p-4 gap-6 overflow-hidden">
+      {isLoading && <Loader />}
       <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full">
         <h1 className="text-2xl text-black font-bold mb-6">履歴書ビルダー / Resume Builder</h1>
         <PersonalInfo details={details} handleInputChange={handleInputChange} />
@@ -320,7 +351,12 @@ export default function Page() {
           addEducation={addEducation}
           removeEducation={removeEducation}
         />
-        <LanguagesAndTools details={details} handleInputChange={handleInputChange} />
+        <LanguagesAndTools 
+          details={details} 
+          handleInputChange={handleInputChange} 
+          fetchLanguagesAndTools={fetchLanguagesAndTools}
+          isLoading={isLoading}
+        />
         <Projects details={details} handleInputChange={handleInputChange} />
         <ProductDevelopment details={details} handleInputChange={handleInputChange} />
         <FieldsOfInterest
