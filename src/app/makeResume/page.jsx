@@ -162,6 +162,40 @@ export default function Page() {
     }
   };
 
+  const fetchInternshipExperience = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      console.log('Sending id_number to /api/internship', details.id_number);
+      const res = await fetch('/api/internship', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_number: details.id_number }),
+      });
+      if (!res.ok) throw new Error(`Internship experience API error: ${res.statusText}`);
+      const gptData = await res.json();
+      console.log('Internship experience response:', gptData);
+      if (gptData.suggestions) {
+        const { projectRole, projectDescription, projectChallenges, leadership } = gptData.suggestions;
+        setDetails((prev) => ({
+          ...prev,
+          projectRole: projectRole || prev.projectRole,
+          projectDescription: projectDescription || prev.projectDescription,
+          projectChallenges: projectChallenges || prev.projectChallenges,
+          leadership: leadership || prev.leadership,
+        }));
+      } else {
+        setError('Failed to generate internship experience: No suggestions in response');
+        console.error('No suggestions in LLaMA response:', gptData);
+      }
+    } catch (err) {
+      setError(`Internship experience fetch error: ${err.message}`);
+      console.error('Internship experience fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const encryptedId = searchParams.get('encrypted_id');
     if (encryptedId && !hasFetchedCareerData.current) {
@@ -357,7 +391,12 @@ export default function Page() {
           fetchLanguagesAndTools={fetchLanguagesAndTools}
           isLoading={isLoading}
         />
-        <Projects details={details} handleInputChange={handleInputChange} />
+        <Projects 
+          details={details} 
+          handleInputChange={handleInputChange} 
+          fetchInternshipExperience={fetchInternshipExperience}
+          isLoading={isLoading}
+        />
         <ProductDevelopment details={details} handleInputChange={handleInputChange} />
         <FieldsOfInterest
           interestFields={details.interestFields}
