@@ -2,7 +2,7 @@
     This is a helper function for different types of prompts.
     In the whatFor array we have defined the types for which we have the prompts.
 */
-const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'others'];
+const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'internshipExperience', 'others'];
 
 export default function Prompt(data, whatFor) {
   if (whatFor === whatForTypes[0]) {
@@ -147,6 +147,60 @@ export default function Prompt(data, whatFor) {
         開発ツール: Git, VS Code
         ===FORM2-END===
         `;
+    // #endregion
+    return prompt;
+  } else if (whatFor === whatForTypes[3]) {
+    const { internship_1_title, internship_1_company, internship_1_period, internship_1_team_size, internship_1_technologies, internship_1_summary, internship_1_purpose, internship_1_role, internship_1_challenges, internship_1_outcome } = data;
+    // #region internshipExperience
+    const prompt = `
+        ＜システム指示/System Instructions>
+        以下のインターンシップ情報を元に、CVの「プロジェクト/インターンシップ」セクションに記載するための簡潔でビジネスに適した値を生成してください。
+        出力は指定されたフォーマットに**厳密に**従い、余計な説明や追加のテキストを含めず、指定されたマーカー内に4行の日本語テキストのみを提供してください。
+        各項目は自然な日本語で、CVに適したプロフェッショナルな表現を使用してください。
+
+        ＜インターンシップ情報/Internship Information>
+        タイトル/Title: ${internship_1_title || 'なし'}
+        会社/Company: ${internship_1_company || 'なし'}
+        期間/Period: ${internship_1_period || 'なし'}
+        チームサイズ/Team Size: ${internship_1_team_size || '不明'}
+        使用技術/Technologies: ${internship_1_technologies || 'なし'}
+        概要/Summary: ${internship_1_summary || 'なし'}
+        目的/Purpose: ${internship_1_purpose || 'なし'}
+        役割/Role: ${internship_1_role || 'なし'}
+        課題/Challenges: ${internship_1_challenges || 'なし'}
+        成果/Outcome: ${internship_1_outcome || 'なし'}
+
+        <プロンプト/Prompt>
+        以下の4つの項目について、適切な値を生成してください :
+        - 担当した役割/Role: インターンシップでの役割（${internship_1_role}）を簡潔に記述。
+        - 具体的な内容/Description: インターンシップの概要（${internship_1_summary}）、目的（${internship_1_purpose}）、使用技術（${internship_1_technologies}）、チームサイズ（${internship_1_team_size}）を統合し、詳細な説明を生成。
+        - 直面した課題/Challenges: 課題（${internship_1_challenges}）を簡潔かつ具体的に記述。
+        - リーダー経験/Leadership Experience: 成果（${internship_1_outcome}）からリーダーシップに関連する内容を抽出し、簡潔に記述。リーダーシップが明示されていない場合は、チームでの貢献を強調。
+
+        【出力フォーマット】
+        出力は以下のフォーマットに**厳密に**従ってください。余計なテキストや説明を一切含めず、===FORM1-START=== と ===FORM1-END=== の間に4行のみを記載してください。各行は指定されたラベルで始まり、内容は日本語で簡潔かつプロフェッショナルに記述してください。
+
+        ===FORM1-START===
+        担当した役割: [役割を簡潔に記述]
+        具体的な内容: [概要、目的、技術、チームサイズを統合した詳細な説明]
+        直面した課題: [課題を具体的に記述]
+        リーダー経験: [リーダーシップまたはチーム貢献を記述]
+        ===FORM1-END===
+
+        【出力例】
+        ===FORM1-START===
+        担当した役割: チームリーダー
+        具体的な内容: 3人チームで、Pythonを使用し、電気自動車の走行距離予測モデルを開発
+        直面した課題: データクリーニングとPythonの初学者としての技術習得に苦労
+        リーダー経験: チームを統括し、モデルの評価と改善を主導
+        ===FORM1-END===
+
+        【構成ルール】
+        - 4つの項目をそれぞれ1行ずつ、**日本語で簡潔かつ正確に**記載。
+        - 入力データをそのまま記載せず、適切に変換し、CVにふさわしいビジネス的な表現を使用。
+        - 専門性と成果を強調し、自然な日本語で記述。
+        - 出力は===FORM1-START=== と ===FORM1-END=== の間に4行のみを含め、他のテキストやマーカーは一切含めない。
+      `;
     // #endregion
     return prompt;
   } else {
