@@ -6,9 +6,9 @@ export default function LanguagesAndTools({ details, handleInputChange, fetchLan
         <button
           onClick={fetchLanguagesAndTools}
           disabled={isLoading}
-          className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 whitespace-pre-line ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          {isLoading ? '取得中... / Fetching...' : 'スキルを取得 / Fetch Skills'}
+          {isLoading ? '取得中... \n/ Fetching...' : 'スキルを取得 \n Fetch Skills'}
         </button>
       </div>
       <div className="space-y-4">

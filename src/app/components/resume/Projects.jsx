@@ -1,15 +1,15 @@
 export default function Projects({ details, handleInputChange, fetchInternshipExperience, isLoading }) {
   return (
     <div className="mb-8">
-      <h2 className="text-xl text-black font-semibold mb-3">プロジェクト / インターンシップ経験 / Projects & Internship Experience</h2>
+      <h2 className="text-xl text-black font-semibold mb-3">プロジェクト / インターンシップ経験 /<br></br> Projects & Internship Experience</h2>
       <div className="space-y-4">
         <div>
           <button
             onClick={fetchInternshipExperience}
             disabled={isLoading}
-            className={`mb-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 whitespace-pre-line ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            {isLoading ? '取得中... / Fetching...' : 'インターンシップ情報を取得 / Fetch Internship Data'}
+            {isLoading ? '取得中... \n Fetching...' : 'インターンシップ情報を取得 \n Fetch Internship Data'}
           </button>
         </div>
         <div>
