@@ -41,20 +41,18 @@ const defaultDetails = {
   japanCompanySkills: 'Work Culture',
   careerPriorities: ['Growth', 'Impact', 'Balance'],
   careerRoles: 'Project Manager',
-  japaneseLevel: 'N3',
+  japaneseLevel: 'Not certified',
+  total: '',
+  vocabulary: '',
+  reading: '',
+  listening: '',
   personality: 'Diligent',
-  selectedSuggestion: 'Studying for N3',
+  selectedSuggestion: '',
   photo: null,
 };
 
 export default function Page() {
   const [details, setDetails] = useState(defaultDetails);
-  const [jlptScores, setJlptScores] = useState({
-    total: '',
-    vocabulary: '',
-    reading: '',
-    listening: '',
-  });
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -258,8 +256,6 @@ export default function Page() {
       } else {
         alert('Please upload a JPEG image under 5MB');
       }
-    } else if (name in jlptScores) {
-      setJlptScores((prev) => ({ ...prev, [name]: value }));
     } else {
       setDetails((prev) => ({ ...prev, [name]: value }));
     }
@@ -410,14 +406,13 @@ export default function Page() {
           handleArrayInputChange={handleArrayInputChange}
         />
         <JLPTExperience
-          jlptScores={jlptScores}
+          details={details}
           handleInputChange={handleInputChange}
           isLoading={isLoading}
           error={error}
           setSuggestions={setSuggestions}
           setError={setError}
           setIsLoading={setIsLoading}
-          details={details}
         />
         <Suggestions
           suggestions={suggestions}
