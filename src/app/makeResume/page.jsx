@@ -417,6 +417,7 @@ export default function Page() {
           setSuggestions={setSuggestions}
           setError={setError}
           setIsLoading={setIsLoading}
+          details={details}
         />
         <Suggestions
           suggestions={suggestions}

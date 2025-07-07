@@ -1,6 +1,6 @@
 import Split from '../../helper/split';
 
-export default function JLPTExperience({ jlptScores, handleInputChange, isLoading, error, setSuggestions, setError, setIsLoading }) {
+export default function JLPTExperience({ jlptScores, handleInputChange, isLoading, error, setSuggestions, setError, setIsLoading,details }) {
   const generateSuggestions = async () => {
     setIsLoading(true);
     setError(null);
@@ -27,6 +27,16 @@ export default function JLPTExperience({ jlptScores, handleInputChange, isLoadin
     <div className="mb-8">
       <h2 className="text-xl text-black font-semibold mb-3">JLPT経験 / JLPT Experience</h2>
       <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">日本語レベル / Japanese Level</label>
+          <textarea
+            name="japaneseLevel"
+            value={details.japaneseLevel}
+            onChange={handleInputChange}
+            className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            rows="3"
+          />
+        </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">総合スコア / Total Score (out of 180)</label>
           <input
