@@ -6,9 +6,9 @@ export default function CareerAspirations({ details, handleInputChange, fetchCar
         <button
           onClick={fetchCareerAspirations}
           disabled={isLoading}
-          className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 whitespace-pre-line ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          {isLoading ? '取得中... / Fetching...' : '志向を取得 / Generate'}
+          {isLoading ? '取得中... \n Fetching...' : '志向を取得 \n Generate'}
         </button>
       </div>
       <div className="space-y-4">

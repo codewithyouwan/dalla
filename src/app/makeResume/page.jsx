@@ -41,20 +41,18 @@ const defaultDetails = {
   japanCompanySkills: 'Work Culture',
   careerPriorities: ['Growth', 'Impact', 'Balance'],
   careerRoles: 'Project Manager',
-  japaneseLevel: 'N3',
+  japaneseLevel: 'Not certified',
+  total: '',
+  vocabulary: '',
+  reading: '',
+  listening: '',
   personality: 'Diligent',
-  selectedSuggestion: 'Studying for N3',
+  selectedSuggestion: '',
   photo: null,
 };
 
 export default function Page() {
   const [details, setDetails] = useState(defaultDetails);
-  const [jlptScores, setJlptScores] = useState({
-    total: '',
-    vocabulary: '',
-    reading: '',
-    listening: '',
-  });
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -99,15 +97,15 @@ export default function Page() {
               type: lines[3] || '',
             }));
           } else {
-            setError('Invalid career aspirations response format: Insufficient lines');
+            setError('Invalid career aspirations response format');
             console.error('Expected 4 lines, got:', lines);
           }
         } else {
-          setError('Failed to parse career aspirations response: FORM2 not found');
+          setError('Failed to parse career aspirations response');
           console.error('No FORM2 in response:', gptData.suggestions);
         }
       } else {
-        setError('Failed to generate career aspirations: No suggestions in response');
+        setError('No career aspirations suggestions');
         console.error('No suggestions in GPT response:', gptData);
       }
     } catch (err) {
@@ -143,15 +141,15 @@ export default function Page() {
               devTools: lines[1].replace('開発ツール: ', '') || '',
             }));
           } else {
-            setError('Invalid languages and tools response format: Insufficient lines');
+            setError('Invalid languages and tools response format');
             console.error('Expected 2 lines, got:', lines);
           }
         } else {
-          setError('Failed to parse languages and tools response: FORM2 not found');
+          setError('Failed to parse languages and tools response');
           console.error('No FORM2 in response:', gptData.suggestions);
         }
       } else {
-        setError('Failed to generate languages and tools: No suggestions in response');
+        setError('No languages and tools suggestions');
         console.error('No suggestions in GPT response:', gptData);
       }
     } catch (err) {
@@ -166,7 +164,7 @@ export default function Page() {
     setIsLoading(true);
     setError(null);
     try {
-      console.log('Sending id_number to /api/internship', details.id_number);
+      console.log('Sending id_number to /api/internship:', details.id_number);
       const res = await fetch('/api/internship', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -185,7 +183,7 @@ export default function Page() {
           leadership: leadership || prev.leadership,
         }));
       } else {
-        setError('Failed to generate internship experience: No suggestions in response');
+        setError('No internship experience suggestions');
         console.error('No suggestions in LLaMA response:', gptData);
       }
     } catch (err) {
@@ -250,7 +248,7 @@ export default function Page() {
 
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
-    console.log('Input change triggered:', { name, type, value, files: files?.length });
+    console.log('Input change:', { name, type, value, files: files?.length });
     if (type === 'file') {
       const file = files[0];
       if (file && file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) {
@@ -258,8 +256,6 @@ export default function Page() {
       } else {
         alert('Please upload a JPEG image under 5MB');
       }
-    } else if (name in jlptScores) {
-      setJlptScores((prev) => ({ ...prev, [name]: value }));
     } else {
       setDetails((prev) => ({ ...prev, [name]: value }));
     }
@@ -300,10 +296,9 @@ export default function Page() {
     setError(null);
     try {
       const formData = new FormData();
-      const resumeDetails = { ...details, photo: null };
-      formData.append('details', JSON.stringify(resumeDetails));
+      formData.append('details', JSON.stringify(details));
       if (details.photo) {
-        console.log('Appending photo to FormData:', details.photo.name, details.photo.size);
+        console.log('Appending photo:', details.photo.name, details.photo.size);
         formData.append('photo', details.photo);
       }
       formData.append('sessionId', sessionId);
@@ -312,8 +307,8 @@ export default function Page() {
         body: formData,
       });
       if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`HTTP ${response.status}: ${text}`);
+        const errorData = await response.json();
+        throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
       }
       const data = await response.json();
       console.log('Response from /api/generateResume:', data);
@@ -337,10 +332,9 @@ export default function Page() {
     setError(null);
     try {
       const formData = new FormData();
-      const resumeDetails = { ...details, photo: null };
-      formData.append('details', JSON.stringify(resumeDetails));
+      formData.append('details', JSON.stringify(details));
       if (details.photo) {
-        console.log('Appending photo to FormData for save:', details.photo.name, details.photo.size);
+        console.log('Appending photo for save:', details.photo.name, details.photo.size);
         formData.append('photo', details.photo);
       }
       if (tempPdfPath) {
@@ -352,8 +346,8 @@ export default function Page() {
         body: formData,
       });
       if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`HTTP ${response.status}: ${text}`);
+        const errorData = await response.json();
+        throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
       }
       const data = await response.json();
       alert(`Resume saved successfully! Access it here: ${data.resumeLink}`);
@@ -412,7 +406,7 @@ export default function Page() {
           handleArrayInputChange={handleArrayInputChange}
         />
         <JLPTExperience
-          jlptScores={jlptScores}
+          details={details}
           handleInputChange={handleInputChange}
           isLoading={isLoading}
           error={error}
@@ -434,7 +428,7 @@ export default function Page() {
           >
             {isLoading ? '保存中... / Saving...' : '履歴書を保存 / Save Resume'}
           </button>
-          {error && <p className="mt-2 text-red-600 text-sm">{error}</p>}
+          {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
         </div>
       </div>
       <ResumePreview

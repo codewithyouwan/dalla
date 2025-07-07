@@ -46,9 +46,9 @@ export default function Education({ education, handleArrayInputChange, addEducat
       ))}
       <button
         onClick={addEducation}
-        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 whitespace-pre-line"
       >
-        学歴を追加 / Add Education
+        {'学歴を追加 \n Add Education'}
       </button>
     </div>
   );
