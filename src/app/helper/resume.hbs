@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resume</title>
+  <style>
+    body { font-family: 'Noto Sans JP', sans-serif; margin: 20px; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #000; padding: 8px; text-align: center; }
+    th { background-color: #f0f0f0; }
+    .section-header { background-color: #d0e0ff; }
+    .photo { width: 100px; height: 120px; object-fit: cover; }
+  </style>
+</head>
+<body>
+  <table>
+    <tr>
+      <th colspan="2">社員番号</th>
+      <td colspan="2">{{employeeNumber}}</td>
+      <td rowspan="2">
+        {{#if photo}}
+          <img class="photo" src="{{photo}}" alt="Profile Photo">
+        {{else}}
+          <!-- Empty photo placeholder -->
+        {{/if}}
+      </td>
+    </tr>
+    <tr>
+      <th colspan="2">氏名</th>
+      <td colspan="2">{{name}}</td>
+    </tr>
+    <tr>
+      <th colspan="2">日本語レベル</th>
+      <td colspan="3">{{japaneseLevel}}</td>
+    </tr>
+    <tr>
+      <th colspan="2">性格</th>
+      <td colspan="3">{{personality}}</td>
+    </tr>
+    <tr>
+      <th rowspan="4">志向</th>
+      <th>開発分野</th>
+      <td colspan="3">{{devField}}</td>
+    </tr>
+    <tr>
+      <th>職種</th>
+      <td colspan="3">{{jobType}}</td>
+    </tr>
+    <tr>
+      <th>領域</th>
+      <td colspan="3">{{domain}}</td>
+    </tr>
+    <tr>
+      <th>タイプ</th>
+      <td colspan="3">{{type}}</td>
+    </tr>
+    <tr>
+      <th colspan="5" class="section-header">学歴</th>
+    </tr>
+    {{#each education}}
+    <tr>
+      <td>{{year}}</td>
+      <td colspan="3">{{institution}}</td>
+      <td>{{degree}}</td>
+    </tr>
+    {{/each}}
+    <tr>
+      <th colspan="5" class="section-header">言語/開発ツール</th>
+    </tr>
+    <tr>
+      <th colspan="2">言語</th>
+      <td colspan="3">{{languages}}</td>
+    </tr>
+    <tr>
+      <th colspan="2">開発ツール</th>
+      <td colspan="3">{{devTools}}</td>
+    </tr>
+    <tr>
+      <th colspan="5" class="section-header">プロジェクト（大学のコースの一部）</th>
+    </tr>
+    <tr>
+      <th colspan="2">担当した役割</th>
+      <td colspan="3">{{projectRole}}</td>
+    </tr>
+    <tr>
+      <th colspan="2">具体的な内容</th>
+      <td colspan="3">{{projectDescription}}</td>
+    </tr>
+    <tr>
+      <th colspan="2">直面した課題</th>
+      <td colspan="3">{{projectChallenges}}</td>
+    </tr>
+    <tr>
+      <th colspan="2">リーダー経験</th>
+      <td colspan="3">{{leadership}}</td>
+    </tr>
+  </table>
+</body>
+</html>
