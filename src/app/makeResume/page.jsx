@@ -194,6 +194,36 @@ export default function Page() {
     }
   };
 
+  const fetchEducation = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      console.log('Sending id_number to /api/fetchEducation:', details.id_number);
+      const res = await fetch('/api/fetchEducation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_number: details.id_number }),
+      });
+      if (!res.ok) throw new Error(`Education fetch error: ${res.statusText}`);
+      const data = await res.json();
+      console.log('Education response:', data);
+      if (data.education && Array.isArray(data.education)) {
+        setDetails((prev) => ({
+          ...prev,
+          education: data.education.length > 0 ? data.education : prev.education,
+        }));
+      } else {
+        setError('No education data found');
+        console.error('No education data in response:', data);
+      }
+    } catch (err) {
+      setError(`Education fetch error: ${err.message}`);
+      console.error('Education fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const encryptedId = searchParams.get('encrypted_id');
     if (encryptedId && !hasFetchedCareerData.current) {
@@ -378,6 +408,8 @@ export default function Page() {
           handleArrayInputChange={handleArrayInputChange}
           addEducation={addEducation}
           removeEducation={removeEducation}
+          fetchEducation={fetchEducation}
+          isLoading={isLoading}
         />
         <LanguagesAndTools 
           details={details} 

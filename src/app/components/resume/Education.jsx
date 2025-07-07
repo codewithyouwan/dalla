@@ -1,7 +1,16 @@
-export default function Education({ education, handleArrayInputChange, addEducation, removeEducation }) {
+export default function Education({ education, handleArrayInputChange, addEducation, removeEducation, fetchEducation, isLoading }) {
   return (
     <div className="mb-8">
+      <div className="flex items-center justify-between">
       <h2 className="text-xl text-black font-semibold mb-3">学歴 / Education</h2>
+      <button
+          onClick={fetchEducation}
+          disabled={isLoading}
+          className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 whitespace-pre-line ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {isLoading ? '取得中... \n Fetching...' : '学歴を取得 \n Fetch Education'}
+      </button>
+      </div>
       {education.map((edu, index) => (
         <div key={index} className="space-y-4 mb-4 border-b pb-4 relative">
           <div>
@@ -44,12 +53,14 @@ export default function Education({ education, handleArrayInputChange, addEducat
           )}
         </div>
       ))}
-      <button
-        onClick={addEducation}
-        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 whitespace-pre-line"
-      >
-        {'学歴を追加 \n Add Education'}
-      </button>
+      <div className="flex space-x-4">
+        <button
+          onClick={addEducation}
+          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 whitespace-pre-line"
+        >
+          {'学歴を追加 \n Add Education'}
+        </button>
+      </div>
     </div>
   );
 }

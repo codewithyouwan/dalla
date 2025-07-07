@@ -2,7 +2,7 @@
     This is a helper function for different types of prompts.
     In the whatFor array we have defined the types for which we have the prompts.
 */
-const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'internshipExperience', 'others'];
+const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'internshipExperience', 'education', 'others'];
 
 export default function Prompt(data, whatFor) {
   if (whatFor === whatForTypes[0]) {
@@ -212,6 +212,66 @@ export default function Prompt(data, whatFor) {
         - 専門性と成果を強調し、自然な日本語で記述。
         - 出力は===FORM1-START=== と ===FORM1-END=== の間に4行のみを含め、他のテキストやマーカーは一切含めない。
       `;
+    // #endregion
+    return prompt;
+  } else if (whatFor === whatForTypes[4]) {
+    const { education } = data;
+    // #region education
+    const prompt = `
+        ＜システム指示/System Instructions>
+        以下の学歴情報を元に、CVの「学歴」セクションに記載するための簡潔でビジネスに適した値を生成してください。
+        出力は指定されたフォーマットに**厳密に**従い、余計な説明や追加のテキストを含めず、指定されたマーカー内に日本語テキストのみを提供してください。
+        各項目は自然な日本語で、CVに適したプロフェッショナルな表現を使用してください。
+
+        ＜学歴情報/Education Information>
+        学歴: ${JSON.stringify(education) || 'なし'}
+
+        <プロンプト/Prompt>
+        以下の3つの項目について、適切な値を生成してください :
+        - 年/Year: 学歴の修了年または在籍期間（例: "2020" または "2018-2020"）。
+        - 機関/Institution: 学校名または機関名（例: "東京大学"）。
+        - 学位/Degree: 取得した学位または専攻（例: "学士（コンピュータサイエンス）"）。
+        3パターンの値セットを作成し、各パターンは複数の学歴エントリ（最大3つ）で構成してください。
+        各エントリは3つの値（年→機関→学位の順）で、改行で区切り、**日本語で簡潔かつ正確に**記載してください。
+        学歴情報が「なし」の場合は、一般的な例（大学、高校など）を想定して生成してください。
+
+        出力は以下のフォーマットに**厳密に**従ってください。各パターンの出力は、それぞれ次のようにマーカーで囲ってください：
+        - 詳細な記述（年、機関、学位すべて詳細）には ===FORM1-START=== と ===FORM1-END=== を使用してください。
+        - 中程度の記述（機関と学位を簡略化）には ===FORM2-START=== と ===FORM2-END=== を使用してください。
+        - 最も簡潔な記述（学位のみ簡略化）には ===FORM3-START=== と ===FORM3-END=== を使用してください。
+
+        【各パターの構成ルール】
+        - 各パターンは最大3つの学歴エントリ（年、機関、学位のセット）を記載してください。
+        - 各エントリは3行（年→機関→学位）で構成してください。
+        - 入力データをそのまま記載せず、適切に変換し、CVにふさわしいビジネス的な表現を使用してください。
+        - 学歴情報が「なし」の場合は、標準的な学歴（例: 大学、高校）を仮定して生成してください。
+
+        【出力形式の例】
+
+        ===FORM1-START===
+        年: 2020
+        機関: 東京大学
+        学位: 学士（コンピュータサイエンス）
+        年: 2018
+        機関: 私立高校
+        学位: 高校卒業
+        ===FORM1-END===
+
+        ===FORM2-START===
+        年: 2020
+        機関: 東京大学
+        学位: 学士
+        年: 2018
+        機関: 高校
+        学位: 卒業
+        ===FORM2-END===
+
+        ===FORM3-START===
+        年: 2020
+        機関: 大学
+        学位: 学士
+        ===FORM3-END===
+        `;
     // #endregion
     return prompt;
   } else {
