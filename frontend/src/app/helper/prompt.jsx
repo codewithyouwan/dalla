@@ -163,15 +163,17 @@ export default function Prompt(data, whatFor) {
   } else if (whatFor === whatForTypes[3]) {
     const { internship_1_title, internship_1_company, internship_1_period, internship_1_team_size, internship_1_technologies, internship_1_summary, internship_1_purpose, internship_1_role, internship_1_challenges, internship_1_outcome } = data;
     // #region internshipExperience
+    const isInternship = internship_1_company !== ''; // Detect if it's an internship based on company field
+    const experienceType = isInternship ? 'インターンシップ' : 'プロジェクト';
     const prompt = `
         ＜システム指示/System Instructions>
-        以下のインターンシップ情報を元に、CVの「プロジェクト/インターンシップ」セクションに記載するための簡潔でビジネスに適した値を生成してください。
+        以下の${experienceType}情報を元に、CVの「${experienceType}」セクションに記載するための簡潔でビジネスに適した値を生成してください。
         出力は指定されたフォーマットに**厳密に**従い、余計な説明や追加のテキストを含めず、指定されたマーカー内に4行の日本語テキストのみを提供してください。
         各項目は自然な日本語で、CVに適したプロフェッショナルな表現を使用してください。
 
-        ＜インターンシップ情報/Internship Information>
+        ＜${experienceType}情報/${isInternship ? 'Internship' : 'Project'} Information>
         タイトル/Title: ${internship_1_title || 'なし'}
-        会社/Company: ${internship_1_company || 'なし'}
+        ${isInternship ? '会社/Company' : 'プロジェクト名/Project Name'}: ${internship_1_company || 'なし'}
         期間/Period: ${internship_1_period || 'なし'}
         チームサイズ/Team Size: ${internship_1_team_size || '不明'}
         使用技術/Technologies: ${internship_1_technologies || 'なし'}
@@ -183,8 +185,8 @@ export default function Prompt(data, whatFor) {
 
         <プロンプト/Prompt>
         以下の4つの項目について、適切な値を生成してください :
-        - 担当した役割/Role: インターンシップでの役割（${internship_1_role}）を簡潔に記述。
-        - 具体的な内容/Description: インターンシップの概要（${internship_1_summary}）、目的（${internship_1_purpose}）、使用技術（${internship_1_technologies}）、チームサイズ（${internship_1_team_size}）を統合し、詳細な説明を生成。
+        - 担当した役割/Role: ${experienceType}での役割（${internship_1_role}）を簡潔に記述。
+        - 具体的な内容/Description: ${experienceType}の概要（${internship_1_summary}）、目的（${internship_1_purpose}）、使用技術（${internship_1_technologies}）、チームサイズ（${internship_1_team_size}）を統合し、詳細な説明を生成。
         - 直面した課題/Challenges: 課題（${internship_1_challenges}）を簡潔かつ具体的に記述。
         - リーダー経験/Leadership Experience: 成果（${internship_1_outcome}）からリーダーシップに関連する内容を抽出し、簡潔に記述。リーダーシップが明示されていない場合は、チームでの貢献を強調。
 

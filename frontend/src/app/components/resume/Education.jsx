@@ -1,8 +1,8 @@
 export default function Education({ education, handleArrayInputChange, addEducation, removeEducation, fetchEducation, isLoading }) {
   return (
     <div className="mb-8">
-      <div className="flex items-center justify-between">
-      <h2 className="text-xl text-black font-semibold mb-3">学歴 / Education</h2>
+      <div className="flex items-center justify-between whitespace-pre-line">
+      <h2 className="text-xl text-black font-semibold mb-3">{"学歴 \n Education"}</h2>
       <button
           onClick={fetchEducation}
           disabled={isLoading}

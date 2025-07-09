@@ -1,7 +1,7 @@
 export default function JapaneseCompanies({ details, handleInputChange }) {
   return (
-    <div className="mb-8">
-      <h2 className="text-xl text-black font-semibold mb-3">日本企業について / Japanese Companies</h2>
+    <div className="mb-8 whitespace-pre-line">
+      <h2 className="text-xl text-black font-semibold mb-3">{"日本企業について \n Japanese Companies"}</h2>
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">一番興味がある点 / Most Interesting Aspect</label>

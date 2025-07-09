@@ -1,7 +1,7 @@
 export default function ProductDevelopment({ details, handleInputChange }) {
   return (
-    <div className="mb-8">
-      <h2 className="text-xl text-black font-semibold mb-3">製品開発について / Product Development</h2>
+    <div className="mb-8 whitespace-pre-line">
+      <h2 className="text-xl text-black font-semibold mb-3">{"製品開発について \n Product Development"}</h2>
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">興味を持つ理由 / Reason for Interest</label>

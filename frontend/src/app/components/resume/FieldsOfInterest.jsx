@@ -1,7 +1,7 @@
 export default function FieldsOfInterest({ interestFields, interestDetails, handleInputChange, handleArrayInputChange }) {
   return (
-    <div className="mb-8">
-      <h2 className="text-xl text-black font-semibold mb-3">興味ある分野 / Fields of Interest</h2>
+    <div className="mb-8 whitespace-pre-line">
+      <h2 className="text-xl text-black font-semibold mb-3">{"興味ある分野 \n Fields of Interest"}</h2>
       <div className="space-y-4">
         {interestFields.map((field, index) => (
           <div key={index}>

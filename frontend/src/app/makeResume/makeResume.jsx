@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
@@ -18,7 +20,7 @@ import Loader from '../components/Loader';
 
 const defaultDetails = {
   id_number: '',
-  employeeNumber: '',
+  employeeNumber: '', // Initialize as empty string for user input
   name: 'Test User',
   devField: '',
   jobType: '',
@@ -47,6 +49,7 @@ const defaultDetails = {
   personality: 'Diligent',
   selectedSuggestion: '',
   photo: null,
+  isInternship: true,
 };
 
 export default function MakeResume() {
@@ -168,30 +171,32 @@ export default function MakeResume() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_number: details.id_number }),
       });
-      if (!res.ok) throw new Error(`Internship experience API error: ${res.statusText}`);
+      if (!res.ok) throw new Error(`Experience API error: ${res.statusText}`);
       const gptData = await res.json();
-      console.log('Internship experience response:', gptData);
+      console.log('Experience response:', gptData);
       if (gptData.suggestions) {
-        const { projectRole, projectDescription, projectChallenges, leadership } = gptData.suggestions;
+        const { projectRole, projectDescription, projectChallenges, leadership, isInternship } = gptData.suggestions;
         setDetails((prev) => ({
           ...prev,
           projectRole: projectRole || prev.projectRole,
           projectDescription: projectDescription || prev.projectDescription,
           projectChallenges: projectChallenges || prev.projectChallenges,
           leadership: leadership || prev.leadership,
+          isInternship: isInternship,
         }));
       } else {
-        setError('No internship experience suggestions');
+        setError('No experience suggestions');
         console.error('No suggestions in LLaMA response:', gptData);
       }
     } catch (err) {
-      setError(`Internship experience fetch error: ${err.message}`);
-      console.error('Internship experience fetch error:', err);
+      setError(`Experience fetch error: ${err.message}`);
+      console.error('Experience fetch error:', err);
     } finally {
       setIsLoading(false);
     }
   };
-    const handlefetchEducation = async () => {
+
+  const handlefetchEducation = async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -220,6 +225,7 @@ export default function MakeResume() {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
     const encryptedId = searchParams.get('encrypted_id');
     if (encryptedId && !hasFetchedCareerData.current) {
@@ -242,8 +248,7 @@ export default function MakeResume() {
                 setDetails((prev) => ({
                   ...prev,
                   id_number: idNumber,
-                  employeeNumber: idNumber,
-                  name: data.name,
+                  name: data.name, // Only set id_number and name, not employeeNumber
                 }));
               } else {
                 setError('Employee name not found');
@@ -283,6 +288,11 @@ export default function MakeResume() {
         alert('Please upload a JPEG image under 5MB');
       }
     } else {
+      // Ensure employeeNumber is treated as a number (or empty string)
+      if (name === 'employeeNumber' && value !== '' && !/^\d+$/.test(value)) {
+        alert('Employee Number must be a number');
+        return;
+      }
       setDetails((prev) => ({ ...prev, [name]: value }));
     }
   };
@@ -375,7 +385,7 @@ export default function MakeResume() {
         const errorData = await response.json();
         throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
       }
-      const data = await response.json();
+      const data = await res.json();
       alert(`Resume saved successfully! Access it here: ${data.resumeLink}`);
       setPreviewLink(data.resumeLink.replace('/view', '/preview').split('/temp/')[1]);
       setTempPdfPath(null);

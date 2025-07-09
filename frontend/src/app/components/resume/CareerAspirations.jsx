@@ -1,8 +1,8 @@
 export default function CareerAspirations({ details, handleInputChange, fetchCareerAspirations, isLoading }) {
   return (
     <div className="mb-8">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl text-black font-semibold mb-3">志向 / Career Aspirations</h2>
+      <div className="flex justify-between items-center whitespace-pre-line">
+        <h2 className="text-xl text-black font-semibold mb-3">{"志向 \n Career Aspirations"}</h2>
         <button
           onClick={fetchCareerAspirations}
           disabled={isLoading}

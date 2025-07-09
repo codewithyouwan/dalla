@@ -1,7 +1,7 @@
 export default function CareerDevelopment({ careerPriorities, details, handleInputChange, handleArrayInputChange }) {
   return (
-    <div className="mb-8">
-      <h2 className="text-xl text-black font-semibold mb-3">キャリアアップについて / Career Development</h2>
+    <div className="mb-8 whitespace-pre-line">
+      <h2 className="text-xl text-black font-semibold mb-3">{"キャリアアップについて \n Career Development"}</h2>
       <div className="space-y-4">
         {careerPriorities.map((priority, index) => (
           <div key={index}>

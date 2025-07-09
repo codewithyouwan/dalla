@@ -1,8 +1,8 @@
 export default function LanguagesAndTools({ details, handleInputChange, fetchLanguagesAndTools, isLoading }) {
   return (
     <div className="mb-8">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl text-black font-semibold mb-3">言語/開発ツール / Languages & Tools</h2>
+      <div className="flex justify-between items-center whitespace-pre-line">
+        <h2 className="text-xl text-black font-semibold mb-3">{"言語/開発ツール \n Languages & Tools"}</h2>
         <button
           onClick={fetchLanguagesAndTools}
           disabled={isLoading}

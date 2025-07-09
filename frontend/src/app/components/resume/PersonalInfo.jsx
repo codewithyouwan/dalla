@@ -81,11 +81,11 @@ export default function PersonalInfo({ details, handleInputChange }) {
   };
 
   return (
-    <div className="mb-8">
-      <h2 className="text-xl text-black font-semibold mb-3">個人情報 / Personal Information</h2>
+    <div className="mb-8 whitespace-pre-line">
+      <h2 className="text-xl text-black font-semibold mb-3">{"個人情報 \n Personal Information"}</h2>
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">社員番号 / Employee Number</label>
+          <label className="block text-sm font-medium text-gray-700">社員番号 \n Employee Number</label>
           <input
             type="text"
             name="employeeNumber"
