@@ -1,4 +1,3 @@
-
 export default function Education({ education, handleArrayInputChange, addEducation, removeEducation, fetchEducation, isLoading }) {
   return (
     <div className="mb-8">
