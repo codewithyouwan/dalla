@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>履歴書</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      margin: 20px;
+      font-size: 13px; /* Adjusted font size to match the image's appearance */
+      color: #333;
+    }
+    .header-note {
+      text-align: right;
+      font-size: 11px;
+      margin-bottom: 5px;
+      padding-right: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed; /* Ensures column widths are respected */
+      border-radius: 8px; /* Rounded corners for the whole table */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+      overflow: hidden; /* Important for border-radius to show with border-collapse */
+    }
+    /* Define column widths based on visual inspection of the image */
+    colgroup col.col1 { width: 15%; } /* For main categories like '志向', '日本語レベル' (parent th) */
+    colgroup col.col2 { width: 15%; } /* For sub-categories like '開発分野', 'タイトル', '興味を持つ理由' (sub-th) */
+    colgroup col.col3 { width: 23.33%; } /* For data columns */
+    colgroup col.col4 { width: 23.33%; } /* For data columns */
+    colgroup col.col5 { width: 23.33%; } /* For data columns, including photo */
+
+    th, td {
+      border: 1px solid #ddd; /* Softer border color */
+      padding: 8px; /* Increased padding for better spacing */
+      vertical-align: middle; /* Align text vertically in the middle */
+      text-align: center; /* Default text alignment */
+    }
+    th {
+      background-color: #e8e8e8; /* Lighter grey for regular table headers (e.g., No., 氏名) */
+      font-weight: normal; /* Thinner font for headers as in the image */
+    }
+    /* Specific header colors from the provided figures */
+    .section-header {
+      background-color: #d0e0ff; /* Blue background for "学歴", "言語/開発ツール" */
+      font-weight: bold;
+    }
+    .header-light-green {
+      background-color: #e6ffe6; /* Light green for "インターンシップ" header */
+      font-weight: bold;
+    }
+    .header-blue {
+      background-color: #cfe2f3; /* Light blue for "製品開発について" and "興味ある分野" */
+      font-weight: bold;
+    }
+    .header-pink {
+      background-color: #ffcccc; /* Pink/Reddish for "日本企業について" */
+      font-weight: bold;
+    }
+    .header-purple {
+      background-color: #e0ccee; /* Light purple for "キャリアアップについて" */
+      font-weight: bold;
+    }
+    /* White background for specific th cells within the internship section */
+    .th-white {
+      background-color: #fff; /* Explicitly white for these headers */
+    }
+    /* Photo container or actual image */
+    .photo {
+      max-width: 100px; /* Max width for the photo */
+      height: 120px; /* Fixed height for the photo */
+      object-fit: cover; /* Cover the area, cropping if necessary */
+      display: block; /* Remove extra space below image */
+      margin: 0 auto; /* Center the image within its cell */
+      border: 1px solid #ddd; /* Give photo a border like the placeholder */
+      border-radius: 4px; /* Slight rounded corners for the photo itself */
+    }
+    /* Style for the photo placeholder if no image is present */
+    .photo-placeholder {
+      width: 100px;
+      height: 120px;
+      border: 1px solid #ddd; /* Match new table border color */
+      table-layout: fixed;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    colgroup col.col1 { width: 15%; }
+    colgroup col.col2 { width: 15%; }
+    colgroup col.col3 { width: 23.33%; }
+    colgroup col.col4 { width: 23.33%; }
+    colgroup col.col5 { width: 23.33%; }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      vertical-align: middle;
+      text-align: center;
+    }
+    th {
+      background-color: #e8e8e8;
+      font-weight: normal;
+    }
+    .section-header {
+      background-color: #d0e0ff;
+      font-weight: bold;
+    }
+    .header-light-green {
+      background-color: #e6ffe6;
+      font-weight: bold;
+    }
+    .header-blue {
+      background-color: #cfe2f3;
+      font-weight: bold;
+    }
+    .header-pink {
+      background-color: #ffcccc;
+      font-weight: bold;
+    }
+    .header-purple {
+      background-color: #e0ccee;
+      font-weight: bold;
+    }
+    .th-white {
+      background-color: #fff;
+    }
+    .photo {
+      max-width: 100px;
+      height: 120px;
+      object-fit: cover;
+      display: block;
+      margin: 0 auto;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .photo-placeholder {
+      width: 100px;
+      height: 120px;
+      border: 1px solid #ddd;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #999;
+    }
+
+    .text-left {
+      text-align: left; /* Align text to the left for content cells */
+    }
+    .indent {
+      padding-left: 20px; /* Indentation for bullet points */
+    }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 10px;
+      font-size: 12px;
+      padding: 0 10px;
+    }
+    .footer span:nth-child(2) {
+      flex-grow: 1; /* Pushes the last span to the right */
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-note">
+    *個人情報に付きお取り扱いご注意願います。
+  </div>
+  <table>
+    <colgroup>
+      <col class="col1">
+      <col class="col2">
+      <col class="col3">
+      <col class="col4">
+      <col class="col5">
+    </colgroup>
+    
+    <tr>
+      <th colspan="2">No.</th>
+      <td colspan="2">2407048</td>
+      <td rowspan="2">
+        <img class="photo" src="https://via.placeholder.com/100x120?text=Your+Photo" alt="Profile Photo">
+    <tr>
+      <th colspan="2">No.</th>
+      <td colspan="2">{{id_number}}</td>
+      <td rowspan="2">
+        {{#if photo}}
+          <img class="photo" src="{{photo}}" alt="Profile Photo">
+        {{else}}
+          <div class="photo-placeholder">Your Photo</div>
+        {{/if}}
+      </td>
+    </tr>
+    <tr>
+      <th colspan="2">氏名</th>
+      <td colspan="2" class="text-left">{{name}}</td>
+    </tr>
+    <tr>
+      <th rowspan="4">志向</th>
+      <th>開発分野</th>
+      <td colspan="3" class="text-left">{{devField}}</td>
+    </tr>
+    <tr>
+      <th>職種</th>
+      <td colspan="3" class="text-left">{{jobType}}</td>
+    </tr>
+    <tr>
+      <th>領域</th>
+      <td colspan="3" class="text-left">{{domain}}</td>
+    </tr>
+    <tr>
+      <th>タイプ</th>
+      <td colspan="3" class="text-left">{{type}}</td>
+    </tr>
+    <tr>
+      <th colspan="5" class="section-header">学歴</th>
+    </tr>
+    {{#each education}}
+    <tr>
+      <td>{{year}}</td>
+      <td colspan="3" class="text-left">{{institution}}</td>
+      <td class="text-left">{{degree}}</td>
+    </tr>
+    {{/each}}
+
+    <tr>
+      <th colspan="5" class="section-header">言語/開発ツール</th>
+    </tr>
+    <tr>
+      <th colspan="2">言語</th>
+      <td colspan="3" class="text-left">{{languages}}</td>
+    </tr>
+    <tr>
+      <th colspan="2">開発ツール</th>
+      <td colspan="3" class="text-left">{{devTools}}</td>
+    </tr>
+    <tr>
+      <th colspan="5" class="header-light-green">インターンシップ</th>
+    </tr>
+    <tr>
+      <td colspan="5" class="text-left">{{projectDescription}}</td>
+    </tr>
+    <tr>
+      <th colspan="2" class="text-left th-white">タイトル：</th>
+      <td colspan="3" class="text-left">{{projectRole}}</td>
+    </tr>
+    <tr>
+      <th colspan="2" class="text-left th-white">概要：</th>
+      <td colspan="3" class="text-left">{{projectDescription}}</td>
+    </tr>
+    <tr>
+      <th colspan="2" class="text-left th-white">エンドユーザー：</th>
+      <td colspan="3" class="text-left">アプリを使用する一般ユーザー</td>
+    </tr>
+    <tr>
+      <th colspan="2" class="text-left th-white">内容：</th>
+      <td colspan="3" class="text-left">{{projectDescription}}</td>
+    </tr>
+    <tr>
+      <th colspan="2" class="text-left th-white">具体的な内容１</th>
+      <td colspan="3" class="text-left">
+        <b>果たした役割（3人体制）：</b><br>
+        <span class="indent">{{projectRole}}</span><br>
+        <span class="indent">ディープラーニングモデルの設計・訓練</span><br>
+        <span class="indent">データの収集と前処理</span><br>
+        <span class="indent">モデルの評価と改善</span>
+      </td>
+    </tr>
+    <tr>
+      <th colspan="2" class="text-left th-white">課題：</th>
+      <td colspan="3" class="text-left">
+        <span class="indent">{{projectChallenges}}</span><br>
+        <span class="indent">-> マネージャーからの継続的な指導を受けつつ、自主学習を行った</span><br>
+        <span class="indent">-> モデルに供給するためのデータを適切にクリーニングする必要があった</span><br>
+        <span class="indent">-> 少量のデータセットを手動でチェックし、アルゴリズムを適用して検証した</span>
+      </td>
+    </tr>
+    <tr>
+      <th colspan="2" class="text-left th-white">得られた成果</th>
+      <td colspan="3" class="text-left">{{leadership}}</td>
+    </tr>
+    <tr>
+      <th colspan="2" class="text-left th-white">直面した課題</th>
+      <td colspan="3" class="text-left">{{projectChallenges}}</td>
+    </tr>
+    <tr>
+      <th colspan="2" class="text-left th-white">リーダー経験</th>
+      <td colspan="3" class="text-left">{{leadership}}</td>
+    </tr>
+    <tr>
+      <th colspan="5" class="header-blue">製品開発について</th>
+    </tr>
+    <tr>
+      <th colspan="2">興味を持つ理由</th>
+      <td colspan="3" class="text-left">{{productDevReason}}</td>
+    </tr>
+    <tr>
+      <th colspan="2">果たしたい役割</th>
+    </tr>
+    <tr>
+      <th colspan="5" class="header-blue">興味ある分野（左から1番→3番）</th>
+    </tr>
+    <tr>
+      <td colspan="2">{{#if interestFields.[0]}}{{interestFields.[0]}}{{else}}未指定{{/if}}</td>
+      <td colspan="2">{{#if interestFields.[1]}}{{interestFields.[1]}}{{else}}未指定{{/if}}</td>
+      <td colspan="1">{{#if interestFields.[2]}}{{interestFields.[2]}}{{else}}未指定{{/if}}</td>
+
+    </tr>
+    <tr>
+      <th colspan="5" class="header-pink">日本企業について</th>
+    </tr>
+    <tr>
+      <th colspan="2">一番興味がある点</th>
+      <td colspan="3" class="text-left">{{japanCompanyInterest}}</td>
+    </tr>
+    <tr>
+      <th colspan="2">習得したいこと</th>
+      <td colspan="3" class="text-left">{{japanCompanySkills}}</td>
+    </tr>
+    <tr>
+      <th colspan="5" class="header-purple">キャリアアップについて</th>
+    </tr>
+    <tr>
+      <th colspan="2">3大優先要素</th>
+
+      <td colspan="3" class="text-left">
+        {{#each careerPriorities}}
+          {{this}}{{#unless @last}}、{{/unless}}
+        {{/each}}
+      </td>
+    </tr>
+    <tr>
+      <th colspan="2">興味ある役割</th>
+      <td colspan="3" class="text-left">{{careerRoles}}</td>
+    </tr>
+    <tr>
+      <th colspan="2">日本語レベル</th>
+      <td colspan="3" class="text-left">{{selectedSuggestion}}</td>
+    </tr>
+    <tr>
+      <th colspan="2">性格</th>
+      <td colspan="3" class="text-left">{{personality}}</td>
+    </tr>
+  </table>
+  <div class="footer">
+    <span>{{id_number}}</span>
+    <span>モラブ阪神工業株式会社</span>
+    <span>1/2</span>
+  </div>
+</body>
+</html>
