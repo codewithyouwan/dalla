@@ -1,0 +1,48 @@
+networks:
+  dalla-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - dalla-network
+    environment:
+      - NODE_ENV=production
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5175:5175"
+    networks:
+      - dalla-network
+
+  ollama:
+    build:
+      context: ./apps/ollama
+      dockerfile: Dockerfile
+    ports:
+      - "11434:11434"
+    networks:
+      - dalla-network
+
+  redis:
+    build:
+      context: ./redis
+      dockerfile: Dockerfile
+    ports:
+      - "6379:6379"
+    networks:
+      - dalla-network
+    volumes:
+      - redis-data:/data
