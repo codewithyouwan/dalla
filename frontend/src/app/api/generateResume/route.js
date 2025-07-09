@@ -94,6 +94,7 @@ export async function POST(req) {
     console.log('Generated HTML:', htmlContent);
 
     const browser = await puppeteer.launch({
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
