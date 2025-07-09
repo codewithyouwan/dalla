@@ -29,7 +29,7 @@ services:
 
   ollama:
     build:
-      context: ./apps/ollama
+      context: ./ollama
       dockerfile: Dockerfile
     ports:
       - "11434:11434"
