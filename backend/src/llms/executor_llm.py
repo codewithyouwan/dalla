@@ -13,5 +13,5 @@ tools_dict = {tool.name: tool for tool in tools}
 executor_llm = ChatOllama(
     model = executor_llm_name,
     temperature=0,
-    base_url="http://host.docker.internal:11434"
+    base_url="http://ollama:11434"
 ).bind_tools(tools, tool_choice="any")
