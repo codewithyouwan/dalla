@@ -265,36 +265,42 @@ export default function MakeResume() {
   };
 
   const fetchCareerDevelopment = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      console.log('Sending id_number to /api/careerDevelopment:', details.id_number);
-      const res = await fetch('/api/careerDevelopment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_number: details.id_number }),
-      });
-      if (!res.ok) throw new Error(`Career development API error: ${res.statusText}`);
-      const gptData = await res.json();
-      console.log('Career development response:', gptData);
-      if (gptData.suggestions) {
-        const { careerPriority1, careerPriority2, careerPriority3, careerRoles } = gptData.suggestions;
-        setDetails((prev) => ({
-          ...prev,
-          careerPriorities: [careerPriority1, careerPriority2, careerPriority3],
-          careerRoles: careerRoles || prev.careerRoles,
-        }));
-      } else {
-        setError('No career development suggestions');
-        console.error('No suggestions in LLaMA response:', gptData);
+  setIsLoading(true);
+  setError(null);
+  try {
+    console.log('Sending id_number to /api/careerDevelopment:', details.id_number);
+    const res = await fetch('/api/careerDevelopment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_number: details.id_number }),
+    });
+    if (!res.ok) throw new Error(`Career development API error: ${res.statusText}`);
+    const gptData = await res.json();
+    console.log('Career development response:', gptData);
+    if (gptData.suggestions && gptData.suggestions.careerPriority1) {
+      const { careerPriority1, careerPriority2, careerPriority3, careerRoles } = gptData.suggestions;
+      const newPriorities = [careerPriority1, careerPriority2, careerPriority3].filter(p => p && p.trim());
+      if (newPriorities.length < 3) {
+        console.warn('Incomplete career priorities:', newPriorities);
+        setError('Incomplete career priorities received');
+        return;
       }
-    } catch (err) {
-      setError(`Career development fetch error: ${err.message}`);
-      console.error('Career development fetch error:', err);
-    } finally {
-      setIsLoading(false);
+      setDetails((prev) => ({
+        ...prev,
+        careerPriorities: newPriorities,
+        careerRoles: careerRoles || prev.careerRoles,
+      }));
+    } else {
+      setError('No valid career development suggestions');
+      console.error('Invalid suggestions:', gptData);
     }
-  };
+  } catch (err) {
+    setError(`Career development fetch error: ${err.message}`);
+    console.error('Career development fetch error:', err);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   useEffect(() => {
     const encryptedId = searchParams.get('encrypted_id');
@@ -396,41 +402,46 @@ export default function MakeResume() {
     }));
   };
 
-  const compileResume = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const formData = new FormData();
-      formData.append('details', JSON.stringify(details));
-      if (details.photo) {
-        console.log('Appending photo:', details.photo.name, details.photo.size);
-        formData.append('photo', details.photo);
-      }
-      formData.append('sessionId', sessionId);
-      const response = await fetch('/api/generateResume', {
-        method: 'POST',
-        body: formData,
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
-      }
-      const data = await response.json();
-      console.log('Response from /api/generateResume:', data);
-      if (!data.previewUrl || !data.previewUrl.startsWith('resume-') || !data.previewUrl.endsWith('.pdf')) {
-        throw new Error(`Invalid preview URL: ${data.previewUrl}`);
-      }
-      setPreviewLink(data.previewUrl);
-      setTempPdfPath(data.tempPdfPath);
-      setSessionId(data.sessionId);
-    } catch (err) {
-      setError(`Failed to generate preview: ${err.message}`);
-      console.error('Generate resume error:', err);
-      setPreviewLink(null);
-    } finally {
-      setIsLoading(false);
+ const compileResume = async () => {
+  setIsLoading(true);
+  setError(null);
+  try {
+    if (!Array.isArray(details.careerPriorities) || details.careerPriorities.length === 0) {
+      console.warn('careerPriorities is invalid:', details.careerPriorities);
+      setError('Career priorities are missing or invalid');
+      return;
     }
-  };
+    const formData = new FormData();
+    formData.append('details', JSON.stringify(details));
+    if (details.photo) {
+      console.log('Appending photo:', details.photo.name, details.photo.size);
+      formData.append('photo', details.photo);
+    }
+    formData.append('sessionId', sessionId);
+    const response = await fetch('/api/generateResume', {
+      method: 'POST',
+      body: formData,
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
+    }
+    const data = await response.json();
+    console.log('Response from /api/generateResume:', data);
+    if (!data.previewUrl || !data.previewUrl.startsWith('resume-') || !data.previewUrl.endsWith('.pdf')) {
+      throw new Error(`Invalid preview URL: ${data.previewUrl}`);
+    }
+    setPreviewLink(data.previewUrl);
+    setTempPdfPath(data.tempPdfPath);
+    setSessionId(data.sessionId);
+  } catch (err) {
+    setError(`Failed to generate preview: ${err.message}`);
+    console.error('Generate resume error:', err);
+    setPreviewLink(null);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const saveResume = async () => {
     setIsLoading(true);

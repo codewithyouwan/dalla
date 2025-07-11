@@ -43,28 +43,33 @@ export async function POST(req) {
     }
 
     const escapedDetails = {
-      employeeNumber: escapeHtml(details.employeeNumber),
-      name: escapeHtml(details.name),
-      japaneseLevel: escapeHtml(details.japaneseLevel || details.selectedSuggestion),
-      personality: escapeHtml(details.personality),
-      devField: escapeHtml(details.devField || '未入力'),
-      jobType: escapeHtml(details.jobType || '未入力'),
-      domain: escapeHtml(details.domain || '未入力'),
-      type: escapeHtml(details.type || '未入力'),
-      languages: escapeHtml(details.languages),
-      devTools: escapeHtml(details.devTools),
-      projectRole: escapeHtml(details.projectRole),
-      projectDescription: escapeHtml(details.projectDescription),
-      projectChallenges: escapeHtml(details.projectChallenges),
-      leadership: escapeHtml(details.leadership),
-      education: Array.isArray(details.education)
-        ? details.education.slice(0, 4).map((edu) => ({
-            year: escapeHtml(edu.year || '未入力'),
-            institution: escapeHtml(edu.institution || '未入力'),
-            degree: escapeHtml(edu.degree || '未入力'),
-          }))
-        : [{ year: '未入力', institution: '未入力', degree: '未入力' }],
-    };
+  ...details,
+  employeeNumber: escapeHtml(details.employeeNumber),
+  name: escapeHtml(details.name),
+  japaneseLevel: escapeHtml(details.japaneseLevel || details.selectedSuggestion),
+  personality: escapeHtml(details.personality),
+  devField: escapeHtml(details.devField || '未入力'),
+  jobType: escapeHtml(details.jobType || '未入力'),
+  domain: escapeHtml(details.domain || '未入力'),
+  type: escapeHtml(details.type || '未入力'),
+  languages: escapeHtml(details.languages),
+  devTools: escapeHtml(details.devTools),
+  projectRole: escapeHtml(details.projectRole),
+  projectDescription: escapeHtml(details.projectDescription),
+  projectChallenges: escapeHtml(details.projectChallenges),
+  leadership: escapeHtml(details.leadership),
+  careerPriorities: Array.isArray(details.careerPriorities)
+    ? details.careerPriorities.map(p => escapeHtml(p || '未入力'))
+    : ['未入力', '未入力', '未入力'],
+  careerRoles: escapeHtml(details.careerRoles || '未入力'),
+  education: Array.isArray(details.education)
+    ? details.education.slice(0, 4).map((edu) => ({
+        year: escapeHtml(edu.year || '未入力'),
+        institution: escapeHtml(edu.institution || '未入力'),
+        degree: escapeHtml(edu.degree || '未入力'),
+      }))
+    : [{ year: '未入力', institution: '未入力', degree: '未入力' }],
+};
 
     const tempDir = path.join(process.cwd(), 'temp');
     await fs.mkdir(tempDir, { recursive: true });

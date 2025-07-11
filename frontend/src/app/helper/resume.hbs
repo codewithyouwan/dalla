@@ -249,7 +249,7 @@
       <th colspan="5" class="header-pink">日本企業について</th>
     </tr>
     <tr>
-      <th colspan="2">一番興味がある点</th>
+      <th colspan="2">番興味がある点</th>
       <td colspan="3" class="text-left">{{japanCompanyInterest}}</td>
     </tr>
     <tr>
@@ -262,9 +262,13 @@
     <tr>
       <th colspan="2">3大優先要素</th>
       <td colspan="3" class="text-left">
-        {{#each careerPriorities}}
-          {{this}}{{#unless @last}}、{{/unless}}
-        {{/each}}
+        {{#if careerPriorities.length}}
+          {{#each careerPriorities}}
+            {{this}}{{#unless @last}}、{{/unless}}
+          {{/each}}
+        {{else}}
+          未入力
+        {{/if}}
       </td>
     </tr>
     <tr>
