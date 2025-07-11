@@ -2,7 +2,7 @@
     This is a helper function for different types of prompts.
     In the whatFor array we have defined the types for which we have the prompts.
 */
-const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'internshipExperience', 'japaneseCompanies'];
+const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'internshipExperience', 'japaneseCompanies','careerDevelopment'];
 
 export default function Prompt(data, whatFor) {
   if (whatFor === whatForTypes[0]) {
@@ -249,7 +249,60 @@ export default function Prompt(data, whatFor) {
       `;
     // #endregion
     return prompt;
-  } else {
+  }else if(whatFor === whatForTypes[5]){
+    const { job_role_priority_1, job_role_priority_2, job_role_priority_3, future_career_goals, work_values, jobs_to_try_in_japan } = data;
+    // #region careerDevelopment
+    const prompt = `
+        ＜システム指示/System Instructions>
+        以下のキャリア情報を元に、CVの「キャリアアップについて」セクションに記載するための簡潔でビジネスに適した値を生成してください。
+        出力は指定されたフォーマットに**厳密に**従い、余計な説明や追加のテキストを含めず、指定されたマーカー内に4行の日本語テキストのみを提供してください。
+        各項目は自然な日本語で、CVに適したプロフェッショナルな表現を使用してください。
+
+        ＜キャリア情報/Career Information>
+        優先職種1/Job Role Priority 1: ${job_role_priority_1 || 'なし'}
+        優先職種2/Job Role Priority 2: ${job_role_priority_2 || 'なし'}
+        優先職種3/Job Role Priority 3: ${job_role_priority_3 || 'なし'}
+        将来のキャリア目標/Future Career Goals: ${future_career_goals.join(', ') || 'なし'}
+        ワークバリュー/Work Values: ${work_values.join(', ') || 'なし'}
+        日本で試したい職種/Jobs to Try in Japan: ${jobs_to_try_in_japan || 'なし'}
+
+        <プロンプト/Prompt>
+        以下の4つの項目について、適切な値を生成してください :
+        - 優先要素1/Priority 1: 優先職種（${job_role_priority_1}）と将来のキャリア目標（${future_career_goals}）、ワークバリュー（${work_values}）を統合し、簡潔な文として記述。
+        - 優先要素2/Priority 2: 優先職種（${job_role_priority_2}）と将来のキャリア目標、ワークバリューを統合し、簡潔な文として記述。
+        - 優先要素3/Priority 3: 優先職種（${job_role_priority_3}）と将来のキャリア目標、ワークバリューを統合し、簡潔な文として記述。
+        - 興味ある役割/Desired Roles: 日本で試したい職種（${jobs_to_try_in_japan}）を元に、1単語または短いフレーズ（最大3語）で記述。
+
+        【出力フォーマット】
+        出力は以下のフォーマットに**厳密に**従ってください。余計なテキストや説明を一切含めず、===FORM1-START=== と ===FORM1-END=== の間に4行のみを記載してください。各行は指定されたラベルで始まり、内容は日本語で簡潔かつプロフェッショナルに記述してください。
+
+        ===FORM1-START===
+        優先要素1: [優先職種1とキャリア目標・ワークバリューを統合した文]
+        優先要素2: [優先職種2とキャリア目標・ワークバリューを統合した文]
+        優先要素3: [優先職種3とキャリア目標・ワークバリューを統合した文]
+        興味ある役割: [日本で試したい職種を元にした1単語または短いフレーズ]
+        ===FORM1-END===
+
+        【出力例】
+        ===FORM1-START===
+        優先要素1: 技術革新を通じて社会に貢献
+        優先要素2: チームをリードして成果を達成
+        優先要素3: ワークライフバランスを重視
+        興味ある役割: プロジェクトマネージャー
+        ===FORM1-END===
+
+        【構成ルール】
+        - 4つの項目をそれぞれ1行ずつ、**日本語で簡潔かつ正確に**記載。
+        - 優先要素1-3は簡潔な文（10-15語程度）で、職種、キャリア目標、ワークバリューを自然に統合。
+        - 興味ある役割は1単語または短いフレーズ（最大3語）で記述。
+        - 入力データをそのまま記載せず、適切に変換し、CVにふさわしいビジネス的な表現を使用。
+        - 専門性と意欲を強調し、自然な日本語で記述。
+        - 出力は===FORM1-START=== と ===FORM1-END=== の間に4行のみを含め、他のテキストやマーカーは一切含めない。
+      `;
+    // #endregion
+    return prompt;
+  }
+   else {
     throw new Error("Invalid prompt type used");
   }
 }

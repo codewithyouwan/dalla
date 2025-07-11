@@ -20,7 +20,7 @@ import Loader from '../components/Loader';
 
 const defaultDetails = {
   id_number: '',
-  employeeNumber: '', // Initialize as empty string for user input
+  employeeNumber: '',
   name: 'Test User',
   devField: '',
   jobType: '',
@@ -225,43 +225,77 @@ export default function MakeResume() {
       setIsLoading(false);
     }
   };
- const fetchJapaneseCompanies = async () => {
-  setIsLoading(true);
-  setError(null);
-  try {
-    console.log('Sending id_number to /api/japaneseCompanies:', details.id_number);
-    const res = await fetch('/api/japaneseCompanies', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id_number: details.id_number }),
-    });
-    if (!res.ok) throw new Error(`Japanese companies API error: ${res.statusText}`);
-    const gptData = await res.json();
-    console.log('Japanese companies response:', gptData);
-    if (gptData.suggestions) {
-      const lines = gptData.suggestions.split('\n').map(line => line.trim());
-      console.log('Parsed response lines:', lines);
-      if (lines.length >= 2) {
+
+  const fetchJapaneseCompanies = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      console.log('Sending id_number to /api/japaneseCompanies:', details.id_number);
+      const res = await fetch('/api/japaneseCompanies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_number: details.id_number }),
+      });
+      if (!res.ok) throw new Error(`Japanese companies API error: ${res.statusText}`);
+      const gptData = await res.json();
+      console.log('Japanese companies response:', gptData);
+      if (gptData.suggestions) {
+        const lines = gptData.suggestions.split('\n').map(line => line.trim());
+        console.log('Parsed response lines:', lines);
+        if (lines.length >= 2) {
+          setDetails((prev) => ({
+            ...prev,
+            japanCompanyInterest: lines[0] || '',
+            japanCompanySkills: lines[1] || '',
+          }));
+        } else {
+          setError('Invalid Japanese companies response format');
+          console.error('Expected 2 lines, got:', lines);
+        }
+      } else {
+        setError('No Japanese companies suggestions');
+        console.error('No suggestions in response:', gptData);
+      }
+    } catch (err) {
+      setError(`Japanese companies fetch error: ${err.message}`);
+      console.error('Japanese companies fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchCareerDevelopment = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      console.log('Sending id_number to /api/careerDevelopment:', details.id_number);
+      const res = await fetch('/api/careerDevelopment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_number: details.id_number }),
+      });
+      if (!res.ok) throw new Error(`Career development API error: ${res.statusText}`);
+      const gptData = await res.json();
+      console.log('Career development response:', gptData);
+      if (gptData.suggestions) {
+        const { careerPriority1, careerPriority2, careerPriority3, careerRoles } = gptData.suggestions;
         setDetails((prev) => ({
           ...prev,
-          japanCompanyInterest: lines[0] || '',
-          japanCompanySkills: lines[1] || '',
+          careerPriorities: [careerPriority1, careerPriority2, careerPriority3],
+          careerRoles: careerRoles || prev.careerRoles,
         }));
       } else {
-        setError('Invalid Japanese companies response format');
-        console.error('Expected 2 lines, got:', lines);
+        setError('No career development suggestions');
+        console.error('No suggestions in LLaMA response:', gptData);
       }
-    } else {
-      setError('No Japanese companies suggestions');
-      console.error('No suggestions in response:', gptData);
+    } catch (err) {
+      setError(`Career development fetch error: ${err.message}`);
+      console.error('Career development fetch error:', err);
+    } finally {
+      setIsLoading(false);
     }
-  } catch (err) {
-    setError(`Japanese companies fetch error: ${err.message}`);
-    console.error('Japanese companies fetch error:', err);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
+
   useEffect(() => {
     const encryptedId = searchParams.get('encrypted_id');
     if (encryptedId && !hasFetchedCareerData.current) {
@@ -284,7 +318,7 @@ export default function MakeResume() {
                 setDetails((prev) => ({
                   ...prev,
                   id_number: idNumber,
-                  name: data.name, // Only set id_number and name, not employeeNumber
+                  name: data.name,
                 }));
               } else {
                 setError('Employee name not found');
@@ -324,7 +358,6 @@ export default function MakeResume() {
         alert('Please upload a JPEG image under 5MB');
       }
     } else {
-      // Ensure employeeNumber is treated as a number (or empty string)
       if (name === 'employeeNumber' && value !== '' && !/^\d+$/.test(value)) {
         alert('Employee Number must be a number');
         return;
@@ -421,7 +454,7 @@ export default function MakeResume() {
         const errorData = await response.json();
         throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
       }
-      const data = await res.json();
+      const data = await response.json();
       alert(`Resume saved successfully! Access it here: ${data.resumeLink}`);
       setPreviewLink(data.resumeLink.replace('/view', '/preview').split('/temp/')[1]);
       setTempPdfPath(null);
@@ -483,6 +516,8 @@ export default function MakeResume() {
           details={details}
           handleInputChange={handleInputChange}
           handleArrayInputChange={handleArrayInputChange}
+          fetchCareerDevelopment={fetchCareerDevelopment}
+          isLoading={isLoading}
         />
         <JLPTExperience
           details={details}
