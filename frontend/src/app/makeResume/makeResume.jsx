@@ -225,7 +225,43 @@ export default function MakeResume() {
       setIsLoading(false);
     }
   };
-
+ const fetchJapaneseCompanies = async () => {
+  setIsLoading(true);
+  setError(null);
+  try {
+    console.log('Sending id_number to /api/japaneseCompanies:', details.id_number);
+    const res = await fetch('/api/japaneseCompanies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_number: details.id_number }),
+    });
+    if (!res.ok) throw new Error(`Japanese companies API error: ${res.statusText}`);
+    const gptData = await res.json();
+    console.log('Japanese companies response:', gptData);
+    if (gptData.suggestions) {
+      const lines = gptData.suggestions.split('\n').map(line => line.trim());
+      console.log('Parsed response lines:', lines);
+      if (lines.length >= 2) {
+        setDetails((prev) => ({
+          ...prev,
+          japanCompanyInterest: lines[0] || '',
+          japanCompanySkills: lines[1] || '',
+        }));
+      } else {
+        setError('Invalid Japanese companies response format');
+        console.error('Expected 2 lines, got:', lines);
+      }
+    } else {
+      setError('No Japanese companies suggestions');
+      console.error('No suggestions in response:', gptData);
+    }
+  } catch (err) {
+    setError(`Japanese companies fetch error: ${err.message}`);
+    console.error('Japanese companies fetch error:', err);
+  } finally {
+    setIsLoading(false);
+  }
+};
   useEffect(() => {
     const encryptedId = searchParams.get('encrypted_id');
     if (encryptedId && !hasFetchedCareerData.current) {
@@ -436,7 +472,12 @@ export default function MakeResume() {
           handleInputChange={handleInputChange}
           handleArrayInputChange={handleArrayInputChange}
         />
-        <JapaneseCompanies details={details} handleInputChange={handleInputChange} />
+        <JapaneseCompanies 
+          details={details} 
+          handleInputChange={handleInputChange} 
+          fetchJapaneseCompanies={fetchJapaneseCompanies}
+          isLoading={isLoading}
+        />
         <CareerDevelopment
           careerPriorities={details.careerPriorities}
           details={details}

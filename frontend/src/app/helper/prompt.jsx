@@ -2,7 +2,7 @@
     This is a helper function for different types of prompts.
     In the whatFor array we have defined the types for which we have the prompts.
 */
-const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'internshipExperience', 'others'];
+const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'internshipExperience', 'japaneseCompanies'];
 
 export default function Prompt(data, whatFor) {
   if (whatFor === whatForTypes[0]) {
@@ -193,13 +193,6 @@ export default function Prompt(data, whatFor) {
         【出力フォーマット】
         出力は以下のフォーマットに**厳密に**従ってください。余計なテキストや説明を一切含めず、===FORM1-START=== と ===FORM1-END=== の間に4行のみを記載してください。各行は指定されたラベルで始まり、内容は日本語で簡潔かつプロフェッショナルに記述してください。
 
-        ===FORM1-START===
-        担当した役割: [役割を簡潔に記述]
-        具体的な内容: [概要、目的、技術、チームサイズを統合した詳細な説明]
-        直面した課題: [課題を具体的に記述]
-        リーダー経験: [リーダーシップまたはチーム貢献を記述]
-        ===FORM1-END===
-
         【出力例】
         ===FORM1-START===
         担当した役割: チームリーダー
@@ -213,6 +206,46 @@ export default function Prompt(data, whatFor) {
         - 入力データをそのまま記載せず、適切に変換し、CVにふさわしいビジネス的な表現を使用。
         - 専門性と成果を強調し、自然な日本語で記述。
         - 出力は===FORM1-START=== と ===FORM1-END=== の間に4行のみを含め、他のテキストやマーカーは一切含めない。
+      `;
+    // #endregion
+    return prompt;
+  } else if (whatFor === whatForTypes[4]) {
+    const {interest_in_japanese_companies, aspects_to_learn, future_career_goals} = data;
+    // #region japaneseCompanies
+    const prompt = `
+        <System Instructions>
+        Respond **only** with the exact format specified below, containing two Japanese lines within ===FORM2-START=== and ===FORM2-END===. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM1, FORM3). Use professional Japanese suitable for a CV, reflecting Japanese corporate culture (e.g., teamwork, continuous improvement, technical innovation). Limit each line to one sentence, maximum 15 words.
+
+        <Employee Information>
+        Interest in Japanese Companies: ${interest_in_japanese_companies || 'なし'}
+        Aspects to Learn: ${aspects_to_learn || 'なし'}
+        Future Career Goals: ${future_career_goals?.join(', ') || 'なし'}
+
+        <Prompt>
+        Generate two items for the CV's "日本企業について" section:
+        - Most Interesting Aspect: Based on Interest in Japanese Companies (${interest_in_japanese_companies}), describe what excites you about working at Japanese companies in 1 sentence (max 15 words).
+        - Skills to Acquire: Combine Aspects to Learn (${aspects_to_learn}) and Future Career Goals (${future_career_goals}), describe skills to acquire in 1 sentence (max 15 words).
+
+        <Output Format>
+        ===FORM2-START===
+        番興味がある点: [1 sentence, max 15 words, reflecting Japanese corporate culture]
+        習得したいこと: [1 sentence, max 15 words, reflecting Japanese corporate culture]
+        ===FORM2-END===
+
+        <Example>
+        ===FORM2-START===
+        番興味がある点: 生産技術を通じてものづくりの革新を推進すること
+        習得したいこと: ものづくり現場の課題を発見し改善する提案力と技術力
+        ===FORM2-END===
+
+        <Rules>
+        - Output **exactly** two lines between ===FORM2-START=== and ===FORM2-END===.
+        - Each line starts with "番興味がある点: " or "習得したいこと: ", followed by 1 sentence (max 15 words).
+        - Convert input data into professional, CV-appropriate Japanese; do not copy verbatim.
+        - Reflect Japanese corporate culture (e.g., teamwork, continuous improvement).
+        - Do **not** include other markers, text, or blank lines.
+        - **Strictly** follow the format; any deviation will break the system.
+        - Suggested max_tokens: 100 to ensure concise output.
       `;
     // #endregion
     return prompt;
