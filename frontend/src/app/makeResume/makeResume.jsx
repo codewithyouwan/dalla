@@ -354,23 +354,27 @@ export default function MakeResume() {
   }, [searchParams]);
 
   const handleInputChange = (e) => {
-    const { name, value, type, files } = e.target;
-    console.log('Input change:', { name, type, value, files: files?.length });
-    if (type === 'file') {
-      const file = files[0];
-      if (file && file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) {
-        setDetails((prev) => ({ ...prev, photo: file }));
-      } else {
-        alert('Please upload a JPEG image under 5MB');
-      }
+  const { name, value, type, files } = e.target;
+  console.log('Input change:', { name, type, value, files: files?.length });
+  if (type === 'file') {
+    const file = files[0];
+    if (file && file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) {
+      setDetails((prev) => ({ ...prev, photo: file }));
     } else {
-      if (name === 'employeeNumber' && value !== '' && !/^\d+$/.test(value)) {
-        alert('Employee Number must be a number');
-        return;
-      }
-      setDetails((prev) => ({ ...prev, [name]: value }));
+      alert('Please upload a JPEG image under 5MB');
     }
-  };
+  } else {
+    if (name === 'employeeNumber' && value !== '' && !/^\d+$/.test(value)) {
+      alert('Employee Number must be a number');
+      return;
+    }
+    setDetails((prev) => {
+      const updatedDetails = { ...prev, [name]: value };
+      console.log('Updated details:', updatedDetails); // Log state
+      return updatedDetails;
+    });
+  }
+};
 
   const handleArrayInputChange = (e, index, field, arrayName) => {
     const { value } = e.target;
@@ -533,9 +537,9 @@ export default function MakeResume() {
         <JLPTExperience
           details={details}
           handleInputChange={handleInputChange}
+          setDetails={setDetails}
           isLoading={isLoading}
           error={error}
-          setSuggestions={setSuggestions}
           setError={setError}
           setIsLoading={setIsLoading}
         />

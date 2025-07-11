@@ -1,6 +1,6 @@
 import Split from '../../helper/split';
 
-export default function JLPTExperience({ details, handleInputChange, isLoading, error, setSuggestions, setError, setIsLoading }) {
+export default function JLPTExperience({ details, handleInputChange, setDetails, isLoading, error, setError, setIsLoading }) {
   const generateSuggestions = async () => {
     setIsLoading(true);
     setError(null);
@@ -13,7 +13,7 @@ export default function JLPTExperience({ details, handleInputChange, isLoading, 
         listening: details.listening,
         japaneseLevel,
       };
-      console.log('Sending payload to /api/gpt:', payload);
+      console.log('Sending payload to /api/jlpt:', payload);
       const response = await fetch('/api/gpt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -24,12 +24,28 @@ export default function JLPTExperience({ details, handleInputChange, isLoading, 
       const content = data.suggestions;
       const forms = Split(content);
       const finalForms = forms.length > 0 ? forms.slice(0, 3) : [content];
-      setSuggestions(finalForms.map((form) => form.trim()));
+      const trimmedForms = finalForms.map((form) => form.trim());
+      setDetails((prev) => ({
+        ...prev,
+        suggestions: trimmedForms,
+        selectedIndex: null, // Reset selection
+        selectedSuggestion: '', // Reset selected suggestion
+      }));
     } catch (err) {
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSuggestionSelect = (suggestion, index) => {
+    setDetails((prev) => ({
+      ...prev,
+      selectedSuggestion: suggestion,
+      japaneseLevel: suggestion, // Ensure consistency
+      selectedIndex: index,
+    }));
+    console.log('Selected JLPT suggestion:', suggestion, 'Index:', index);
   };
 
   return (
@@ -102,6 +118,22 @@ export default function JLPTExperience({ details, handleInputChange, isLoading, 
           </button>
           {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
         </div>
+        {details.suggestions && details.suggestions.length > 0 && (
+          <div className="mt-4">
+            <h3 className="text-sm font-medium text-black">提案 / Suggestions</h3>
+            <ul className="mt-2 space-y-2 text-black">
+              {details.suggestions.map((suggestion, index) => (
+                <li
+                  key={index}
+                  className={`p-2 cursor-pointer border rounded-lg  ${details.selectedIndex === index ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
+                  onClick={() => handleSuggestionSelect(suggestion, index)}
+                >
+                  {suggestion}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
