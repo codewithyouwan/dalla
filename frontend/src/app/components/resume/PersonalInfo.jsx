@@ -87,7 +87,7 @@ export default function PersonalInfo({ details, handleInputChange }) {
         <div>
           <label className="block text-sm font-medium text-gray-700">社員番号 \n Employee Number</label>
           <input
-            type="text"
+            type="number"
             name="employeeNumber"
             value={details.employeeNumber}
             onChange={handleInputChange}
