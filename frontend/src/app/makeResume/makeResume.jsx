@@ -36,7 +36,6 @@ const defaultDetails = {
   productDevReason: 'Problem Solving',
   productDevRole: 'Data Scientist',
   interestFields: ['AI', 'Data Analysis', 'Testing'],
-  interestDetails: 'Interested in ML',
   japanCompanyInterest: 'Technology',
   japanCompanySkills: 'Work Culture',
   careerPriorities: ['Growth', 'Impact', 'Balance'],
@@ -446,6 +445,42 @@ export default function MakeResume() {
     setIsLoading(false);
   }
 };
+  const fetchFieldsOfInterest = async () => {
+  setIsLoading(true);
+  setError(null);
+  try {
+    console.log('Sending id_number to /api/fieldsOfInterest:', details.id_number);
+    const res = await fetch('/api/fieldsOfInterest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_number: details.id_number }),
+    });
+    if (!res.ok) throw new Error(`Fields of Interest API error: ${res.statusText}`);
+    const data = await res.json();
+    console.log('Fields of Interest response:', data);
+    if (data.suggestions) {
+      const { field1, field2, field3 } = data.suggestions;
+      const newFields = [field1, field2, field3].filter(Boolean);
+      if (newFields.length < 3) {
+        console.warn('Incomplete fields of interest:', newFields);
+        setError('Incomplete fields of interest received');
+        return;
+      }
+      setDetails((prev) => ({
+        ...prev,
+        interestFields: newFields, // Auto-populate inputs
+      }));
+    } else {
+      setError('No fields of interest suggestions');
+      console.error('No suggestions in response:', data);
+    }
+  } catch (err) {
+    setError(`Fields of Interest fetch error: ${err.message}`);
+    console.error('Fields of Interest fetch error:', err);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const saveResume = async () => {
     setIsLoading(true);
@@ -515,10 +550,11 @@ export default function MakeResume() {
         />
         <ProductDevelopment details={details} handleInputChange={handleInputChange} />
         <FieldsOfInterest
-          interestFields={details.interestFields}
-          interestDetails={details.interestDetails}
-          handleInputChange={handleInputChange}
+          details={details}
           handleArrayInputChange={handleArrayInputChange}
+          isLoading={isLoading}
+          error={error}
+          fetchFieldsOfInterest={fetchFieldsOfInterest}
         />
         <JapaneseCompanies 
           details={details} 
