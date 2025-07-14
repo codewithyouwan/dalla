@@ -2,7 +2,7 @@
     This is a helper function for different types of prompts.
     In the whatFor array we have defined the types for which we have the prompts.
 */
-const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'internshipExperience', 'japaneseCompanies','careerDevelopment','fieldsOfInterest'];
+const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'internshipExperience', 'japaneseCompanies', 'careerDevelopment', 'fieldsOfInterest', 'productDevelopment'];
 
 export default function Prompt(data, whatFor) {
   if (whatFor === whatForTypes[0]) {
@@ -249,7 +249,7 @@ export default function Prompt(data, whatFor) {
       `;
     // #endregion
     return prompt;
-  }else if(whatFor === whatForTypes[5]){
+  } else if (whatFor === whatForTypes[5]) {
     const { job_role_priority_1, job_role_priority_2, job_role_priority_3, future_career_goals, work_values, jobs_to_try_in_japan } = data;
     // #region careerDevelopment
     const prompt = `
@@ -301,15 +301,15 @@ export default function Prompt(data, whatFor) {
       `;
     // #endregion
     return prompt;
-  }else if (whatFor === whatForTypes[6]) {
+  } else if (whatFor === whatForTypes[6]) {
     const { job_role_priority_1, job_role_priority_2, job_role_priority_3, jobs_to_try_in_japan } = data;
     // #region fieldsOfInterest
     return `
         Based on the following user data:
-        - Job Role Priority 1: ${data.job_role_priority_1 || 'N/A'}
-        - Job Role Priority 2: ${data.job_role_priority_2 || 'N/A'}
-        - Job Role Priority 3: ${data.job_role_priority_3 || 'N/A'}
-        - Jobs to Try in Japan: ${data.jobs_to_try_in_japan || 'N/A'}
+        - Job Role Priority 1: ${job_role_priority_1 || 'N/A'}
+        - Job Role Priority 2: ${job_role_priority_2 || 'N/A'}
+        - Job Role Priority 3: ${job_role_priority_3 || 'N/A'}
+        - Jobs to Try in Japan: ${jobs_to_try_in_japan || 'N/A'}
 
         Generate three distinct fields of interest relevant to the user's career goals and job preferences in Japan. Each field should be a concise phrase (e.g., "データサイエンス", "ソフトウェア開発", "プロジェクト管理") suitable for a resume. The output must be formatted as follows, with exactly three fields, each on a new line within its own FORM section:
 
@@ -327,11 +327,50 @@ export default function Prompt(data, whatFor) {
         - Each field must be unique and relevant to the user's data.
         - If data is missing or vague, use generic but relevant fields (e.g., "データサイエンス", "ソフトウェア開発", "プロジェクト管理").
         - Ensure each field is concise (2-5 words) and professional.
-        - Ensure the output is in japanese and suitable for a resume.
+        - Ensure the output is in Japanese and suitable for a resume.
       `;
       // #endregion
-  }
-   else {
+  } else if (whatFor === whatForTypes[7]) {
+    const { job_role_priority_1, job_role_priority_2, job_role_priority_3, jobs_to_try_in_japan } = data;
+    // #region productDevelopment
+    return `
+        <System Instructions>
+        Respond **only** with the exact format specified below, containing two Japanese lines within ===FORM1-START=== and ===FORM1-END===. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM2, FORM3). Use professional Japanese suitable for a CV, reflecting Japanese corporate culture (e.g., teamwork, continuous improvement, technical innovation). Limit each line to one sentence, maximum 15 words. Do **not** include the labels "興味を持つ理由: " or "果たしたい役割: " in the output lines; only provide the content after these labels.
+
+        <Employee Information>
+        Job Role Priority 1: ${job_role_priority_1 || 'なし'}
+        Job Role Priority 2: ${job_role_priority_2 || 'なし'}
+        Job Role Priority 3: ${job_role_priority_3 || 'なし'}
+        Jobs to Try in Japan: ${jobs_to_try_in_japan || 'なし'}
+
+        <Prompt>
+        Generate two items for the CV's "製品開発について" section:
+        - Reason for Interest: Based on Jobs to Try in Japan (${jobs_to_try_in_japan}) and Job Role Priorities (${job_role_priority_1}, ${job_role_priority_2}, ${job_role_priority_3}), describe why you are interested in product development in 1 sentence (max 15 words), excluding the label "興味を持つ理由: ".
+        - Desired Role: Based on Job Role Priorities (${job_role_priority_1}, ${job_role_priority_2}, ${job_role_priority_3}), describe the desired role in product development in 1 sentence (max 15 words), excluding the label "果たしたい役割: ".
+
+        <Output Format>
+        ===FORM1-START===
+        [Reason for Interest, max 15 words, without label]
+        [Desired Role, max 15 words, without label]
+        ===FORM1-END===
+
+        <Example>
+        ===FORM1-START===
+        プロジェクトに取り組んだ後、何かが出来上がっていくのを見るのが好きだからだ。
+        アンドロイド開発やウェブ開発のような技術的な仕事がしたい。
+        ===FORM1-END===
+
+        <Rules>
+        - Output **exactly** two lines between ===FORM1-START=== and ===FORM1-END===.
+        - Each line is a sentence (max 15 words) without the labels "興味を持つ理由: " or "果たしたい役割: ".
+        - Convert input data into professional, CV-appropriate Japanese; do not copy verbatim.
+        - Reflect Japanese corporate culture (e.g., innovation, problem-solving).
+        - Do **not** include other markers, text, or blank lines.
+        - **Strictly** follow the format; any deviation will break the system.
+        - Suggested max_tokens: 100 to ensure concise output.
+      `;
+    // #endregion
+  } else {
     throw new Error("Invalid prompt type used");
   }
 }

@@ -50,7 +50,17 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
 
   return (
     <div className="mb-8 whitespace-pre-line">
-      <h2 className="text-xl text-black font-semibold mb-3">{"JLPT経験 \n JLPT Experience"}</h2>
+      <div className="flex items-center justify-between mb-4 whitespace-pre-line">
+        <h2 className="text-xl text-black font-semibold mb-3">{"JLPT経験 \n JLPT Experience"}</h2>
+        <button
+          onClick={generateSuggestions}
+          disabled={isLoading || details.japaneseLevel === 'Not certified'}
+          className={`mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isLoading || details.japaneseLevel === 'Not certified' ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {isLoading ? '生成中... \n Generating...' : '提案を生成 \n Generate Suggestions'}
+        </button>
+        {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
+      </div>
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">日本語レベル / Japanese Level</label>
@@ -107,16 +117,6 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
-        </div>
-        <div>
-          <button
-            onClick={generateSuggestions}
-            disabled={isLoading || details.japaneseLevel === 'Not certified'}
-            className={`mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isLoading || details.japaneseLevel === 'Not certified' ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            {isLoading ? '生成中... / Generating...' : '提案を生成 / Generate Suggestions'}
-          </button>
-          {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
         </div>
         {details.suggestions && details.suggestions.length > 0 && (
           <div className="mt-4">

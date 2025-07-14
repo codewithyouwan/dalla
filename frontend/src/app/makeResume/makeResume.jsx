@@ -481,6 +481,42 @@ export default function MakeResume() {
     setIsLoading(false);
   }
 };
+const fetchProductDevelopment = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      console.log('Sending id_number to /api/productDevelopment:', details.id_number);
+      const res = await fetch('/api/productDevelopment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_number: details.id_number }),
+      });
+      if (!res.ok) throw new Error(`Product development API error: ${res.statusText}`);
+      const data = await res.json();
+      console.log('Product development response:', data);
+      if (data.suggestions) {
+        const { productDevReason, productDevRole } = data.suggestions;
+        if (!productDevReason || !productDevRole) {
+          console.warn('Incomplete product development suggestions:', data.suggestions);
+          setError('Incomplete product development suggestions received');
+          return;
+        }
+        setDetails((prev) => ({
+          ...prev,
+          productDevReason,
+          productDevRole
+        }));
+      } else {
+        setError('No product development suggestions');
+        console.error('No suggestions in response:', data);
+      }
+    } catch (err) {
+      setError(`Product development fetch error: ${err.message}`);
+      console.error('Product development fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const saveResume = async () => {
     setIsLoading(true);
@@ -548,7 +584,13 @@ export default function MakeResume() {
           fetchInternshipExperience={fetchInternshipExperience}
           isLoading={isLoading}
         />
-        <ProductDevelopment details={details} handleInputChange={handleInputChange} />
+        <ProductDevelopment 
+        details={details} 
+        handleInputChange={handleInputChange}
+        fetchProductDevelopment={fetchProductDevelopment}
+        isLoading={isLoading}
+        error={error} 
+        />
         <FieldsOfInterest
           details={details}
           handleArrayInputChange={handleArrayInputChange}
