@@ -80,6 +80,13 @@ export default function PersonalInfo({ details, handleInputChange }) {
     }
   };
 
+  // Options for the name dropdown
+  const nameOptions = [
+    { value: details.name, label: `English: ${details.name}` },
+    details.katakana && { value: details.katakana, label: `カタカナ: ${details.katakana}` },
+    details.initials && { value: details.initials, label: `Initials(イニシャル): ${details.initials}` },
+  ].filter(Boolean); // Remove empty options
+
   return (
     <div className="mb-8 whitespace-pre-line">
       <h2 className="text-xl text-black font-semibold mb-3">{"個人情報 \n Personal Information"}</h2>
@@ -96,13 +103,18 @@ export default function PersonalInfo({ details, handleInputChange }) {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">名前 / Name</label>
-          <input
-            type="text"
-            name="name"
-            value={details.name}
+          <select
+            name="selectedName"
+            value={details.selectedName}
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
+          >
+            {nameOptions.map((option, index) => (
+              <option key={index} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">性格 / Personality</label>

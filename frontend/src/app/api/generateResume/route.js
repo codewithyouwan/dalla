@@ -46,6 +46,7 @@ export async function POST(req) {
   ...details,
   employeeNumber: escapeHtml(details.employeeNumber),
   name: escapeHtml(details.name),
+  selectedName: escapeHtml(details.selectedName || details.name),
   japaneseLevel: escapeHtml(details.japaneseLevel || details.selectedSuggestion),
   personality: escapeHtml(details.personality),
   devField: escapeHtml(details.devField || '未入力'),

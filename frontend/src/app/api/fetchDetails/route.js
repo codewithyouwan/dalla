@@ -15,10 +15,10 @@ export async function GET(request) {
       return NextResponse.json({ error: 'id_number is required' }, { status: 400 });
     }
 
-    // Fetch only full_name_english from the data table
+    // Fetch full_name_english and full_name_katakana from the data table
     const { data, error } = await supabase
       .from('data')
-      .select('full_name_english')
+      .select('full_name_english, full_name_katakana')
       .eq('id_number', idNumber)
       .single();
 
@@ -27,12 +27,23 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
     }
 
-    // Preprocess the name
-    const name = data.full_name_english ? data.full_name_english.trim() : 'Unknown Employee';
+    // Preprocess the names
+    const fullNameEnglish = data.full_name_english ? data.full_name_english.trim() : 'Unknown Employee';
+    const fullNameKatakana = data.full_name_katakana ? data.full_name_katakana.trim() : '';
+    
+    // Compute English initials (first letter of first and last names)
+    const nameParts = fullNameEnglish.split(' ').filter(Boolean);
+    const initials = nameParts.length >= 2 
+      ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase()
+      : fullNameEnglish[0]?.toUpperCase() || '';
 
-    console.log('Fetched and processed name:', name); // Log for debugging
+    console.log('Fetched and processed names:', { fullNameEnglish, fullNameKatakana, initials });
 
-    return NextResponse.json({ name }, { status: 200 });
+    return NextResponse.json({
+      name: fullNameEnglish,
+      katakana: fullNameKatakana,
+      initials
+    }, { status: 200 });
   } catch (error) {
     console.error('Error fetching employee name:', {
       message: error.message,
