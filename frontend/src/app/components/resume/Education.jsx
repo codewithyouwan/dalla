@@ -1,25 +1,29 @@
 export default function Education({ education, handleArrayInputChange, addEducation, removeEducation, fetchEducation, isLoading }) {
+  // Sort education by year (latest first)
+  const sortedEducation = [...education].sort((a, b) => parseInt(b.year) - parseInt(a.year));
+
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between whitespace-pre-line">
-      <h2 className="text-xl text-black font-semibold mb-3">{"学歴 \n Education"}</h2>
-      <button
+        <h2 className="text-xl text-black font-semibold mb-3">{"学歴 \n Education"}</h2>
+        <button
           onClick={fetchEducation}
           disabled={isLoading}
           className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 whitespace-pre-line ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {isLoading ? '取得中... \n Fetching...' : '学歴を取得 \n Fetch Education'}
-      </button>
+        </button>
       </div>
-      {education.map((edu, index) => (
+      {sortedEducation.map((edu, index) => (
         <div key={index} className="space-y-4 mb-4 border-b pb-4 relative">
           <div>
             <label className="block text-sm font-medium text-gray-700">年 / Year</label>
             <input
               type="text"
-              value={edu.year}
-              onChange={(e) => handleArrayInputChange(e, index, 'year', 'education')}
+              value={edu.year ? `${edu.year}` : ''}
+              onChange={(e) => handleArrayInputChange({ target: { value: e.target.value.replace('年', '') } }, index, 'year', 'education')}
               className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              placeholder="例: 2023年"
             />
           </div>
           <div>
@@ -31,16 +35,31 @@ export default function Education({ education, handleArrayInputChange, addEducat
               className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
           </div>
+          {(edu.degree === '学士' || edu.degree === '修士') && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700">専攻 / Major</label>
+              <input
+                type="text"
+                value={edu.major || ''}
+                onChange={(e) => handleArrayInputChange(e, index, 'major', 'education')}
+                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              />
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700">学位 / Degree</label>
-            <input
-              type="text"
+            <select
               value={edu.degree}
               onChange={(e) => handleArrayInputChange(e, index, 'degree', 'education')}
               className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
+            >
+              <option value="高校">高校</option>
+              <option value="学士">学士</option>
+              <option value="修士">修士</option>
+              <option value="博士">博士</option>
+            </select>
           </div>
-          {education.length > 1 && (
+          {sortedEducation.length > 1 && (
             <button
               onClick={() => removeEducation(index)}
               className="absolute top-0 right-0 text-red-600 hover:text-red-800 p-1"

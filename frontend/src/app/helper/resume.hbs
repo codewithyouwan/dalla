@@ -153,8 +153,8 @@
     </tr>
     {{#each education}}
     <tr>
-      <td>{{year}}</td>
-      <td colspan="3" class="text-left">{{institution}}</td>
+      <td>{{year}}年</td>
+      <td colspan="3" class="text-left">{{institution}}{{#if major}} (<strong>{{major}}</strong>) {{/if}}</td>
       <td class="text-left">{{degree}}</td>
     </tr>
     {{/each}}

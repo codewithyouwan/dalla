@@ -2,7 +2,7 @@
     This is a helper function for different types of prompts.
     In the whatFor array we have defined the types for which we have the prompts.
 */
-const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'internshipExperience', 'japaneseCompanies', 'careerDevelopment', 'fieldsOfInterest', 'productDevelopment'];
+const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'internshipExperience', 'japaneseCompanies', 'careerDevelopment', 'fieldsOfInterest', 'productDevelopment', 'katakanaConversion'];
 
 export default function Prompt(data, whatFor) {
   if (whatFor === whatForTypes[0]) {
@@ -329,7 +329,7 @@ export default function Prompt(data, whatFor) {
         - Ensure each field is concise (2-5 words) and professional.
         - Ensure the output is in Japanese and suitable for a resume.
       `;
-      // #endregion
+    // #endregion
   } else if (whatFor === whatForTypes[7]) {
     const { job_role_priority_1, job_role_priority_2, job_role_priority_3, jobs_to_try_in_japan } = data;
     // #region productDevelopment
@@ -370,6 +370,81 @@ export default function Prompt(data, whatFor) {
         - Suggested max_tokens: 100 to ensure concise output.
       `;
     // #endregion
+  } else if (whatFor === whatForTypes[8]) {
+    const { institution_name , date_string } = data;
+    // #region katakanaConversion
+const prompt = `
+    <System Instructions>
+    Process the provided institution name and date string for a Japanese CV. Respond **only** with the exact format specified below, containing two lines within ===FORM1-START=== and ===FORM1-END===: one for the Katakana institution name and one for the date range in Japanese format. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM2, FORM3).
+
+    <Input Information>
+    Institution Name: ${institution_name || 'なし'}
+    Date String: ${date_string || 'なし'}
+
+    <Prompt>
+    Perform the following tasks:
+    - **Institution Name**: Convert the institution name (${institution_name}) to Katakana, ensuring:
+      - Output a single Katakana string representing the phonetic pronunciation in Japanese.
+      - If the input is empty, 'なし', or already in Katakana, return the input as-is (if Katakana) or an empty string (if empty or 'なし').
+      - Remove non-institution details (e.g., "Science", "Higher Secondary", "Bachelor's").
+      - Use standard Japanese Katakana conventions (e.g., "Tokyo University" → "トウキョウダイガク").
+      - For complex names, provide a phonetically accurate Katakana representation, keeping it concise.
+    - **Date String**: Convert the date string (${date_string}) to a Japanese date range in the format "YYYY年MM月 – YYYY年MM月", ensuring:
+      - For ranges like "Apr 2014 – Mar 2016" or "Aug 2016 – Oct 2017", output the full range (e.g., "2014年4月 – 2016年3月", "2016年8月 – 2017年10月").
+      - For single years like "2016", output "2016年".
+      - If the input is empty, 'なし', or invalid, return an empty string.
+      - Use Japanese month names (e.g., "January" → "1月", "October" → "10月").
+      - Ensure the output strictly follows "YYYY年MM月 – YYYY年MM月" for ranges or "YYYY年" for single years.
+
+    <Output Format>
+    ===FORM1-START===
+    [Katakana representation of institution name]
+    [Date range in format YYYY年MM月 – YYYY年MM月 or YYYY年]
+    ===FORM1-END===
+
+    <Examples>
+    Input: Institution Name: "Tokyo University", Date String: "Apr 2014 – Mar 2016"
+    ===FORM1-START===
+    トウキョウダイガク
+    2014年4月 – 2016年3月
+    ===FORM1-END===
+
+    Input: Institution Name: "B.S.S Pranavananda Academy Raipur Science Higher Secondary", Date String: "Aug 2016 – Oct 2017"
+    ===FORM1-START===
+    ビーエスエス プラナヴァナンダ アカデミー
+    2016年8月 – 2017年10月
+    ===FORM1-END===
+
+    Input: Institution Name: "Shri Shankaracharya Institute of Professional Management and Technology", Date String: "August 2016 – September 2021"
+    ===FORM1-START===
+    シュリ シャンカラチャリヤ インスティテュート
+    2016年8月 – 2021年9月
+    ===FORM1-END===
+
+    Input: Institution Name: "なし", Date String: "なし"
+    ===FORM1-START===
+    
+    ===FORM1-END===
+
+    Input: Institution Name: "トウキョウダイガク", Date String: "2016"
+    ===FORM1-START===
+    トウキョウダイガク
+    2016年
+    ===FORM1-END===
+
+    <Rules>
+    - Output **exactly** two lines between ===FORM1-START=== and ===FORM1-END===.
+    - First line: Katakana institution name or empty string.
+    - Second line: Date range as "YYYY年MM月 – YYYY年MM月" for ranges, "YYYY年" for single years, or empty string.
+    - Exclude non-institution details from the institution name.
+    - Ensure phonetic accuracy for institution names and correct date range conversion.
+    - Use Japanese month names (e.g., "January" → "1月", "October" → "10月").
+    - Do **not** include any labels, additional text, or blank lines.
+    - **Strictly** follow the format; any deviation will break the system.
+    - Suggested max_tokens: 50 for concise output.
+`;
+// #endregion
+    return prompt;
   } else {
     throw new Error("Invalid prompt type used");
   }
