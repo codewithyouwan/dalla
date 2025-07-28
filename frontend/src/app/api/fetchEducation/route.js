@@ -31,7 +31,7 @@ export async function POST(request) {
           ],
           temperature: 0.2,
           top_p: 0.7,
-          max_tokens: 50,
+          max_tokens: 60,
           model: model
         }
       });
@@ -91,15 +91,15 @@ export async function POST(request) {
 
     const education = [];
 
-    // Helper function to convert institution name to Katakana and extract date range
-    const convertToKatakana = async (name, dateString) => {
+    // Helper function to convert institution name to Katakana, append major in bold brackets, and extract date range
+    const convertToKatakana = async (name, dateString, major) => {
       if (!name || name === 'なし' || !dateString || dateString === 'なし') {
         return { institution: '', year: '' };
       }
-      const prompt = Prompt({ institution_name: name, date_string: dateString }, 'katakanaConversion');
+      const prompt = Prompt({ institution_name: name, date_string: dateString, major: major || 'なし' }, 'katakanaConversion');
       try {
         const response = await callGrokAPI(prompt);
-        console.log(`Raw response for ${name}, ${dateString}:`, response); // Debugging
+        console.log(`Raw response for ${name}, ${dateString}, ${major}:`, response); // Debugging
         // Handle malformed end marker (e.g., ===FORM1 instead of ===FORM1-END===)
         const normalizedResponse = response.replace(/===FORM1($|\n)/, '===FORM1-END===');
         const match = normalizedResponse.match(/===FORM1-START===\n(.*)\n(.*)\n===FORM1-END===/);
@@ -109,10 +109,10 @@ export async function POST(request) {
             year: match[2].trim(),
           };
         }
-        console.warn(`Parsing failed for ${name}, ${dateString}:`, response);
+        console.warn(`Parsing failed for ${name}, ${dateString}, ${major}:`, response);
         return { institution: '', year: '' }; // Fallback if parsing fails
       } catch (error) {
-        console.error(`Katakana/date conversion failed for ${name}, ${dateString}:`, error);
+        console.error(`Katakana/date conversion failed for ${name}, ${dateString}, ${major}:`, error);
         return { institution: '', year: '' }; // Fallback to avoid breaking response
       }
     };
@@ -126,7 +126,7 @@ export async function POST(request) {
     };
 
     if (data.high_school_name && data.high_school_years_attended) {
-      const { institution, year } = await convertToKatakana(data.high_school_name, data.high_school_years_attended);
+      const { institution, year } = await convertToKatakana(data.high_school_name, data.high_school_years_attended, data.high_school_education_level);
       education.push({
         year,
         institution,
@@ -135,22 +135,20 @@ export async function POST(request) {
     }
 
     if (data.bachelor_university && data.bachelor_years_attended) {
-      const { institution, year } = await convertToKatakana(data.bachelor_university, data.bachelor_years_attended);
+      const { institution, year } = await convertToKatakana(data.bachelor_university, data.bachelor_years_attended, data.bachelor_major);
       education.push({
         year,
         institution,
         degree: degreeMap['Bachelor'] || '学士',
-        major: data.bachelor_major || '',
       });
     }
 
     if (data.master_university && data.master_years_attended) {
-      const { institution, year } = await convertToKatakana(data.master_university, data.master_years_attended);
+      const { institution, year } = await convertToKatakana(data.master_university, data.master_years_attended, data.master_major);
       education.push({
         year,
         institution,
         degree: degreeMap['Master'] || '修士',
-        major: data.master_major || '',
       });
     }
 
@@ -167,7 +165,6 @@ export async function POST(request) {
         year: entry.year,
         institution: entry.institution,
         degree: entry.degree,
-        ...(entry.major && { major: entry.major }), // Include major only if present
       })),
     };
 

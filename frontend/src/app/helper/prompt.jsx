@@ -371,15 +371,16 @@ export default function Prompt(data, whatFor) {
       `;
     // #endregion
   } else if (whatFor === whatForTypes[8]) {
-    const { institution_name , date_string } = data;
+    const { institution_name , date_string , major} = data;
     // #region katakanaConversion
 const prompt = `
     <System Instructions>
-    Process the provided institution name and date string for a Japanese CV. Respond **only** with the exact format specified below, containing two lines within ===FORM1-START=== and ===FORM1-END===: one for the Katakana institution name and one for the date range in Japanese format. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM2, FORM3).
+    Process the provided institution name, date string, and major for a Japanese CV. Respond **only** with the exact format specified below, containing two lines within ===FORM1-START=== and ===FORM1-END===: one for the Katakana institution name (with major in bold brackets if provided) and one for the date range in Japanese format. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM2, FORM3).
 
     <Input Information>
     Institution Name: ${institution_name || 'なし'}
     Date String: ${date_string || 'なし'}
+    Major: ${major || 'なし'}
 
     <Prompt>
     Perform the following tasks:
@@ -389,44 +390,46 @@ const prompt = `
       - Remove non-institution details (e.g., "Science", "Higher Secondary", "Bachelor's").
       - Use standard Japanese Katakana conventions (e.g., "Tokyo University" → "トウキョウダイガク").
       - For complex names, provide a phonetically accurate Katakana representation, keeping it concise.
+    - **Major**: If a major (${major}) is provided and not empty or 'なし', convert it to Katakana and append it in bold brackets (e.g., **[土木工学]**) to the institution name.
+      - Convert the major to Katakana using Japanese phonetic conventions (e.g., "Civil Engineering" → "土木工学").
+      - If the major is empty or 'なし', do not append anything.
     - **Date String**: Convert the date string (${date_string}) to a Japanese date range in the format "YYYY年MM月 – YYYY年MM月", ensuring:
       - For ranges like "Apr 2014 – Mar 2016" or "Aug 2016 – Oct 2017", output the full range (e.g., "2014年4月 – 2016年3月", "2016年8月 – 2017年10月").
       - For single years like "2016", output "2016年".
       - If the input is empty, 'なし', or invalid, return an empty string.
       - Use Japanese month names (e.g., "January" → "1月", "October" → "10月").
-      - Ensure the output strictly follows "YYYY年MM月 – YYYY年MM月" for ranges or "YYYY年" for single years.
 
     <Output Format>
     ===FORM1-START===
-    [Katakana representation of institution name]
+    [Katakana institution name] **[Katakana major]** (if major is provided)
     [Date range in format YYYY年MM月 – YYYY年MM月 or YYYY年]
     ===FORM1-END===
 
     <Examples>
-    Input: Institution Name: "Tokyo University", Date String: "Apr 2014 – Mar 2016"
+    Input: Institution Name: "Tokyo University", Date String: "Apr 2014 – Mar 2016", Major: "Computer Science"
     ===FORM1-START===
-    トウキョウダイガク
+    トウキョウダイガク **[コンピューターサイエンス]**
     2014年4月 – 2016年3月
     ===FORM1-END===
 
-    Input: Institution Name: "B.S.S Pranavananda Academy Raipur Science Higher Secondary", Date String: "Aug 2016 – Oct 2017"
+    Input: Institution Name: "B.S.S Pranavananda Academy Raipur Science Higher Secondary", Date String: "Aug 2016 – Oct 2017", Major: "なし"
     ===FORM1-START===
     ビーエスエス プラナヴァナンダ アカデミー
     2016年8月 – 2017年10月
     ===FORM1-END===
 
-    Input: Institution Name: "Shri Shankaracharya Institute of Professional Management and Technology", Date String: "August 2016 – September 2021"
+    Input: Institution Name: "Shri Shankaracharya Institute of Professional Management and Technology", Date String: "August 2016 – September 2021", Major: "Civil Engineering"
     ===FORM1-START===
-    シュリ シャンカラチャリヤ インスティテュート
+    シュリ シャンカラチャリヤ インスティテュート **[土木工学]**
     2016年8月 – 2021年9月
     ===FORM1-END===
 
-    Input: Institution Name: "なし", Date String: "なし"
+    Input: Institution Name: "なし", Date String: "なし", Major: "なし"
     ===FORM1-START===
     
     ===FORM1-END===
 
-    Input: Institution Name: "トウキョウダイガク", Date String: "2016"
+    Input: Institution Name: "トウキョウダイガク", Date String: "2016", Major: "なし"
     ===FORM1-START===
     トウキョウダイガク
     2016年
@@ -434,14 +437,14 @@ const prompt = `
 
     <Rules>
     - Output **exactly** two lines between ===FORM1-START=== and ===FORM1-END===.
-    - First line: Katakana institution name or empty string.
+    - First line: Katakana institution name, followed by Katakana major in bold brackets (e.g., **[土木工学]**) if major is provided and not empty or 'なし', or just the institution name otherwise.
     - Second line: Date range as "YYYY年MM月 – YYYY年MM月" for ranges, "YYYY年" for single years, or empty string.
     - Exclude non-institution details from the institution name.
-    - Ensure phonetic accuracy for institution names and correct date range conversion.
+    - Ensure phonetic accuracy for institution names and majors, and correct date range conversion.
     - Use Japanese month names (e.g., "January" → "1月", "October" → "10月").
     - Do **not** include any labels, additional text, or blank lines.
     - **Strictly** follow the format; any deviation will break the system.
-    - Suggested max_tokens: 50 for concise output.
+    - Suggested max_tokens: 60 for concise output.
 `;
 // #endregion
     return prompt;

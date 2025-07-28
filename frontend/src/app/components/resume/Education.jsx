@@ -1,6 +1,20 @@
 export default function Education({ education, handleArrayInputChange, addEducation, removeEducation, fetchEducation, isLoading }) {
   // Sort education by year (latest first)
-  const sortedEducation = [...education].sort((a, b) => parseInt(b.year) - parseInt(a.year));
+  const sortedEducation = [...education].sort((a, b) => {
+    const endYearA = parseInt(a.year.match(/– (\d{4})年/)?.[1] || a.year.replace(/年.*$/, '')) || 0;
+    const endYearB = parseInt(b.year.match(/– (\d{4})年/)?.[1] || b.year.replace(/年.*$/, '')) || 0;
+    return endYearB - endYearA;
+  });
+
+  const displayInstitution = (institution) => {
+    const match = institution.match(/^(.*)\s*\*\*\[(.*?)\]\*\*$/);
+    if (match) {
+      const name = match[1].trim();
+      const major = match[2].trim();
+      return `${name} (<strong>${major}</strong>)`;
+    }
+    return institution;
+  };
 
   return (
     <div className="mb-8">
@@ -23,29 +37,16 @@ export default function Education({ education, handleArrayInputChange, addEducat
               value={edu.year ? `${edu.year}` : ''}
               onChange={(e) => handleArrayInputChange({ target: { value: e.target.value.replace('年', '') } }, index, 'year', 'education')}
               className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              placeholder="例: 2023年"
+              placeholder="例: 2016年8月 – 2017年10月"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">機関 / Institution</label>
-            <input
-              type="text"
-              value={edu.institution}
-              onChange={(e) => handleArrayInputChange(e, index, 'institution', 'education')}
-              className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            <label className="block text-sm font-medium text-gray-700">機関 / Institution and Major</label>
+            <div
+              className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm p-2"
+              dangerouslySetInnerHTML={{ __html: displayInstitution(edu.institution) }}
             />
           </div>
-          {(edu.degree === '学士' || edu.degree === '修士') && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700">専攻 / Major</label>
-              <input
-                type="text"
-                value={edu.major || ''}
-                onChange={(e) => handleArrayInputChange(e, index, 'major', 'education')}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-          )}
           <div>
             <label className="block text-sm font-medium text-gray-700">学位 / Degree</label>
             <select
