@@ -24,7 +24,7 @@ const defaultDetails = {
   name: 'Test User',
   katakana: '',
   initials: '',
-  selectedName: 'Test User', // Default to English name
+  selectedName: 'Test User',
   devField: '',
   jobType: '',
   domain: '',
@@ -32,10 +32,8 @@ const defaultDetails = {
   education: [{ year: '2024', institution: 'University', degree: 'Masters' }],
   languages: 'Python',
   devTools: 'Git, VS Code',
-  projectRole: 'Programmer',
-  projectDescription: 'ML Project',
-  projectChallenges: 'Data Cleaning',
-  leadership: 'Project Leader',
+  internships: [],
+  projects: [],
   productDevReason: 'Problem Solving',
   productDevRole: 'Data Scientist',
   interestFields: ['AI', 'Data Analysis', 'Testing'],
@@ -51,7 +49,6 @@ const defaultDetails = {
   personality: 'Diligent',
   selectedSuggestion: '',
   photo: null,
-  isInternship: true,
 };
 
 export default function MakeResume() {
@@ -177,14 +174,11 @@ export default function MakeResume() {
       const gptData = await res.json();
       console.log('Experience response:', gptData);
       if (gptData.suggestions) {
-        const { projectRole, projectDescription, projectChallenges, leadership, isInternship } = gptData.suggestions;
+        const { internships, projects } = gptData.suggestions;
         setDetails((prev) => ({
           ...prev,
-          projectRole: projectRole || prev.projectRole,
-          projectDescription: projectDescription || prev.projectDescription,
-          projectChallenges: projectChallenges || prev.projectChallenges,
-          leadership: leadership || prev.leadership,
-          isInternship: isInternship,
+          internships: internships || [],
+          projects: projects || [],
         }));
       } else {
         setError('No experience suggestions');
@@ -267,119 +261,119 @@ export default function MakeResume() {
   };
 
   const fetchCareerDevelopment = async () => {
-  setIsLoading(true);
-  setError(null);
-  try {
-    console.log('Sending id_number to /api/careerDevelopment:', details.id_number);
-    const res = await fetch('/api/careerDevelopment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id_number: details.id_number }),
-    });
-    if (!res.ok) throw new Error(`Career development API error: ${res.statusText}`);
-    const gptData = await res.json();
-    console.log('Career development response:', gptData);
-    if (gptData.suggestions && gptData.suggestions.careerPriority1) {
-      const { careerPriority1, careerPriority2, careerPriority3, careerRoles } = gptData.suggestions;
-      const newPriorities = [careerPriority1, careerPriority2, careerPriority3].filter(p => p && p.trim());
-      if (newPriorities.length < 3) {
-        console.warn('Incomplete career priorities:', newPriorities);
-        setError('Incomplete career priorities received');
-        return;
-      }
-      setDetails((prev) => ({
-        ...prev,
-        careerPriorities: newPriorities,
-        careerRoles: careerRoles || prev.careerRoles,
-      }));
-    } else {
-      setError('No valid career development suggestions');
-      console.error('Invalid suggestions:', gptData);
-    }
-  } catch (err) {
-    setError(`Career development fetch error: ${err.message}`);
-    console.error('Career development fetch error:', err);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-  useEffect(() => {
-  const encryptedId = searchParams.get('encrypted_id');
-  if (encryptedId && !hasFetchedCareerData.current) {
-    hasFetchedCareerData.current = true;
     setIsLoading(true);
+    setError(null);
     try {
-      const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET || 'default-secure-key-32chars1234567';
-      const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedId), secretKey);
-      const idNumber = bytes.toString(CryptoJS.enc.Utf8);
-      if (idNumber) {
-        console.log('Selected employee ID:', idNumber);
-        fetch(`/api/fetchDetails?id_number=${encodeURIComponent(idNumber)}`)
-          .then((res) => {
-            if (!res.ok) throw new Error(`Fetch error: ${res.statusText}`);
-            return res.json();
-          })
-          .then((data) => {
-            if (data.name) {
-              console.log('Fetched names:', { name: data.name, katakana: data.katakana, initials: data.initials });
-              setDetails((prev) => ({
-                ...prev,
-                id_number: idNumber,
-                name: data.name,
-                katakana: data.katakana || '',
-                initials: data.initials || '',
-                selectedName: data.name // Default to English name
-              }));
-            } else {
-              setError('Employee name not found');
-              console.error('No name in response:', data);
-            }
-          })
-          .catch((err) => {
-            setError(`Fetch error: ${err.message}`);
-            console.error('Fetch error:', err);
-          })
-          .finally(() => setIsLoading(false));
+      console.log('Sending id_number to /api/careerDevelopment:', details.id_number);
+      const res = await fetch('/api/careerDevelopment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_number: details.id_number }),
+      });
+      if (!res.ok) throw new Error(`Career development API error: ${res.statusText}`);
+      const gptData = await res.json();
+      console.log('Career development response:', gptData);
+      if (gptData.suggestions && gptData.suggestions.careerPriority1) {
+        const { careerPriority1, careerPriority2, careerPriority3, careerRoles } = gptData.suggestions;
+        const newPriorities = [careerPriority1, careerPriority2, careerPriority3].filter(p => p && p.trim());
+        if (newPriorities.length < 3) {
+          console.warn('Incomplete career priorities:', newPriorities);
+          setError('Incomplete career priorities received');
+          return;
+        }
+        setDetails((prev) => ({
+          ...prev,
+          careerPriorities: newPriorities,
+          careerRoles: careerRoles || prev.careerRoles,
+        }));
       } else {
-        console.error('Failed to decrypt id_number');
-        setError('Invalid employee ID');
-        setIsLoading(false);
+        setError('No valid career development suggestions');
+        console.error('Invalid suggestions:', gptData);
       }
     } catch (err) {
-      console.error('Decryption error:', err.message);
-      setError('Decryption error');
+      setError(`Career development fetch error: ${err.message}`);
+      console.error('Career development fetch error:', err);
+    } finally {
       setIsLoading(false);
     }
-  } else if (!encryptedId) {
-    console.error('No encrypted_id in URL');
-    setError('No employee ID provided');
-    setIsLoading(false);
-  }
-}, [searchParams]);
+  };
+
+  useEffect(() => {
+    const encryptedId = searchParams.get('encrypted_id');
+    if (encryptedId && !hasFetchedCareerData.current) {
+      hasFetchedCareerData.current = true;
+      setIsLoading(true);
+      try {
+        const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET || 'default-secure-key-32chars1234567';
+        const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedId), secretKey);
+        const idNumber = bytes.toString(CryptoJS.enc.Utf8);
+        if (idNumber) {
+          console.log('Selected employee ID:', idNumber);
+          fetch(`/api/fetchDetails?id_number=${encodeURIComponent(idNumber)}`)
+            .then((res) => {
+              if (!res.ok) throw new Error(`Fetch error: ${res.statusText}`);
+              return res.json();
+            })
+            .then((data) => {
+              if (data.name) {
+                console.log('Fetched names:', { name: data.name, katakana: data.katakana, initials: data.initials });
+                setDetails((prev) => ({
+                  ...prev,
+                  id_number: idNumber,
+                  name: data.name,
+                  katakana: data.katakana || '',
+                  initials: data.initials || '',
+                  selectedName: data.name,
+                }));
+              } else {
+                setError('Employee name not found');
+                console.error('No name in response:', data);
+              }
+            })
+            .catch((err) => {
+              setError(`Fetch error: ${err.message}`);
+              console.error('Fetch error:', err);
+            })
+            .finally(() => setIsLoading(false));
+        } else {
+          console.error('Failed to decrypt id_number');
+          setError('Invalid employee ID');
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.error('Decryption error:', err.message);
+        setError('Decryption error');
+        setIsLoading(false);
+      }
+    } else if (!encryptedId) {
+      console.error('No encrypted_id in URL');
+      setError('No employee ID provided');
+      setIsLoading(false);
+    }
+  }, [searchParams]);
 
   const handleInputChange = (e) => {
-  const { name, value, type, files } = e.target;
-  console.log('Input change:', { name, type, value, files: files?.length });
-  if (type === 'file') {
-    const file = files[0];
-    if (file && file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) {
-      setDetails((prev) => ({ ...prev, photo: file }));
+    const { name, value, type, files } = e.target;
+    console.log('Input change:', { name, type, value, files: files?.length });
+    if (type === 'file') {
+      const file = files[0];
+      if (file && file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) {
+        setDetails((prev) => ({ ...prev, photo: file }));
+      } else {
+        alert('Please upload a JPEG image under 5MB');
+      }
     } else {
-      alert('Please upload a JPEG image under 5MB');
+      if (name === 'employeeNumber' && value !== '' && !/^\d+$/.test(value)) {
+        alert('Employee Number must be a number');
+        return;
+      }
+      setDetails((prev) => {
+        const updatedDetails = { ...prev, [name]: value };
+        console.log('Updated details:', updatedDetails);
+        return updatedDetails;
+      });
     }
-  } else {
-    if (name === 'employeeNumber' && value !== '' && !/^\d+$/.test(value)) {
-      alert('Employee Number must be a number');
-      return;
-    }
-    setDetails((prev) => {
-      const updatedDetails = { ...prev, [name]: value };
-      console.log('Updated details:', updatedDetails); // Log state
-      return updatedDetails;
-    });
-  }
-};
+  };
 
   const handleArrayInputChange = (e, index, field, arrayName) => {
     const { value } = e.target;
@@ -411,83 +405,112 @@ export default function MakeResume() {
     }));
   };
 
- const compileResume = async () => {
-  setIsLoading(true);
-  setError(null);
-  try {
-    if (!Array.isArray(details.careerPriorities) || details.careerPriorities.length === 0) {
-      console.warn('careerPriorities is invalid:', details.careerPriorities);
-      setError('Career priorities are missing or invalid');
-      return;
-    }
-    const formData = new FormData();
-    formData.append('details', JSON.stringify(details));
-    if (details.photo) {
-      console.log('Appending photo:', details.photo.name, details.photo.size);
-      formData.append('photo', details.photo);
-    }
-    formData.append('sessionId', sessionId);
-    const response = await fetch('/api/generateResume', {
-      method: 'POST',
-      body: formData,
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
-    }
-    const data = await response.json();
-    console.log('Response from /api/generateResume:', data);
-    if (!data.previewUrl || !data.previewUrl.startsWith('resume-') || !data.previewUrl.endsWith('.pdf')) {
-      throw new Error(`Invalid preview URL: ${data.previewUrl}`);
-    }
-    setPreviewLink(data.previewUrl);
-    setTempPdfPath(data.tempPdfPath);
-    setSessionId(data.sessionId);
-  } catch (err) {
-    setError(`Failed to generate preview: ${err.message}`);
-    console.error('Generate resume error:', err);
-    setPreviewLink(null);
-  } finally {
-    setIsLoading(false);
-  }
-};
-  const fetchFieldsOfInterest = async () => {
-  setIsLoading(true);
-  setError(null);
-  try {
-    console.log('Sending id_number to /api/fieldsOfInterest:', details.id_number);
-    const res = await fetch('/api/fieldsOfInterest', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id_number: details.id_number }),
-    });
-    if (!res.ok) throw new Error(`Fields of Interest API error: ${res.statusText}`);
-    const data = await res.json();
-    console.log('Fields of Interest response:', data);
-    if (data.suggestions) {
-      const { field1, field2, field3 } = data.suggestions;
-      const newFields = [field1, field2, field3].filter(Boolean);
-      if (newFields.length < 3) {
-        console.warn('Incomplete fields of interest:', newFields);
-        setError('Incomplete fields of interest received');
+  const addExperience = (type) => {
+    setDetails((prev) => ({
+      ...prev,
+      [type]: [
+        ...prev[type],
+        {
+          title: '',
+          period: '',
+          company: type === 'internships' ? '' : undefined,
+          role: '',
+          description: '',
+          challenges: '',
+          outcome: '',
+        },
+      ].slice(0, 2), // Limit to 2 entries
+    }));
+  };
+
+  const removeExperience = (type, indexToRemove) => {
+    setDetails((prev) => ({
+      ...prev,
+      [type]: prev[type].length > 0
+        ? prev[type].filter((_, index) => index !== indexToRemove)
+        : prev[type],
+    }));
+  };
+
+  const compileResume = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      if (!Array.isArray(details.careerPriorities) || details.careerPriorities.length === 0) {
+        console.warn('careerPriorities is invalid:', details.careerPriorities);
+        setError('Career priorities are missing or invalid');
         return;
       }
-      setDetails((prev) => ({
-        ...prev,
-        interestFields: newFields, // Auto-populate inputs
-      }));
-    } else {
-      setError('No fields of interest suggestions');
-      console.error('No suggestions in response:', data);
+      const formData = new FormData();
+      formData.append('details', JSON.stringify(details));
+      if (details.photo) {
+        console.log('Appending photo:', details.photo.name, details.photo.size);
+        formData.append('photo', details.photo);
+      }
+      formData.append('sessionId', sessionId);
+      const response = await fetch('/api/generateResume', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
+      }
+      const data = await response.json();
+      console.log('Response from /api/generateResume:', data);
+      if (!data.previewUrl || !data.previewUrl.startsWith('resume-') || !data.previewUrl.endsWith('.pdf')) {
+        throw new Error(`Invalid preview URL: ${data.previewUrl}`);
+      }
+      setPreviewLink(data.previewUrl);
+      setTempPdfPath(data.tempPdfPath);
+      setSessionId(data.sessionId);
+    } catch (err) {
+      setError(`Failed to generate preview: ${err.message}`);
+      console.error('Generate resume error:', err);
+      setPreviewLink(null);
+    } finally {
+      setIsLoading(false);
     }
-  } catch (err) {
-    setError(`Fields of Interest fetch error: ${err.message}`);
-    console.error('Fields of Interest fetch error:', err);
-  } finally {
-    setIsLoading(false);
-  }
-};
-const fetchProductDevelopment = async () => {
+  };
+
+  const fetchFieldsOfInterest = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      console.log('Sending id_number to /api/fieldsOfInterest:', details.id_number);
+      const res = await fetch('/api/fieldsOfInterest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_number: details.id_number }),
+      });
+      if (!res.ok) throw new Error(`Fields of Interest API error: ${res.statusText}`);
+      const data = await res.json();
+      console.log('Fields of Interest response:', data);
+      if (data.suggestions) {
+        const { field1, field2, field3 } = data.suggestions;
+        const newFields = [field1, field2, field3].filter(Boolean);
+        if (newFields.length < 3) {
+          console.warn('Incomplete fields of interest:', newFields);
+          setError('Incomplete fields of interest received');
+          return;
+        }
+        setDetails((prev) => ({
+          ...prev,
+          interestFields: newFields,
+        }));
+      } else {
+        setError('No fields of interest suggestions');
+        console.error('No suggestions in response:', data);
+      }
+    } catch (err) {
+      setError(`Fields of Interest fetch error: ${err.message}`);
+      console.error('Fields of Interest fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchProductDevelopment = async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -510,7 +533,7 @@ const fetchProductDevelopment = async () => {
         setDetails((prev) => ({
           ...prev,
           productDevReason,
-          productDevRole
+          productDevRole,
         }));
       } else {
         setError('No product development suggestions');
@@ -564,9 +587,9 @@ const fetchProductDevelopment = async () => {
       <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full">
         <h1 className="text-2xl text-black font-bold mb-6">履歴書ビルダー / Resume Builder</h1>
         <PersonalInfo details={details} handleInputChange={handleInputChange} />
-        <CareerAspirations 
-          details={details} 
-          handleInputChange={handleInputChange} 
+        <CareerAspirations
+          details={details}
+          handleInputChange={handleInputChange}
           fetchCareerAspirations={fetchCareerAspirations}
           isLoading={isLoading}
         />
@@ -578,24 +601,27 @@ const fetchProductDevelopment = async () => {
           fetchEducation={handlefetchEducation}
           isLoading={isLoading}
         />
-        <LanguagesAndTools 
-          details={details} 
-          handleInputChange={handleInputChange} 
+        <LanguagesAndTools
+          details={details}
+          handleInputChange={handleInputChange}
           fetchLanguagesAndTools={fetchLanguagesAndTools}
           isLoading={isLoading}
         />
-        <Projects 
-          details={details} 
-          handleInputChange={handleInputChange} 
+        <Projects
+          internships={details.internships}
+          projects={details.projects}
+          handleArrayInputChange={handleArrayInputChange}
+          addExperience={addExperience}
+          removeExperience={removeExperience}
           fetchInternshipExperience={fetchInternshipExperience}
           isLoading={isLoading}
         />
-        <ProductDevelopment 
-        details={details} 
-        handleInputChange={handleInputChange}
-        fetchProductDevelopment={fetchProductDevelopment}
-        isLoading={isLoading}
-        error={error} 
+        <ProductDevelopment
+          details={details}
+          handleInputChange={handleInputChange}
+          fetchProductDevelopment={fetchProductDevelopment}
+          isLoading={isLoading}
+          error={error}
         />
         <FieldsOfInterest
           details={details}
@@ -604,9 +630,9 @@ const fetchProductDevelopment = async () => {
           error={error}
           fetchFieldsOfInterest={fetchFieldsOfInterest}
         />
-        <JapaneseCompanies 
-          details={details} 
-          handleInputChange={handleInputChange} 
+        <JapaneseCompanies
+          details={details}
+          handleInputChange={handleInputChange}
           fetchJapaneseCompanies={fetchJapaneseCompanies}
           isLoading={isLoading}
         />

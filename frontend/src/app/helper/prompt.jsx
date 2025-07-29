@@ -161,53 +161,58 @@ export default function Prompt(data, whatFor) {
     // #endregion
     return prompt;
   } else if (whatFor === whatForTypes[3]) {
-    const { internship_1_title, internship_1_company, internship_1_period, internship_1_team_size, internship_1_technologies, internship_1_summary, internship_1_purpose, internship_1_role, internship_1_challenges, internship_1_outcome } = data;
-    // #region internshipExperience
-    const isInternship = internship_1_company !== ''; // Detect if it's an internship based on company field
+    const { title, company, period, team_size, technologies, summary, purpose, role, challenges, outcome, isInternship } = data;
     const experienceType = isInternship ? 'インターンシップ' : 'プロジェクト';
     const prompt = `
-        ＜システム指示/System Instructions>
-        以下の${experienceType}情報を元に、CVの「${experienceType}」セクションに記載するための簡潔でビジネスに適した値を生成してください。
-        出力は指定されたフォーマットに**厳密に**従い、余計な説明や追加のテキストを含めず、指定されたマーカー内に4行の日本語テキストのみを提供してください。
-        各項目は自然な日本語で、CVに適したプロフェッショナルな表現を使用してください。
+      ＜システム指示/System Instructions>
+      以下の${experienceType}情報を元に、CVの「${experienceType}」セクションに記載するための簡潔でビジネスに適した値を生成してください。
+      出力は指定されたフォーマットに**厳密に**従い、余計な説明や追加のテキストを含めず、指定されたマーカー内に7行の日本語テキストのみを提供してください。
+      各項目は自然な日本語で、CVに適したプロフェッショナルな表現を使用してください。
+      タイトル、期間、${isInternship ? '会社' : 'プロジェクト名'}は必ず日本語で記述し、期間は「YYYY年MM月 – YYYY年MM月」の形式で統一してください。
 
-        ＜${experienceType}情報/${isInternship ? 'Internship' : 'Project'} Information>
-        タイトル/Title: ${internship_1_title || 'なし'}
-        ${isInternship ? '会社/Company' : 'プロジェクト名/Project Name'}: ${internship_1_company || 'なし'}
-        期間/Period: ${internship_1_period || 'なし'}
-        チームサイズ/Team Size: ${internship_1_team_size || '不明'}
-        使用技術/Technologies: ${internship_1_technologies || 'なし'}
-        概要/Summary: ${internship_1_summary || 'なし'}
-        目的/Purpose: ${internship_1_purpose || 'なし'}
-        役割/Role: ${internship_1_role || 'なし'}
-        課題/Challenges: ${internship_1_challenges || 'なし'}
-        成果/Outcome: ${internship_1_outcome || 'なし'}
+      ＜${experienceType}情報/${isInternship ? 'Internship' : 'Project'} Information>
+      タイトル/Title: ${title || 'なし'}
+      ${isInternship ? '会社/Company' : 'プロジェクト名/Project Name'}: ${company || 'なし'}
+      期間/Period: ${period || 'なし'}
+      チームサイズ/Team Size: ${team_size || '不明'}
+      使用技術/Technologies: ${technologies || 'なし'}
+      概要/Summary: ${summary || 'なし'}
+      目的/Purpose: ${purpose || 'なし'}
+      役割/Role: ${role || 'なし'}
+      課題/Challenges: ${challenges || 'なし'}
+      成果/Outcome: ${outcome || 'なし'}
 
-        <プロンプト/Prompt>
-        以下の4つの項目について、適切な値を生成してください :
-        - 担当した役割/Role: ${experienceType}での役割（${internship_1_role}）を簡潔に記述。
-        - 具体的な内容/Description: ${experienceType}の概要（${internship_1_summary}）、目的（${internship_1_purpose}）、使用技術（${internship_1_technologies}）、チームサイズ（${internship_1_team_size}）を統合し、詳細な説明を生成。
-        - 直面した課題/Challenges: 課題（${internship_1_challenges}）を簡潔かつ具体的に記述。
-        - リーダー経験/Leadership Experience: 成果（${internship_1_outcome}）からリーダーシップに関連する内容を抽出し、簡潔に記述。リーダーシップが明示されていない場合は、チームでの貢献を強調。
+      <プロンプト/Prompt>
+      以下の7つの項目について、適切な値を生成してください :
+      - タイトル/Title: ${experienceType}のタイトル（${title}）を日本語で簡潔に記述。
+      - ${isInternship ? '会社/Company' : 'プロジェクト名/Project Name'}: ${isInternship ? '会社名（${company}）' : 'プロジェクト名（${title}）'}を日本語で記述。
+      - 期間/Period: 期間（${period}）を「YYYY年MM月 – YYYY年MM月」の形式で日本語で記述。
+      - 担当した役割/Role: ${experienceType}での役割（${role}）を簡潔に記述。
+      - 具体的な内容/Description: ${experienceType}の概要（${summary}）、目的（${purpose}）、使用技術（${technologies}）、チームサイズ（${team_size}）を統合し、詳細な説明を生成。
+      - 直面した課題/Challenges: 課題（${challenges}）を簡潔かつ具体的に記述。
+      - 成果/Outcome: 成果（${outcome}）を簡潔に記述し、チームまたは個人の貢献を強調。
 
-        【出力フォーマット】
-        出力は以下のフォーマットに**厳密に**従ってください。余計なテキストや説明を一切含めず、===FORM1-START=== と ===FORM1-END=== の間に4行のみを記載してください。各行は指定されたラベルで始まり、内容は日本語で簡潔かつプロフェッショナルに記述してください。
+      【出力フォーマット】
+      出力は以下のフォーマットに**厳密に**従ってください。余計なテキストや説明を一切含めず、===FORM1-START=== と ===FORM1-END=== の間に7行のみを記載してください。各行は指定されたラベルで始まり、内容は日本語で簡潔かつプロフェッショナルに記述してください。
 
-        【出力例】
-        ===FORM1-START===
-        担当した役割: チームリーダー
-        具体的な内容: 3人チームで、Pythonを使用し、電気自動車の走行距離予測モデルを開発
-        直面した課題: データクリーニングとPythonの初学者としての技術習得に苦労
-        リーダー経験: チームを統括し、モデルの評価と改善を主導
-        ===FORM1-END===
+      【出力例】
+      ===FORM1-START===
+      タイトル: 機械学習インターンシップ
+      会社: テック株式会社
+      期間: 2023年06月 – 2023年08月
+      担当した役割: データサイエンティスト
+      具体的な内容: 3人チームでPythonを使用し、機械学習モデルを開発
+      直面した課題: データクリーニングの複雑さ
+      成果: モデル精度を20%向上
+      ===FORM1-END===
 
-        【構成ルール】
-        - 4つの項目をそれぞれ1行ずつ、**日本語で簡潔かつ正確に**記載。
-        - 入力データをそのまま記載せず、適切に変換し、CVにふさわしいビジネス的な表現を使用。
-        - 専門性と成果を強調し、自然な日本語で記述。
-        - 出力は===FORM1-START=== と ===FORM1-END=== の間に4行のみを含め、他のテキストやマーカーは一切含めない。
-      `;
-    // #endregion
+      【構成ルール】
+      - 7つの項目をそれぞれ1行ずつ、**日本語で簡潔かつ正確に**記載。
+      - タイトル、${isInternship ? '会社' : 'プロジェクト名'}、期間は入力データをそのまま反映し、日本語で記述。期間は「YYYY年MM月 – YYYY年MM月」の形式で統一。
+      - 入力データを適切に変換し、CVにふさわしいビジネス的な表現を使用。
+      - 専門性と成果を強調し、自然な日本語で記述。
+      - 出力は===FORM1-START=== と ===FORM1-END=== の間に7行のみを含め、他のテキストやマーカーは一切含めない。
+    `;
     return prompt;
   } else if (whatFor === whatForTypes[4]) {
     const {interest_in_japanese_companies, aspects_to_learn, future_career_goals} = data;
@@ -393,6 +398,7 @@ const prompt = `
     - **Major**: If a major (${major}) is provided and not empty or 'なし', convert it to Katakana and append it in bold brackets (e.g., **[土木工学]**) to the institution name.
       - Convert the major to Katakana using Japanese phonetic conventions (e.g., "Civil Engineering" → "土木工学").
       - If the major is empty or 'なし', do not append anything.
+      - Also there won't be any major for highschools or schools.
     - **Date String**: Convert the date string (${date_string}) to a Japanese date range in the format "YYYY年MM月 – YYYY年MM月", ensuring:
       - For ranges like "Apr 2014 – Mar 2016" or "Aug 2016 – Oct 2017", output the full range (e.g., "2014年4月 – 2016年3月", "2016年8月 – 2017年10月").
       - For single years like "2016", output "2016年".

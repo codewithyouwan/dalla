@@ -153,7 +153,7 @@
     </tr>
     {{#each education}}
     <tr>
-      <td>{{year}}年</td>
+      <td>{{year}}</td>
       <td colspan="3" class="text-left">{{institution}}{{#if major}} (<strong>{{major}}</strong>) {{/if}}</td>
       <td class="text-left">{{degree}}</td>
     </tr>
@@ -170,55 +170,125 @@
       <td colspan="3" class="text-left">{{devTools}}</td>
     </tr>
     <tr>
-      <th colspan="5" class="header-light-green">{{#if isInternship}}インターンシップ{{else}}プロジェクト{{/if}}</th>
+      <th colspan="5" class="header-light-green">インターンシップ / Internships</th>
     </tr>
+    {{#if internships.length}}
+      {{#each internships}}
+      <tr>
+        <th colspan="2" class="text-left th-white">タイトル：</th>
+        <td colspan="3" class="text-left">{{title}}</td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">企業：</th>
+        <td colspan="3" class="text-left">{{company}}</td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">期間：</th>
+        <td colspan="3" class="text-left">{{period}}</td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">概要：</th>
+        <td colspan="3" class="text-left">{{description}}</td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">エンドユーザー：</th>
+        <td colspan="3" class="text-left">アプリを使用する一般ユーザー</td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">内容：</th>
+        <td colspan="3" class="text-left">{{description}}</td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">具体的な内容</th>
+        <td colspan="3" class="text-left">
+          <b>果たした役割：</b><br>
+          <span class="indent">{{role}}</span><br>
+          <span class="indent">ディープラーニングモデルの設計・訓練</span><br>
+          <span class="indent">データの収集と前処理</span><br>
+          <span class="indent">モデルの評価と改善</span>
+        </td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">課題：</th>
+        <td colspan="3" class="text-left">
+          <span class="indent">{{challenges}}</span><br>
+          <span class="indent">-> マネージャーからの継続的な指導を受けつつ、自主学習を行った</span><br>
+          <span class="indent">-> モデルに供給するためのデータを適切にクリーニングする必要があった</span><br>
+          <span class="indent">-> 少量のデータセットを手動でチェックし、アルゴリズムを適用して検証した</span>
+        </td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">得られた成果</th>
+        <td colspan="3" class="text-left">{{outcome}}</td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">直面した課題</th>
+        <td colspan="3" class="text-left">{{challenges}}</td>
+      </tr>
+      {{/each}}
+    {{else}}
+      <tr>
+        <td colspan="5" class="text-left">インターンシップなし / No Internships</td>
+      </tr>
+    {{/if}}
     <tr>
-      <th colspan="2" class="text-left th-white">タイトル：</th>
-      <td colspan="3" class="text-left">{{projectRole}}</td>
+      <th colspan="5" class="header-light-green">プロジェクト / Projects</th>
     </tr>
-    <tr>
-      <th colspan="2" class="text-left th-white">概要：</th>
-      <td colspan="3" class="text-left">{{projectDescription}}</td>
-    </tr>
-    <tr>
-      <th colspan="2" class="text-left th-white">エンドユーザー：</th>
-      <td colspan="3" class="text-left">アプリを使用する一般ユーザー</td>
-    </tr>
-    <tr>
-      <th colspan="2" class="text-left th-white">内容：</th>
-      <td colspan="3" class="text-left">{{projectDescription}}</td>
-    </tr>
-    <tr>
-      <th colspan="2" class="text-left th-white">具体的な内容</th>
-      <td colspan="3" class="text-left">
-        <b>果たした役割：</b><br>
-        <span class="indent">{{projectRole}}</span><br>
-        <span class="indent">ディープラーニングモデルの設計・訓練</span><br>
-        <span class="indent">データの収集と前処理</span><br>
-        <span class="indent">モデルの評価と改善</span>
-      </td>
-    </tr>
-    <tr>
-      <th colspan="2" class="text-left th-white">課題：</th>
-      <td colspan="3" class="text-left">
-        <span class="indent">{{projectChallenges}}</span><br>
-        <span class="indent">-> マネージャーからの継続的な指導を受けつつ、自主学習を行った</span><br>
-        <span class="indent">-> モデルに供給するためのデータを適切にクリーニングする必要があった</span><br>
-        <span class="indent">-> 少量のデータセットを手動でチェックし、アルゴリズムを適用して検証した</span>
-      </td>
-    </tr>
-    <tr>
-      <th colspan="2" class="text-left th-white">得られた成果</th>
-      <td colspan="3" class="text-left">{{leadership}}</td>
-    </tr>
-    <tr>
-      <th colspan="2" class="text-left th-white">直面した課題</th>
-      <td colspan="3" class="text-left">{{projectChallenges}}</td>
-    </tr>
-    <tr>
-      <th colspan="2" class="text-left th-white">リーダー経験</th>
-      <td colspan="3" class="text-left">{{leadership}}</td>
-    </tr>
+    {{#if projects.length}}
+      {{#each projects}}
+      <tr>
+        <th colspan="2" class="text-left th-white">タイトル：</th>
+        <td colspan="3" class="text-left">{{title}}</td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">期間：</th>
+        <td colspan="3" class="text-left">{{period}}</td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">概要：</th>
+        <td colspan="3" class="text-left">{{description}}</td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">エンドユーザー：</th>
+        <td colspan="3" class="text-left">アプリを使用する一般ユーザー</td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">内容：</th>
+        <td colspan="3" class="text-left">{{description}}</td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">具体的な内容</th>
+        <td colspan="3" class="text-left">
+          <b>果たした役割：</b><br>
+          <span class="indent">{{role}}</span><br>
+          <span class="indent">ディープラーニングモデルの設計・訓練</span><br>
+          <span class="indent">データの収集と前処理</span><br>
+          <span class="indent">モデルの評価と改善</span>
+        </td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">課題：</th>
+        <td colspan="3" class="text-left">
+          <span class="indent">{{challenges}}</span><br>
+          <span class="indent">-> マネージャーからの継続的な指導を受けつつ、自主学習を行った</span><br>
+          <span class="indent">-> モデルに供給するためのデータを適切にクリーニングする必要があった</span><br>
+          <span class="indent">-> 少量のデータセットを手動でチェックし、アルゴリズムを適用して検証した</span>
+        </td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">得られた成果</th>
+        <td colspan="3" class="text-left">{{outcome}}</td>
+      </tr>
+      <tr>
+        <th colspan="2" class="text-left th-white">直面した課題</th>
+        <td colspan="3" class="text-left">{{challenges}}</td>
+      </tr>
+      {{/each}}
+    {{else}}
+      <tr>
+        <td colspan="5" class="text-left">プロジェクトなし / No Projects</td>
+      </tr>
+    {{/if}}
     <tr>
       <th colspan="5" class="header-blue">製品開発について</th>
     </tr>
