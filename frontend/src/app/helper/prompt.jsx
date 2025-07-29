@@ -59,59 +59,50 @@ export default function Prompt(data, whatFor) {
         `;
     // #endregion
     return prompt;
-  } else if (whatFor === whatForTypes[1]) {
+  // In prompt.jsx, replace the careerAspirations section
+} else if (whatFor === whatForTypes[1]) {
     const { preferred_industry, job_role_priority_1, future_career_goals, work_style_preference } = data;
-    // #region careerAspirations
     const prompt = `
-        ＜従業員情報/Employee Information>
-        希望業界/Preferred Industry: ${preferred_industry}
-        優先職種/Job Role Priority: ${job_role_priority_1}
-        将来のキャリア目標/Future Career Goals: ${future_career_goals}
-        ワークスタイル/Work Style Preference: ${work_style_preference}
+      <System Instructions>
+      Respond **only** with the exact format specified below, containing four Japanese lines within ===FORM2-START=== and ===FORM2-END===. Use professional Japanese suitable for a CV, with concise expressions (1-3 words per line).
 
-        <プロンプト/Prompt>
-        この従業員情報を元に、キャリア志向 (希望業界、優先職種、将来のキャリア目標、ワークスタイル) について、CVに記載するための簡潔でビジネスに適した値を生成してください。
-        企業が私のキャリア目標と専門性を適切に理解できるように、**1単語または短いフレーズ (最大5語) **で、4つの項目それぞれを記述してください。
-        3パターンの値セットを作成し、各パターンは4つの値 (希望業界→優先職種→将来のキャリア目標→ワークスタイルの順) で構成してください。
-        各値は改行で区切り、**日本語で簡潔かつ正確に**記載してください。
+      <Employee Information>
+      Preferred Industry: ${preferred_industry?.length ? preferred_industry.join(', ') : 'なし'}
+      Job Role Priority: ${job_role_priority_1 || 'なし'}
+      Future Career Goals: ${future_career_goals?.length ? future_career_goals.join(', ') : 'なし'}
+      Work Style Preference: ${work_style_preference?.length ? work_style_preference.join(', ') : 'なし'}
 
-        出力は以下のフォーマットに**厳密に**従ってください。各パターンの出力は、それぞれ次のようにマーカーで囲ってください：
+      <Prompt>
+      Generate four items for the CV's "志向" section:
+      - 希望業界: Based on Preferred Industry (${preferred_industry?.length ? preferred_industry.join(', ') : 'なし'}), describe the desired industry in 1-3 words.
+      - 希望職種: Based on Job Role Priority (${job_role_priority_1 || 'なし'}), describe the desired job type in 1-3 words.
+      - 目指す役割: Based on Future Career Goals (${future_career_goals?.length ? future_career_goals.join(', ') : 'なし'}), describe the target role in 1-3 words.
+      - ワークスタイル: Based on Work Style Preference (${work_style_preference?.length ? work_style_preference.join(', ') : 'なし'}), describe the work style in 1-3 words.
 
-        - 長めのフレーズ (3-5語) には ===FORM1-START=== と ===FORM1-END=== を使用してください。  
-        - 中くらいのフレーズ (2-3語) には ===FORM2-START=== と ===FORM2-END=== を使用してください。  
-        - 最も簡潔な値 (1-2語) には ===FORM3-START=== と ===FORM3-END=== を使用してください。
+      <Output Format>
+      ===FORM2-START===
+      希望業界: [1-3 words]
+      希望職種: [1-3 words]
+      目指す役割: [1-3 words]
+      ワークスタイル: [1-3 words]
+      ===FORM2-END===
 
-        【各パターの構成ルール】
+      <Example>
+      ===FORM2-START===
+      希望業界: テクノロジー
+      希望職種: 開発エンジニア
+      目指す役割: ソフトウェア開発
+      ワークスタイル: スペシャリスト
+      ===FORM2-END===
 
-        - 4つの項目 (希望業界、優先職種、将来のキャリア目標、ワークスタイル) について、それぞれ1行ずつ、**日本語で簡潔に**記載してください。
-        - 各パターンは4行で構成してください (希望業界→優先職種→将来のキャリア目標→ワークスタイルの順)。
-        - 入力データ（${preferred_industry}、${job_role_priority_1}、${future_career_goals}、${work_style_preference}）をそのまま記載せず、適切に変換してください。
-        - CVにふさわしいビジネス的な表現を使用し、専門性と意欲を強調してください。
-
-        【出力形式の例】
-
-        ===FORM1-START===
-        テクノロジー業界
-        ソフトウェアエンジニア
-        データサイエンス
-        リモートワーク
-        ===FORM1-END===
-
-        ===FORM2-START===
-        IT業界
-        エンジニア
-        AI開発
-        スペシャリスト
-        ===FORM2-END===
-
-        ===FORM3-START===
-        技術
-        開発者
-        機械学習
-        フレキシブル
-        ===FORM3-END===
-        `;
-    // #endregion
+      <Rules>
+      - Output **exactly** four lines between ===FORM2-START=== and ===FORM2-END===.
+      - Each line starts with the specified label (希望業界: , 希望職種: , 目指す役割: , ワークスタイル: ) followed by 1-3 words.
+      - Convert input data into professional, CV-appropriate Japanese; do not copy verbatim.
+      - If input is 'なし' or empty, use generic but relevant terms (e.g., 技術, エンジニア, データ分析, スペシャリスト).
+      - Do **not** include other markers (e.g., FORM1, FORM3), text, or blank lines.
+      - Suggested max_tokens: 100 for concise output.
+    `;
     return prompt;
   } else if (whatFor === whatForTypes[2]) {
     const { programming_languages, databases_querying, version_control, code_editors_ides, ml_frameworks } = data;

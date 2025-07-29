@@ -64,57 +64,40 @@ export default function MakeResume() {
   const searchParams = useSearchParams();
   const hasFetchedCareerData = useRef(false);
 
-  const fetchCareerAspirations = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const careerData = {
-        preferred_industry: details.interestFields || [],
-        job_role_priority_1: details.careerRoles || '',
-        future_career_goals: details.careerPriorities || [],
-        work_style_preference: details.japanCompanySkills ? [details.japanCompanySkills] : [],
-      };
-      console.log('Sending career data to API:', careerData);
-      const res = await fetch('/api/careerAspirations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(careerData),
-      });
-      if (!res.ok) throw new Error(`Career aspirations API error: ${res.statusText}`);
-      const gptData = await res.json();
-      console.log('Career aspirations response:', gptData);
-      if (gptData.suggestions) {
-        const form2Match = gptData.suggestions.match(/===FORM2-START===[\s\S]*?\n([\s\S]*?)\n===FORM2-END===/);
-        if (form2Match) {
-          const lines = form2Match[1].trim().split('\n').map(line => line.trim());
-          console.log('Parsed FORM2 lines:', lines);
-          if (lines.length >= 4) {
-            setDetails((prev) => ({
-              ...prev,
-              devField: lines[0] || '',
-              jobType: lines[1] || '',
-              domain: lines[2] || '',
-              type: lines[3] || '',
-            }));
-          } else {
-            setError('Invalid career aspirations response format');
-            console.error('Expected 4 lines, got:', lines);
-          }
-        } else {
-          setError('Failed to parse career aspirations response');
-          console.error('No FORM2 in response:', gptData.suggestions);
-        }
-      } else {
-        setError('No career aspirations suggestions');
-        console.error('No suggestions in GPT response:', gptData);
-      }
-    } catch (err) {
-      setError(`Career aspirations fetch error: ${err.message}`);
-      console.error('Career aspirations fetch error:', err);
-    } finally {
-      setIsLoading(false);
+const fetchCareerAspirations = async () => {
+  setIsLoading(true);
+  setError(null);
+  try {
+    if (!details.id_number) {
+      throw new Error('id_number is required');
     }
-  };
+    const res = await fetch('/api/careerAspirations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_number: details.id_number }),
+    });
+    if (!res.ok) throw new Error(`Career aspirations API error: ${res.statusText}`);
+    const gptData = await res.json();
+    console.log('Career aspirations response:', gptData);
+    if (gptData.suggestions) {
+      setDetails((prev) => ({
+        ...prev,
+        desiredIndustry: gptData.suggestions.desiredIndustry || prev.desiredIndustry,
+        desiredJobType: gptData.suggestions.desiredJobType || prev.desiredJobType,
+        targetRole: gptData.suggestions.targetRole || prev.targetRole,
+        workStyle: gptData.suggestions.workStyle || prev.workStyle,
+      }));
+    } else {
+      setError('No career aspirations suggestions');
+      console.error('No suggestions in response:', gptData);
+    }
+  } catch (err) {
+    setError(`Career aspirations fetch error: ${err.message}`);
+    console.error('Career aspirations fetch error:', err);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const fetchLanguagesAndTools = async () => {
     setIsLoading(true);

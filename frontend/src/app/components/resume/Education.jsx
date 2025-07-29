@@ -32,7 +32,7 @@ export default function Education({ education, handleArrayInputChange, addEducat
         <div key={index} className="space-y-4 mb-4 border-b pb-4 relative">
           <div>
             <label className="block text-sm font-medium text-gray-700">年 / Year</label>
-            <textarea
+            <input
               type="text"
               value={edu.year ? `${edu.year}` : ''}
               onChange={(e) => handleArrayInputChange({ target: { value: e.target.value.replace('年', '') } }, index, 'year', 'education')}

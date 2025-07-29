@@ -13,44 +13,44 @@ export default function CareerAspirations({ details, handleInputChange, fetchCar
       </div>
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">開発分野 / Development Field</label>
+          <label className="block text-sm font-medium text-gray-700">希望業界 / Desired Industry</label>
           <input
             type="text"
-            name="devField"
-            value={details.devField}
+            name="desiredIndustry"
+            value={details.desiredIndustry}
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            placeholder="例: テクノロジー業界"
+            placeholder="例: テクノロジー"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">職種 / Job Type</label>
+          <label className="block text-sm font-medium text-gray-700">希望職種 / Desired Job Type</label>
           <input
             type="text"
-            name="jobType"
-            value={details.jobType}
+            name="desiredJobType"
+            value={details.desiredJobType}
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             placeholder="例: エンジニア"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">領域 / Domain</label>
+          <label className="block text-sm font-medium text-gray-700">目指す役割 / Target Role</label>
           <input
             type="text"
-            name="domain"
-            value={details.domain}
+            name="targetRole"
+            value={details.targetRole}
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             placeholder="例: データサイエンス"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">タイプ / Type</label>
+          <label className="block text-sm font-medium text-gray-700">ワークスタイル / Work Style</label>
           <input
             type="text"
-            name="type"
-            value={details.type}
+            name="workStyle"
+            value={details.workStyle}
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             placeholder="例: スペシャリスト"

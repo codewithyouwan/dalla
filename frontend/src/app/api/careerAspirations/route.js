@@ -1,84 +1,109 @@
-import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
-import { AzureKeyCredential } from "@azure/core-auth";
-import Prompt from "../../helper/prompt";
+import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from 'next/server';
+import OpenAI from 'openai';
+import Prompt from '../../helper/prompt';
 
 export const runtime = 'nodejs';
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 export async function POST(request) {
-  let body;
+  let id_number;
   try {
-    body = await request.json();
-    console.log('Career Aspirations API payload:', body);
-
-    const { preferred_industry, job_role_priority_1, future_career_goals, work_style_preference } = body;
-
-    // Validate and preprocess inputs
-    if (!body || typeof body !== 'object') {
-      throw new Error('Invalid request body: Expected JSON object');
+    const body = await request.json();
+    id_number = body.id_number;
+    
+    if (!id_number) {
+      return NextResponse.json({ error: 'id_number is required' }, { status: 400 });
     }
 
-    const formattedData = {
-      preferred_industry: Array.isArray(preferred_industry) && preferred_industry.every(item => typeof item === 'string' && item.trim()) 
-        ? preferred_industry.map(item => item.trim()).join(', ') 
-        : 'Not specified',
-      job_role_priority_1: typeof job_role_priority_1 === 'string' && job_role_priority_1.trim() 
-        ? job_role_priority_1.trim() 
-        : 'Not specified',
-      future_career_goals: Array.isArray(future_career_goals) && future_career_goals.every(item => typeof item === 'string' && item.trim()) 
-        ? future_career_goals.map(item => item.trim()).join(', ') 
-        : 'Not specified',
-      work_style_preference: Array.isArray(work_style_preference) && work_style_preference.every(item => typeof item === 'string' && item.trim()) 
-        ? work_style_preference.map(item => item.trim()).join(', ') 
-        : 'Not specified',
+    // Fetch career aspirations from Supabase
+    const { data, error } = await supabase
+      .from('data')
+      .select('preferred_industry, job_role_priority_1, future_career_goals, work_style_preference')
+      .eq('id_number', id_number)
+      .single();
+
+    if (error || !data) {
+      console.error('Supabase error:', error?.message || 'No career data found', { id_number });
+      return NextResponse.json({ error: 'Career data not found' }, { status: 404 });
+    }
+
+    // Preprocess data
+    const careerData = {
+      preferred_industry: data.preferred_industry || [],
+      job_role_priority_1: data.job_role_priority_1 || '',
+      future_career_goals: data.future_career_goals || [],
+      work_style_preference: data.work_style_preference || [],
     };
 
-    // Check if all fields are 'Not specified'
-    if (Object.values(formattedData).every(value => value === 'Not specified')) {
-      throw new Error('All career aspiration fields are empty or invalid');
-    }
+    const prompt = Prompt(careerData, 'careerAspirations');
 
-    const prompt = Prompt(formattedData, 'careerAspirations');
-    // console.log('Generated prompt:', prompt); // Log for debugging
-
-    const token = process.env.GROK3_API_KEY;
+    const token = process.env.NVIDIA_DEEPSEEK_R1_KEY;
     if (!token) {
-      throw new Error('GROK3_API_KEY is not set in environment variables');
+      throw new Error('NVIDIA_DEEPSEEK_R1_KEY is not set in environment variables');
     }
 
-    const endpoint = "https://models.github.ai/inference";
-    const model = "openai/gpt-4.1";
-    const client = ModelClient(endpoint, new AzureKeyCredential(token));
-
-    const response = await client.path("/chat/completions").post({
-      body: {
-        messages: [
-          { role: "system", content: "Provide only the final answer in the specified format without any reasoning or explanation." },
-          { role: "user", content: prompt }
-        ],
-        temperature: 1,
-        top_p: 1,
-        model: model
-      }
+    const openai = new OpenAI({
+      apiKey: token,
+      baseURL: "https://integrate.api.nvidia.com/v1",
     });
 
-    if (isUnexpected(response)) {
-      throw new Error(response.body.error?.message || 'Unexpected error from GPT API');
-    }
+    const response = await openai.chat.completions.create({
+      model: "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+      messages: [
+        {
+          role: "system",
+          content: "Generate the response exactly as specified in the prompt. Include only the formatted output with no additional text, explanations, or deviations. Use ===FORM2-START=== and ===FORM2-END=== with exactly four lines of Japanese text, each starting with the specified labels."
+        },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.1,
+      top_p: 0.9,
+      max_tokens: 100,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+      stream: false,
+    });
 
-    const suggestions = response.body.choices[0].message.content;
+    const suggestions = response.choices[0]?.message?.content || '';
+    if (!suggestions) {
+      throw new Error('No suggestions returned from LLaMA API');
+    }
     console.log('Generated career aspirations:', suggestions);
 
-    if (!suggestions) {
-      throw new Error('No suggestions returned from GPT API');
+    // Parse FORM2
+    const form2Match = suggestions.match(/===FORM2-START===[\s\S]*?\n([\s\S]*?)\n===FORM2-END===/);
+    if (!form2Match) {
+      throw new Error('Failed to parse LLaMA response: FORM2 not found');
     }
 
-    return Response.json({ suggestions });
+    const lines = form2Match[1].trim().split('\n').map(line => line.trim());
+    if (lines.length !== 4) {
+      throw new Error(`Invalid LLaMA response format: Expected 4 lines, got ${lines.length}`);
+    }
+
+    const result = {
+      desiredIndustry: lines[0].startsWith('希望業界: ') ? lines[0].replace('希望業界: ', '') : '',
+      desiredJobType: lines[1].startsWith('希望職種: ') ? lines[1].replace('希望職種: ', '') : '',
+      targetRole: lines[2].startsWith('目指す役割: ') ? lines[2].replace('目指す役割: ', '') : '',
+      workStyle: lines[3].startsWith('ワークスタイル: ') ? lines[3].replace('ワークスタイル: ', '') : '',
+    };
+    console.log("RESULT: ",result);
+    // Validate non-empty fields
+    if (!result.desiredIndustry || !result.desiredJobType || !result.targetRole || !result.workStyle) {
+      throw new Error('Invalid LLaMA response: One or more fields are empty');
+    }
+
+    return NextResponse.json({ suggestions: result }, { status: 200 });
   } catch (error) {
     console.error('Error generating career aspirations:', {
       message: error.message,
       stack: error.stack,
-      body: body || 'undefined',
+      id_number: id_number || 'undefined',
     });
-    return Response.json({ error: `Server error: ${error.message}` }, { status: 500 });
+    return NextResponse.json({ error: `Server error: ${error.message}` }, { status: 500 });
   }
 }
