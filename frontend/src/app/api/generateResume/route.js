@@ -19,6 +19,24 @@ const escapeHtml = (str) => {
     .trim();
 };
 
+// Register Handlebars 'math' helper
+handlebars.registerHelper('math', function (value, operator, operand) {
+  const numValue = parseFloat(value);
+  const numOperand = parseFloat(operand);
+  switch (operator) {
+    case '+':
+      return numValue + numOperand;
+    case '-':
+      return numValue - numOperand;
+    case '*':
+      return numValue * numOperand;
+    case '/':
+      return numValue / numOperand;
+    default:
+      return value;
+  }
+});
+
 export async function POST(req) {
   let pdfPath;
   try {
@@ -81,6 +99,8 @@ export async function POST(req) {
             };
           })
         : [{ year: '未入力', institution: '未入力', degree: '未入力' }],
+      internships: details.internships || [],
+      projects: details.projects || [],
     };
 
     const tempDir = path.join(process.cwd(), 'temp');
