@@ -85,7 +85,7 @@ export default function PersonalInfo({ details, handleInputChange }) {
     { value: details.name, label: `English: ${details.name}` },
     details.katakana && { value: details.katakana, label: `カタカナ: ${details.katakana}` },
     details.initials && { value: details.initials, label: `Initials(イニシャル): ${details.initials}` },
-  ].filter(Boolean); // Remove empty options
+  ].filter(Boolean);
 
   return (
     <div className="mb-8 whitespace-pre-line">
@@ -124,6 +124,17 @@ export default function PersonalInfo({ details, handleInputChange }) {
             value={details.personality}
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">趣味 / Hobby</label>
+          <textarea
+            name="hobby"
+            type="text"
+            value={details.hobby}
+            onChange={handleInputChange}
+            className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            placeholder="例: 読書"
           />
         </div>
         <div>

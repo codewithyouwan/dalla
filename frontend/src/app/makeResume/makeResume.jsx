@@ -28,6 +28,7 @@ const defaultDetails = {
   devField: '',
   jobType: '',
   domain: '',
+  hobby: '',
   type: '',
   education: [{ year: '2024', institution: 'University', degree: 'Masters' }],
   languages: 'Python',
@@ -282,58 +283,60 @@ const fetchCareerAspirations = async () => {
   };
 
   useEffect(() => {
-    const encryptedId = searchParams.get('encrypted_id');
-    if (encryptedId && !hasFetchedCareerData.current) {
-      hasFetchedCareerData.current = true;
-      setIsLoading(true);
-      try {
-        const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET || 'default-secure-key-32chars1234567';
-        const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedId), secretKey);
-        const idNumber = bytes.toString(CryptoJS.enc.Utf8);
-        if (idNumber) {
-          console.log('Selected employee ID:', idNumber);
-          fetch(`/api/fetchDetails?id_number=${encodeURIComponent(idNumber)}`)
-            .then((res) => {
-              if (!res.ok) throw new Error(`Fetch error: ${res.statusText}`);
-              return res.json();
-            })
-            .then((data) => {
-              if (data.name) {
-                console.log('Fetched names:', { name: data.name, katakana: data.katakana, initials: data.initials });
-                setDetails((prev) => ({
-                  ...prev,
-                  id_number: idNumber,
-                  name: data.name,
-                  katakana: data.katakana || '',
-                  initials: data.initials || '',
-                  selectedName: data.name,
-                }));
-              } else {
-                setError('Employee name not found');
-                console.error('No name in response:', data);
-              }
-            })
-            .catch((err) => {
-              setError(`Fetch error: ${err.message}`);
-              console.error('Fetch error:', err);
-            })
-            .finally(() => setIsLoading(false));
-        } else {
-          console.error('Failed to decrypt id_number');
-          setError('Invalid employee ID');
-          setIsLoading(false);
-        }
-      } catch (err) {
-        console.error('Decryption error:', err.message);
-        setError('Decryption error');
+  const encryptedId = searchParams.get('encrypted_id');
+  if (encryptedId && !hasFetchedCareerData.current) {
+    hasFetchedCareerData.current = true;
+    setIsLoading(true);
+    try {
+      const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET || 'default-secure-key-32chars1234567';
+      const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedId), secretKey);
+      const idNumber = bytes.toString(CryptoJS.enc.Utf8);
+      if (idNumber) {
+        console.log('Selected employee ID:', idNumber);
+        fetch(`/api/fetchDetails?id_number=${encodeURIComponent(idNumber)}`)
+          .then((res) => {
+            if (!res.ok) throw new Error(`Fetch error: ${res.statusText}`);
+            return res.json();
+          })
+          .then((data) => {
+            if (data.name) {
+              console.log('Fetched data:', { name: data.name, katakana: data.katakana, hobby: data.hobby, initials: data.initials });
+              setDetails((prev) => ({
+                ...prev,
+                id_number: idNumber,
+                employeeNumber: idNumber,
+                name: data.name,
+                katakana: data.katakana || '',
+                hobby: data.hobby || '',
+                initials: data.initials || '',
+                selectedName: data.name,
+              }));
+            } else {
+              setError('Employee data not found');
+              console.error('No name in response:', data);
+            }
+          })
+          .catch((err) => {
+            setError(`Fetch error: ${err.message}`);
+            console.error('Fetch error:', err);
+          })
+          .finally(() => setIsLoading(false));
+      } else {
+        console.error('Failed to decrypt id_number');
+        setError('Invalid employee ID');
         setIsLoading(false);
       }
-    } else if (!encryptedId) {
-      console.error('No encrypted_id in URL');
-      setError('No employee ID provided');
+    } catch (err) {
+      console.error('Decryption error:', err.message);
+      setError('Decryption error');
       setIsLoading(false);
     }
-  }, [searchParams]);
+  } else if (!encryptedId) {
+    console.error('No encrypted_id in URL');
+    setError('No employee ID provided');
+    setIsLoading(false);
+  }
+}, [searchParams]);
 
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;

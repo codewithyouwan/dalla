@@ -67,10 +67,11 @@ export async function POST(req) {
       selectedName: escapeHtml(details.selectedName || details.name),
       japaneseLevel: escapeHtml(details.japaneseLevel || details.selectedSuggestion),
       personality: escapeHtml(details.personality),
-      devField: escapeHtml(details.desiredIndustry || '未入力'),
-      jobType: escapeHtml(details.desiredJobType || '未入力'),
-      domain: escapeHtml(details.targetRole || '未入力'),
-      type: escapeHtml(details.workStyle || '未入力'),
+      hobby: escapeHtml(details.hobby || '未入力'),
+      desiredIndustry: escapeHtml(details.desiredIndustry || '未入力'),
+      desiredJobType: escapeHtml(details.desiredJobType || '未入力'),
+      targetRole: escapeHtml(details.targetRole || '未入力'),
+      workStyle: escapeHtml(details.workStyle || '未入力'),
       languages: escapeHtml(details.languages),
       devTools: escapeHtml(details.devTools),
       projectRole: escapeHtml(details.projectRole),
@@ -85,11 +86,10 @@ export async function POST(req) {
         ? details.education.slice(0, 4).map((edu) => {
             let institution = escapeHtml(edu.institution || '未入力');
             let major = '';
-            // Extract major from institution (e.g., "シュリ シャンカラチャリヤ インスティテュート **[土木工学]**")
             const match = institution.match(/^(.*)\s*\*\*\[(.*?)\]\*\*$/);
             if (match) {
-              institution = match[1].trim(); // Institution name without major
-              major = match[2].trim(); // Katakana major
+              institution = match[1].trim();
+              major = match[2].trim();
             }
             return {
               year: escapeHtml(edu.year || '未入力'),

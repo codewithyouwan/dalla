@@ -2,13 +2,12 @@
     This is a helper function for different types of prompts.
     In the whatFor array we have defined the types for which we have the prompts.
 */
-const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'internshipExperience', 'japaneseCompanies', 'careerDevelopment', 'fieldsOfInterest', 'productDevelopment', 'katakanaConversion'];
+const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'internshipExperience', 'japaneseCompanies', 'careerDevelopment', 'fieldsOfInterest', 'productDevelopment', 'katakanaConversion', 'hobbyConversion'];
 
 export default function Prompt(data, whatFor) {
   if (whatFor === whatForTypes[0]) {
     const { total, listening, vocabulary, reading, japaneseLevel } = data;
     const validatedJapaneseLevel = japaneseLevel || 'Not certified';
-    // #region cvFormatting
     const prompt = `
         ＜参考情報/Reference Information>
         JLPTレベル/Japanese Level: ${validatedJapaneseLevel}
@@ -57,10 +56,8 @@ export default function Prompt(data, whatFor) {
         私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。私は簡単な文書を理解し、日常的な語彙を適切に使用し、基本的な会話内容を聞き取れます。
         ===FORM1-END===
         `;
-    // #endregion
     return prompt;
-  // In prompt.jsx, replace the careerAspirations section
-} else if (whatFor === whatForTypes[1]) {
+  } else if (whatFor === whatForTypes[1]) {
     const { preferred_industry, job_role_priority_1, future_career_goals, work_style_preference } = data;
     const prompt = `
       <System Instructions>
@@ -106,7 +103,6 @@ export default function Prompt(data, whatFor) {
     return prompt;
   } else if (whatFor === whatForTypes[2]) {
     const { programming_languages, databases_querying, version_control, code_editors_ides, ml_frameworks } = data;
-    // #region languagesAndTools
     const prompt = `
         ＜従業員情報/Employee Information>
         プログラミング言語/Programming Languages: ${programming_languages || 'なし'}
@@ -149,7 +145,6 @@ export default function Prompt(data, whatFor) {
         開発ツール: Git, VS Code
         ===FORM2-END===
         `;
-    // #endregion
     return prompt;
   } else if (whatFor === whatForTypes[3]) {
     const { title, company, period, team_size, technologies, summary, purpose, role, challenges, outcome, isInternship } = data;
@@ -207,7 +202,6 @@ export default function Prompt(data, whatFor) {
     return prompt;
   } else if (whatFor === whatForTypes[4]) {
     const {interest_in_japanese_companies, aspects_to_learn, future_career_goals} = data;
-    // #region japaneseCompanies
     const prompt = `
         <System Instructions>
         Respond **only** with the exact format specified below, containing two Japanese lines within ===FORM2-START=== and ===FORM2-END===. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM1, FORM3). Use professional Japanese suitable for a CV, reflecting Japanese corporate culture (e.g., teamwork, continuous improvement, technical innovation). Limit each line to one sentence, maximum 15 words.
@@ -243,11 +237,9 @@ export default function Prompt(data, whatFor) {
         - **Strictly** follow the format; any deviation will break the system.
         - Suggested max_tokens: 100 to ensure concise output.
       `;
-    // #endregion
     return prompt;
   } else if (whatFor === whatForTypes[5]) {
     const { job_role_priority_1, job_role_priority_2, job_role_priority_3, future_career_goals, work_values, jobs_to_try_in_japan } = data;
-    // #region careerDevelopment
     const prompt = `
         ＜システム指示/System Instructions>
         以下のキャリア情報を元に、CVの「キャリアアップについて」セクションに記載するための簡潔でビジネスに適した値を生成してください。
@@ -295,11 +287,9 @@ export default function Prompt(data, whatFor) {
         - 専門性と意欲を強調し、自然な日本語で記述。
         - 出力は===FORM1-START=== と ===FORM1-END=== の間に4行のみを含め、他のテキストやマーカーは一切含めない。
       `;
-    // #endregion
     return prompt;
   } else if (whatFor === whatForTypes[6]) {
     const { job_role_priority_1, job_role_priority_2, job_role_priority_3, jobs_to_try_in_japan } = data;
-    // #region fieldsOfInterest
     return `
         Based on the following user data:
         - Job Role Priority 1: ${job_role_priority_1 || 'N/A'}
@@ -325,10 +315,8 @@ export default function Prompt(data, whatFor) {
         - Ensure each field is concise (2-5 words) and professional.
         - Ensure the output is in Japanese and suitable for a resume.
       `;
-    // #endregion
   } else if (whatFor === whatForTypes[7]) {
     const { job_role_priority_1, job_role_priority_2, job_role_priority_3, jobs_to_try_in_japan } = data;
-    // #region productDevelopment
     return `
         <System Instructions>
         Respond **only** with the exact format specified below, containing two Japanese lines within ===FORM1-START=== and ===FORM1-END===. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM2, FORM3). Use professional Japanese suitable for a CV, reflecting Japanese corporate culture (e.g., teamwork, continuous improvement, technical innovation). Limit each line to one sentence, maximum 15 words. Do **not** include the labels "興味を持つ理由: " or "果たしたい役割: " in the output lines; only provide the content after these labels.
@@ -365,11 +353,9 @@ export default function Prompt(data, whatFor) {
         - **Strictly** follow the format; any deviation will break the system.
         - Suggested max_tokens: 100 to ensure concise output.
       `;
-    // #endregion
   } else if (whatFor === whatForTypes[8]) {
-    const { institution_name , date_string , major} = data;
-    // #region katakanaConversion
-const prompt = `
+    const { institution_name, date_string, major } = data;
+    const prompt = `
     <System Instructions>
     Process the provided institution name, date string, and major for a Japanese CV. Respond **only** with the exact format specified below, containing two lines within ===FORM1-START=== and ===FORM1-END===: one for the Katakana institution name (with major in bold brackets if provided) and one for the date range in Japanese format. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM2, FORM3).
 
@@ -442,8 +428,47 @@ const prompt = `
     - Do **not** include any labels, additional text, or blank lines.
     - **Strictly** follow the format; any deviation will break the system.
     - Suggested max_tokens: 60 for concise output.
-`;
-// #endregion
+    `;
+    return prompt;
+  } else if (whatFor === whatForTypes[9]) {
+    const { hobbies_Interests } = data;
+    const prompt = `
+     <System Instructions>
+      Respond **only** with the exact format specified below, containing one Japanese line within ===FORM1-START=== and ===FORM1-END===. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM2, FORM3). Use professional Japanese suitable for a CV. Output 3-4 short phrases (each 2-4 words) separated by commas.
+
+      <Employee Information>
+      Hobby: ${hobbies_Interests || 'なし'}
+
+      <Prompt>
+      Convert the hobby (${hobbies_Interests}) into 3-4 concise Japanese phrases for a CV's "趣味" section.
+      - If the hobby is in English or lengthy, simplify it to 3-4 professional, CV-appropriate Japanese phrases (e.g., "Playing cricket" → "クリケットをする").
+      - Each phrase must be 2-4 words, describing an activity (e.g., "サッカーをする", not just "サッカー").
+      - If the input contains multiple hobbies, select up to 4 distinct activities; if fewer, repeat or use generic ones.
+      - If the input is empty or 'なし', use generic but relevant hobbies (e.g., "読書をする,散歩をする,音楽を聴く").
+      - Ignore any URLs or non-hobby text in the input.
+      - Ensure the output reflects a professional tone suitable for a Japanese CV.
+
+      <Output Format>
+      ===FORM1-START===
+      [3-4 phrases, each 2-4 words, comma-separated, in Japanese]
+      ===FORM1-END===
+
+      <Example>
+      ===FORM1-START===
+      ギターを弾く,サッカーをする,バンドで演奏
+      ===FORM1-END===
+
+      <Rules>
+      - Output **exactly** one line between ===FORM1-START=== and ===FORM1-END===.
+      - The line contains 3-4 phrases, each 2-4 words, separated by commas, without the label "趣味: ".
+      - Phrases must describe activities (e.g., "クリケットをする", not "クリケット").
+      - Convert input data into professional, CV-appropriate Japanese; do not copy verbatim.
+      - If the input is vague or lengthy, simplify to relevant phrases; exclude non-hobby text like URLs.
+      - If fewer than 3 hobbies, use generic ones (e.g., "読書をする", "散歩をする").
+      - Do **not** include other markers, text, or blank lines.
+      - **Strictly** follow the format; any deviation will break the system.
+      - Suggested max_tokens: 50 for concise output.
+    `;
     return prompt;
   } else {
     throw new Error("Invalid prompt type used");
