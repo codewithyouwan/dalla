@@ -68,7 +68,7 @@
      const searchParams = useSearchParams();
      const hasFetchedCareerData = useRef(false);
 
-     const fetchWithToast = async (componentName, fetchFn) => {
+     const fetchWithToast = async (componentName, fetchFn, Error) => {
        setLoadingComponent(componentName);
        setIsLoading(true);
        setError(null);
@@ -77,20 +77,8 @@
          {
            loading: `Loading ${componentName}...`,
            success: <b>{componentName} loaded successfully!</b>,
-           error: <b>Failed to load {componentName}.</b>,
+           error: <b>Failed to load {componentName}.{Error}</b>,
          },
-         {
-           style: {
-             background: '#333',
-             color: 'white',
-             border: '1px solid gray',
-             borderRadius: '100px',
-             padding: '12px',
-             boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-           },
-           success: { style: { borderColor: '#10b981' } },
-           error: { style: { borderColor: '#ef4444', color: '#ef4444' } },
-         }
        ).finally(() => {
          setLoadingComponent(null);
          setIsLoading(false);
@@ -116,9 +104,9 @@
              workStyle: gptData.suggestions.workStyle || prev.workStyle,
            }));
          } else {
-           throw new Error('No career aspirations suggestions');
+           setError('No career aspirations suggestions');
          }
-       });
+       },error);
      };
 
      const fetchLanguagesAndTools = async () => {
@@ -141,15 +129,15 @@
                  devTools: lines[1].replace('開発ツール: ', '') || '',
                }));
              } else {
-               throw new Error('Invalid languages and tools response format');
+               setError('Invalid languages and tools response format');
              }
            } else {
-             throw new Error('Failed to parse languages and tools response');
+             setError('Failed to parse languages and tools response');
            }
          } else {
-           throw new Error('No languages and tools suggestions');
+           setError('No languages and tools suggestions');
          }
-       });
+       },error);
      };
 
      const fetchInternshipExperience = async () => {
@@ -159,7 +147,7 @@
            headers: { 'Content-Type': 'application/json' },
            body: JSON.stringify({ id_number: details.id_number }),
          });
-         if (!res.ok) throw new Error(`Experience API error: ${res.statusText}`);
+         if (!res.ok) setError(`Experience API error: ${res.statusText}`);
          const gptData = await res.json();
          if (gptData.suggestions) {
            const { internships, projects } = gptData.suggestions;
@@ -169,9 +157,9 @@
              projects: projects || [],
            }));
          } else {
-           throw new Error('No experience suggestions');
+           setError('No experience suggestions');
          }
-       });
+       },error);
      };
 
      const handlefetchEducation = async () => {
@@ -189,9 +177,9 @@
              education: data.education.length > 0 ? data.education : prev.education,
            }));
          } else {
-           throw new Error('No education data found');
+           setError('No education data found');
          }
-       });
+       },error);
      };
 
      const fetchJapaneseCompanies = async () => {
@@ -212,12 +200,12 @@
                japanCompanySkills: lines[1] || '',
              }));
            } else {
-             throw new Error('Invalid Japanese companies response format');
+             setError('Invalid Japanese companies response format');
            }
          } else {
-           throw new Error('No Japanese companies suggestions');
+           setError('No Japanese companies suggestions');
          }
-       });
+       },error);
      };
 
      const fetchCareerDevelopment = async () => {
@@ -233,7 +221,7 @@
            const { careerPriority1, careerPriority2, careerPriority3, careerRoles } = gptData.suggestions;
            const newPriorities = [careerPriority1, careerPriority2, careerPriority3].filter(p => p && p.trim());
            if (newPriorities.length < 3) {
-             throw new Error('Incomplete career priorities received');
+             setError('Incomplete career priorities received');
            }
            setDetails((prev) => ({
              ...prev,
@@ -241,9 +229,9 @@
              careerRoles: careerRoles || prev.careerRoles,
            }));
          } else {
-           throw new Error('No valid career development suggestions');
+           setError('No valid career development suggestions');
          }
-       });
+       },error);
      };
 
      const fetchFieldsOfInterest = async () => {
@@ -253,22 +241,22 @@
            headers: { 'Content-Type': 'application/json' },
            body: JSON.stringify({ id_number: details.id_number }),
          });
-         if (!res.ok) throw new Error(`Fields of Interest API error: ${res.statusText}`);
+         if (!res.ok) setError(`Fields of Interest API error: ${res.statusText}`);
          const data = await res.json();
          if (data.suggestions) {
            const { field1, field2, field3 } = data.suggestions;
            const newFields = [field1, field2, field3].filter(Boolean);
            if (newFields.length < 3) {
-             throw new Error('Incomplete fields of interest received');
+             setError('Incomplete fields of interest received');
            }
            setDetails((prev) => ({
              ...prev,
              interestFields: newFields,
            }));
          } else {
-           throw new Error('No fields of interest suggestions');
+           setError('No fields of interest suggestions');
          }
-       });
+       },error);
      };
 
      const fetchProductDevelopment = async () => {
@@ -283,7 +271,7 @@
          if (data.suggestions) {
            const { productDevReason, productDevRole } = data.suggestions;
            if (!productDevReason || !productDevRole) {
-             throw new Error('Incomplete product development suggestions received');
+             setError('Incomplete product development suggestions received');
            }
            setDetails((prev) => ({
              ...prev,
@@ -291,15 +279,48 @@
              productDevRole,
            }));
          } else {
-           throw new Error('No product development suggestions');
+           setError('No product development suggestions');
          }
-       });
+       },error);
+     };
+
+      const fetchJLPTSuggestions = async () => {
+       return fetchWithToast('JLPT Suggestions', async () => {
+         const japaneseLevel = details.japaneseLevel || 'Not certified';
+         const payload = {
+           total: details.total,
+           vocabulary: details.vocabulary,
+           reading: details.reading,
+           listening: details.listening,
+           japaneseLevel,
+         };
+         const response = await fetch('/api/gpt', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify(payload),
+         });
+         if (!response.ok) {
+           const data = await response.json();
+           setError(data.error || 'Failed to generate JLPT suggestions');
+         }
+         const data = await response.json();
+         const content = data.suggestions;
+         const forms = Split(content);
+         const finalForms = forms.length > 0 ? forms.slice(0, 3) : [content];
+         const trimmedForms = finalForms.map((form) => form.trim());
+         setDetails((prev) => ({
+           ...prev,
+           suggestions: trimmedForms,
+           selectedIndex: null,
+           selectedSuggestion: '',
+         }));
+       },error);
      };
 
      const compileResume = async () => {
        return fetchWithToast('Resume Compilation', async () => {
          if (!Array.isArray(details.careerPriorities) || details.careerPriorities.length === 0) {
-           throw new Error('Career priorities are missing or invalid');
+           setError('Career priorities are missing or invalid');
          }
          const formData = new FormData();
          formData.append('details', JSON.stringify(details));
@@ -313,16 +334,16 @@
          });
          if (!response.ok) {
            const errorData = await response.json();
-           throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
+           setError(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
          }
          const data = await response.json();
          if (!data.previewUrl || !data.previewUrl.startsWith('resume-') || !data.previewUrl.endsWith('.pdf')) {
-           throw new Error(`Invalid preview URL: ${data.previewUrl}`);
+           setError(`Invalid preview URL: ${data.previewUrl}`);
          }
          setPreviewLink(data.previewUrl);
          setTempPdfPath(data.tempPdfPath);
          setSessionId(data.sessionId);
-       });
+       },error);
      };
 
      const saveResume = async () => {
@@ -342,13 +363,13 @@
          });
          if (!response.ok) {
            const errorData = await response.json();
-           throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
+           setError(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
          }
          const data = await response.json();
          setPreviewLink(data.resumeLink.replace('/view', '/preview').split('/temp/')[1]);
          setTempPdfPath(null);
          return data; // Return for toast success
-       });
+       },error);
      };
 
      useEffect(() => {
@@ -359,9 +380,9 @@
            const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET || 'default-secure-key-32chars1234567';
            const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedId), secretKey);
            const idNumber = bytes.toString(CryptoJS.enc.Utf8);
-           if (!idNumber) throw new Error('Invalid employee ID');
+           if (!idNumber) setError('Invalid employee ID');
            const res = await fetch(`/api/fetchDetails?id_number=${encodeURIComponent(idNumber)}`);
-           if (!res.ok) throw new Error(`Fetch error: ${res.statusText}`);
+           if (!res.ok) setError(`Fetch error: ${res.statusText}`);
            const data = await res.json();
            if (data.name) {
              setDetails((prev) => ({
@@ -375,7 +396,7 @@
                selectedName: data.name,
              }));
            } else {
-             throw new Error('Employee data not found');
+             setError('Employee data not found');
            }
          });
        }
@@ -522,8 +543,7 @@
              handleInputChange={handleInputChange}
              setDetails={setDetails}
              isLoading={isLoading}
-             setError={setError}
-             setIsLoading={setIsLoading}
+             fetchJLPTSuggestions={fetchJLPTSuggestions}
            />
            <Suggestions
              suggestions={suggestions}

@@ -8,7 +8,7 @@ export default function CustomToaster() {
             background: '#333',
             color: 'white',
             border: '1px gray solid',
-            borderRadius: '100px',
+            borderRadius: '1px',
             padding: '12px',
             boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
           },
