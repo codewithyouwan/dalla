@@ -138,7 +138,8 @@ export default function PersonalInfo({ details, handleInputChange }) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">プロフィール写真 / Profile Photo (Optional)</label>
+          <label className="text-sm font-medium text-gray-700">プロフィール写真 / Profile Photo</label>
+          <span className="text-sm font-semibold text-red-700"> (Only jpeg format supported.)</span>
           <input
             type="file"
             name="photo"
