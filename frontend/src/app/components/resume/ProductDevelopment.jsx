@@ -10,7 +10,6 @@ export default function ProductDevelopment({ details, handleInputChange, fetchPr
         >
           {isLoading ? '生成中... \n Generating...' : '提案を生成 \n Generate Suggestions'}
         </button>
-        {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
       </div>
       <div className="space-y-4">
         <div>

@@ -31,6 +31,7 @@
     "react-dom": "^19.1.0",
     "react-dropzone": "^14.3.8",
     "react-easy-crop": "^5.4.2",
+    "react-hot-toast": "^2.5.2",
     "rimraf": "^6.0.1",
     "sharp": "^0.34.3",
     "url": "^0.11.4",

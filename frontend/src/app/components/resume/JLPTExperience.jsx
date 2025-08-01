@@ -1,9 +1,13 @@
 import Split from '../../helper/split';
-
-export default function JLPTExperience({ details, handleInputChange, setDetails, isLoading, error, setError, setIsLoading }) {
+function checkValidityOfScores(details){
+  const { total, vocabulary, reading, listening } = details; 
+  if(total<0 || vocabulary<0 || reading<0 || listening<0){
+    return "Enter only positive values for scores.";
+  }
+  return (total===(vocabulary + reading + listening));
+}
+export default function JLPTExperience({ details, handleInputChange, setDetails, isLoading, setError, setIsLoading }) {
   const generateSuggestions = async () => {
-    setIsLoading(true);
-    setError(null);
     try {
       const japaneseLevel = details.japaneseLevel || 'Not certified';
       const payload = {
@@ -13,6 +17,19 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
         listening: details.listening,
         japaneseLevel,
       };
+      let validity=checkValidityOfScores(payload);
+      if(validity !== true){
+        if(validity===false){
+          setError("Total score must equal the sum of vocabulary, reading, and listening scores.");
+        }else{
+          setError(validity);
+        }
+        return;
+      }
+      else{
+        setIsLoading(true);
+        setError(null);
+      }
       console.log('Sending payload to /api/jlpt:', payload);
       const response = await fetch('/api/gpt', {
         method: 'POST',
@@ -59,7 +76,6 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
         >
           {isLoading ? '生成中... \n Generating...' : '提案を生成 \n Generate Suggestions'}
         </button>
-        {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
       </div>
       <div className="space-y-4">
         <div>

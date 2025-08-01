@@ -1,4 +1,4 @@
-export default function FieldsOfInterest({ details, handleArrayInputChange, isLoading, error, fetchFieldsOfInterest }) {
+export default function FieldsOfInterest({ details, handleArrayInputChange, isLoading, fetchFieldsOfInterest }) {
   return (
     <div className="mb-8 whitespace-pre-line">
       <div className="flex items-center justify-between mb-4 whitespace-pre-line">
@@ -10,7 +10,6 @@ export default function FieldsOfInterest({ details, handleArrayInputChange, isLo
         >
           {isLoading ? '生成中... \n Generating...' : '提案を生成 \n Generate Suggestions'}
         </button>
-        {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
       </div>
       <div className="space-y-4">
         {details.interestFields.map((field, index) => (
