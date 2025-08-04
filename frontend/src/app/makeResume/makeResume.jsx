@@ -67,8 +67,15 @@
      const [loadingComponent, setLoadingComponent] = useState(null); // New state which is loading.
      const searchParams = useSearchParams();
      const hasFetchedCareerData = useRef(false);
-
-     const fetchWithToast = async (componentName, fetchFn, Error) => {
+    useEffect(()=>{
+      if(error){
+        toast(error,{
+          duration: 3000,
+        }
+        )
+      };
+    },[error]);
+     const fetchWithToast = async (componentName, fetchFn) => {
        setLoadingComponent(componentName);
        setIsLoading(true);
        setError(null);
@@ -77,7 +84,7 @@
          {
            loading: `Loading ${componentName}...`,
            success: <b>{componentName} loaded successfully!</b>,
-           error: <b>Failed to load {componentName}.{Error}</b>,
+           error: <b>Failed to load {componentName}.{toast(error)}</b>,
          },
        ).finally(() => {
          setLoadingComponent(null);
@@ -106,7 +113,7 @@
          } else {
            setError('No career aspirations suggestions');
          }
-       },error);
+       });
      };
 
      const fetchLanguagesAndTools = async () => {
@@ -137,7 +144,7 @@
          } else {
            setError('No languages and tools suggestions');
          }
-       },error);
+       });
      };
 
      const fetchInternshipExperience = async () => {
@@ -159,7 +166,7 @@
          } else {
            setError('No experience suggestions');
          }
-       },error);
+       });
      };
 
      const handlefetchEducation = async () => {
@@ -179,7 +186,7 @@
          } else {
            setError('No education data found');
          }
-       },error);
+       });
      };
 
      const fetchJapaneseCompanies = async () => {
@@ -205,7 +212,7 @@
          } else {
            setError('No Japanese companies suggestions');
          }
-       },error);
+       });
      };
 
      const fetchCareerDevelopment = async () => {
@@ -231,7 +238,7 @@
          } else {
            setError('No valid career development suggestions');
          }
-       },error);
+       });
      };
 
      const fetchFieldsOfInterest = async () => {
@@ -256,7 +263,7 @@
          } else {
            setError('No fields of interest suggestions');
          }
-       },error);
+       });
      };
 
      const fetchProductDevelopment = async () => {
@@ -281,7 +288,7 @@
          } else {
            setError('No product development suggestions');
          }
-       },error);
+       });
      };
 
       const fetchJLPTSuggestions = async () => {
@@ -314,7 +321,7 @@
            selectedIndex: null,
            selectedSuggestion: '',
          }));
-       },error);
+       });
      };
 
      const compileResume = async () => {
@@ -343,7 +350,7 @@
          setPreviewLink(data.previewUrl);
          setTempPdfPath(data.tempPdfPath);
          setSessionId(data.sessionId);
-       },error);
+       });
      };
 
      const saveResume = async () => {
@@ -369,7 +376,7 @@
          setPreviewLink(data.resumeLink.replace('/view', '/preview').split('/temp/')[1]);
          setTempPdfPath(null);
          return data; // Return for toast success
-       },error);
+       });
      };
 
      useEffect(() => {
