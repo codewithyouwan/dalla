@@ -60,47 +60,47 @@ export default function Prompt(data, whatFor) {
         `;
     return prompt;
   } else if (whatFor === whatForTypes[1]) {
-    const { preferred_industry, job_role_priority_1, future_career_goals, work_style_preference } = data;
+    const { preferred_industry, jobs_to_try_in_japan, job_role_priorities, work_style_preference } = data;
     const prompt = `
       <System Instructions>
-      Respond **only** with the exact format specified below, containing four Japanese lines within ===FORM2-START=== and ===FORM2-END===. Use professional Japanese suitable for a CV, with concise expressions (1-3 words per line).
+      Respond **only** with the exact format specified below, containing four Japanese lines within ===FORM2-START=== and ===FORM2-END===. Use professional Japanese suitable for a CV. Do not include any additional text, explanations, or deviations.
 
       <Employee Information>
       Preferred Industry: ${preferred_industry?.length ? preferred_industry.join(', ') : 'なし'}
-      Job Role Priority: ${job_role_priority_1 || 'なし'}
-      Future Career Goals: ${future_career_goals?.length ? future_career_goals.join(', ') : 'なし'}
+      Jobs to Try in Japan: ${jobs_to_try_in_japan?.length ? jobs_to_try_in_japan.join(', ') : 'なし'}
+      Job Role Priorities: ${job_role_priorities?.length ? job_role_priorities.join(', ') : 'なし'}
       Work Style Preference: ${work_style_preference?.length ? work_style_preference.join(', ') : 'なし'}
 
       <Prompt>
       Generate four items for the CV's "志向" section:
-      - 希望業界: Based on Preferred Industry (${preferred_industry?.length ? preferred_industry.join(', ') : 'なし'}), describe the desired industry in 1-3 words.
-      - 希望職種: Based on Job Role Priority (${job_role_priority_1 || 'なし'}), describe the desired job type in 1-3 words.
-      - 目指す役割: Based on Future Career Goals (${future_career_goals?.length ? future_career_goals.join(', ') : 'なし'}), describe the target role in 1-3 words.
-      - ワークスタイル: Based on Work Style Preference (${work_style_preference?.length ? work_style_preference.join(', ') : 'なし'}), describe the work style in 1-3 words.
+      - 希望業界: Use all Japanese katakana names from Preferred Industry (${preferred_industry?.length ? preferred_industry.join(', ') : 'なし'}), comma-separated. Remove any English names. Validate and correct katakana if incorrect (e.g., convert "テクノロジ" to "テクノロジー"). If empty or only English, use "技術".
+      - 希望職種: Use all Japanese katakana names from Jobs to Try in Japan (${jobs_to_try_in_japan?.length ? jobs_to_try_in_japan.join(', ') : 'なし'}), comma-separated. Remove any English names. Validate and correct katakana if incorrect (e.g., "エンジニアリング" to "エンジニア"). If empty or only English, use "エンジニア".
+      - 目指す役割: Use all Japanese katakana names from Job Role Priorities (${job_role_priorities?.length ? job_role_priorities.join(', ') : 'なし'}), comma-separated. Remove any English names. Validate and correct katakana if incorrect (e.g., "マネージャ" to "マネージャー"). If empty or only English, use "データ分析".
+      - ワークスタイル: Based on Work Style Preference (${work_style_preference?.length ? work_style_preference.join(', ') : 'なし'}), describe the work style in 1-3 words in Japanese. Filter out any English terms. If empty or only English, use "チームワーク".
 
       <Output Format>
       ===FORM2-START===
-      希望業界: [1-3 words]
-      希望職種: [1-3 words]
-      目指す役割: [1-3 words]
+      希望業界: [comma-separated Japanese katakana names]
+      希望職種: [comma-separated Japanese katakana names]
+      目指す役割: [comma-separated Japanese katakana names]
       ワークスタイル: [1-3 words]
       ===FORM2-END===
 
       <Example>
       ===FORM2-START===
-      希望業界: テクノロジー
-      希望職種: 開発エンジニア
-      目指す役割: ソフトウェア開発
-      ワークスタイル: スペシャリスト
+      希望業界: 情報技術,金融
+      希望職種: 開発エンジニア,データサイエンティスト
+      目指す役割: プロジェクト管理,チームリーダー
+      ワークスタイル: チームワーク
       ===FORM2-END===
 
       <Rules>
       - Output **exactly** four lines between ===FORM2-START=== and ===FORM2-END===.
-      - Each line starts with the specified label (希望業界: , 希望職種: , 目指す役割: , ワークスタイル: ) followed by 1-3 words.
-      - Convert input data into professional, CV-appropriate Japanese; do not copy verbatim.
-      - If input is 'なし' or empty, use generic but relevant terms (e.g., 技術, エンジニア, データ分析, スペシャリスト).
+      - Each line starts with the specified label (希望業界: , 希望職種: , 目指す役割: , ワークスタイル: ).
+      - For 希望業界, 希望職種, and 目指す役割, use comma-separated Japanese katakana names, removing English terms and correcting invalid katakana.
+      - For ワークスタイル, use 1-3 words in Japanese.
+      - If input is 'なし', empty, or contains only English terms, use defaults: 技術 (希望業界), エンジニア (希望職種), データ分析 (目指す役割), チームワーク (ワークスタイル).
       - Do **not** include other markers (e.g., FORM1, FORM3), text, or blank lines.
-      - Suggested max_tokens: 100 for concise output.
     `;
     return prompt;
   } else if (whatFor === whatForTypes[2]) {

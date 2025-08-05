@@ -22,7 +22,7 @@ export async function POST(request) {
     // Fetch career aspirations from Supabase
     const { data, error } = await supabase
       .from('data')
-      .select('preferred_industry, job_role_priority_1, future_career_goals, work_style_preference')
+      .select('preferred_industry, jobs_to_try_in_japan, job_role_priority_1, job_role_priority_2, job_role_priority_3, job_role_priority_4, job_role_priority_5, work_style_preference')
       .eq('id_number', id_number)
       .single();
 
@@ -32,11 +32,32 @@ export async function POST(request) {
     }
 
     // Preprocess data
+    let jobsToTry = data.jobs_to_try_in_japan || [];
+    if (typeof jobsToTry === 'string') {
+      try {
+        // Attempt to parse if it's a JSON string
+        jobsToTry = JSON.parse(jobsToTry);
+      } catch (e) {
+        // If not JSON, assume comma-separated string
+        jobsToTry = jobsToTry.split(',').map(item => item.trim()).filter(Boolean);
+      }
+    }
+    if (!Array.isArray(jobsToTry)) {
+      console.warn('jobs_to_try_in_japan is not an array, defaulting to empty array', { jobsToTry });
+      jobsToTry = [];
+    }
+
     const careerData = {
-      preferred_industry: data.preferred_industry || [],
-      job_role_priority_1: data.job_role_priority_1 || '',
-      future_career_goals: data.future_career_goals || [],
-      work_style_preference: data.work_style_preference || [],
+      preferred_industry: Array.isArray(data.preferred_industry) ? data.preferred_industry : [],
+      jobs_to_try_in_japan: jobsToTry,
+      job_role_priorities: [
+        data.job_role_priority_1,
+        data.job_role_priority_2,
+        data.job_role_priority_3,
+        data.job_role_priority_4,
+        data.job_role_priority_5
+      ].filter(Boolean),
+      work_style_preference: Array.isArray(data.work_style_preference) ? data.work_style_preference : [],
     };
 
     const prompt = Prompt(careerData, 'careerAspirations');
@@ -62,7 +83,7 @@ export async function POST(request) {
       ],
       temperature: 0.1,
       top_p: 0.9,
-      max_tokens: 100,
+      max_tokens: 200,
       frequency_penalty: 0,
       presence_penalty: 0,
       stream: false,
@@ -91,7 +112,8 @@ export async function POST(request) {
       targetRole: lines[2].startsWith('目指す役割: ') ? lines[2].replace('目指す役割: ', '') : '',
       workStyle: lines[3].startsWith('ワークスタイル: ') ? lines[3].replace('ワークスタイル: ', '') : '',
     };
-    console.log("RESULT: ",result);
+    console.log("RESULT: ", result);
+
     // Validate non-empty fields
     if (!result.desiredIndustry || !result.desiredJobType || !result.targetRole || !result.workStyle) {
       throw new Error('Invalid LLaMA response: One or more fields are empty');
