@@ -291,15 +291,14 @@ export default function Prompt(data, whatFor) {
       `;
     return prompt;
   } else if (whatFor === whatForTypes[6]) {
-    const { job_role_priority_1, job_role_priority_2, job_role_priority_3, jobs_to_try_in_japan } = data;
+    const { job_role_priority_1, job_role_priority_2, job_role_priority_3} = data;
     return `
         Based on the following user data:
         - Job Role Priority 1: ${job_role_priority_1 || 'N/A'}
         - Job Role Priority 2: ${job_role_priority_2 || 'N/A'}
         - Job Role Priority 3: ${job_role_priority_3 || 'N/A'}
-        - Jobs to Try in Japan: ${jobs_to_try_in_japan || 'N/A'}
 
-        Generate three distinct fields of interest relevant to the user's career goals and job preferences in Japan. Each field should be a concise phrase (e.g., "データサイエンス", "ソフトウェア開発", "プロジェクト管理") suitable for a resume. The output must be formatted as follows, with exactly three fields, each on a new line within its own FORM section:
+        Generate three distinct fields of interest relevant to the user's career goals and job preferences in Japan. The output must be formatted as follows, with exactly three fields, each on a new line within its own FORM section:
 
         ===FORM1-START===
         [Field 1]
@@ -313,9 +312,8 @@ export default function Prompt(data, whatFor) {
 
         【Rules】
         - Each field must be unique and relevant to the user's data.
-        - If data is missing or vague, use generic but relevant fields (e.g., "データサイエンス", "ソフトウェア開発", "プロジェクト管理").
-        - Ensure each field is concise (2-5 words) and professional.
-        - Ensure the output is in Japanese and suitable for a resume.
+        - Just remove the English names (after the '/') in the input data and just check the japanese names if there is any error then correct it and retur it.
+        - Everything before the '/' is the Japanese name so don't exclude anything if it's not incorrect of misspelled (Even things in brackets).
       `;
   } else if (whatFor === whatForTypes[7]) {
     const { job_role_priority_1, job_role_priority_2, job_role_priority_3, jobs_to_try_in_japan } = data;

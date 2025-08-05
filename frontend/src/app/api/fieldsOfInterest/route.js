@@ -13,7 +13,7 @@ export async function POST(request) {
     // Fetch relevant data from Supabase
     const { data, error } = await supabase
       .from('data')
-      .select('job_role_priority_1, job_role_priority_2, job_role_priority_3, jobs_to_try_in_japan')
+      .select('job_role_priority_1, job_role_priority_2, job_role_priority_3')
       .eq('id_number', id_number)
       .single();
 
@@ -27,7 +27,6 @@ export async function POST(request) {
       job_role_priority_1: data.job_role_priority_1,
       job_role_priority_2: data.job_role_priority_2,
       job_role_priority_3: data.job_role_priority_3,
-      jobs_to_try_in_japan: data.jobs_to_try_in_japan,
     }, 'fieldsOfInterest');
     console.log('Generated prompt for Fields of Interest:', prompt);
 
