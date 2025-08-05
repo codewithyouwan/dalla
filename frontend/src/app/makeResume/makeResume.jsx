@@ -31,6 +31,7 @@
      jobType: '',
      domain: '',
      hobby: '',
+     hometown: '',
      type: '',
      education: [{ year: '2024', institution: 'University', degree: 'Masters' }],
      languages: 'Python',
@@ -92,6 +93,7 @@
        });
      };
 
+     // #region careeraspirations.
      const fetchCareerAspirations = async () => {
        return fetchWithToast('Career Aspirations', async () => {
          if (!details.id_number) throw new Error('id_number is required');
@@ -115,6 +117,7 @@
          }
        });
      };
+     // #endregion
 
      const fetchLanguagesAndTools = async () => {
        return fetchWithToast('Languages and Tools', async () => {
@@ -399,6 +402,7 @@
                name: data.name,
                katakana: data.katakana || '',
                hobby: data.hobby || '',
+               hometown: data.hometown || '',
                initials: data.initials || '',
                selectedName: data.name,
              }));

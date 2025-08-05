@@ -2,7 +2,9 @@
     This is a helper function for different types of prompts.
     In the whatFor array we have defined the types for which we have the prompts.
 */
-const whatForTypes = ['cvFormatting', 'careerAspirations', 'languagesAndTools', 'internshipExperience', 'japaneseCompanies', 'careerDevelopment', 'fieldsOfInterest', 'productDevelopment', 'katakanaConversion', 'hobbyConversion'];
+const whatForTypes = ['jlptExperience', 'careerAspirations', 'languagesAndTools',
+'internshipExperience', 'japaneseCompanies', 'careerDevelopment', 'fieldsOfInterest',
+'productDevelopment', 'katakanaConversion', 'hobbyConversion','placeConversion'];
 
 export default function Prompt(data, whatFor) {
   if (whatFor === whatForTypes[0]) {
@@ -470,7 +472,58 @@ export default function Prompt(data, whatFor) {
       - Suggested max_tokens: 50 for concise output.
     `;
     return prompt;
-  } else {
+  } 
+  else if(whatFor === whatForTypes[10]){
+    const { place_of_belonging } = data;
+    const prompt = `
+      <System Instructions>
+      Respond **only** with the exact format specified below, containing one Japanese line within ===FORM1-START=== and ===FORM1-END===. Do **not** include any other text, headers, blank lines, or markers. Use professional Japanese suitable for a CV.
+
+      <Employee Information>
+      Place of Belonging: ${place_of_belonging || 'なし'}
+
+      <Prompt>
+      Convert the place of belonging (${place_of_belonging}) into a single Japanese phrase for a CV's "出身地" section.
+      - Assume the person is always from India.
+      - If the input is empty or 'なし', output "インド".
+      - If the input is a specific place (e.g., city or state), convert it to katakana and append the region (South India, North India, or North-East India) in katakana within parentheses.
+      - Regions: 
+        - South India (南インド): States like Tamil Nadu, Kerala, Karnataka, Andhra Pradesh, Telangana
+        - North India (北インド): States like Delhi, Uttar Pradesh, Punjab, Rajasthan, Haryana
+        - North-East India (北東インド): States like Assam, Meghalaya, Arunachal Pradesh
+      - Use standard katakana for the place (e.g., "Delhi" → "デリー", "Tamil Nadu" → "タミルナードゥ").
+      - Ensure the output is concise and professional, e.g., "デリー (北インド)".
+      - If the place is not a recognizable Indian city/state, default to "インド".
+      - Ignore any non-place text in the input.
+
+      <Output Format>
+      ===FORM1-START===
+      [Single katakana phrase, optionally with region in parentheses]
+      ===FORM1-END===
+
+      <Examples>
+      ===FORM1-START===
+      デリー (北インド)
+      ===FORM1-END===
+      ===FORM1-START===
+      チェンナイ (南インド)
+      ===FORM1-END===
+      ===FORM1-START===
+      インド
+      ===FORM1-END===
+
+      <Rules>
+      - Output **exactly** one line between ===FORM1-START=== and ===FORM1-END===.
+      - The line must be in katakana, with region in parentheses if applicable.
+      - Default to "インド" if input is empty, invalid, or not a recognizable Indian place.
+      - Use professional tone suitable for a Japanese CV.
+      - Do **not** include other markers, text, or blank lines.
+      - **Strictly** follow the format; any deviation will break the system.
+      - Suggested max_tokens: 50 for concise output.
+    `;
+    return prompt;
+  }
+  else {
     throw new Error("Invalid prompt type used");
   }
 }

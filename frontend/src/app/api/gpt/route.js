@@ -13,7 +13,7 @@ export async function POST(request) {
   try {
     const { total, vocabulary, reading, listening } = await request.json();
     
-    const prompt = Prompt({ total, vocabulary, reading, listening }, 'cvFormatting');
+    const prompt = Prompt({ total, vocabulary, reading, listening }, 'jlptExperience');
     let validity = checkValidityOfScores(total, vocabulary, reading, listening);
     if(validity!==true) {
       if(validity === false)

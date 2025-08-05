@@ -80,7 +80,6 @@ export default function PersonalInfo({ details, handleInputChange }) {
     }
   };
 
-  // Options for the name dropdown
   const nameOptions = [
     { value: details.name, label: `English: ${details.name}` },
     details.katakana && { value: details.katakana, label: `カタカナ: ${details.katakana}` },
@@ -115,6 +114,17 @@ export default function PersonalInfo({ details, handleInputChange }) {
               </option>
             ))}
           </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">出身地 / Hometown</label>
+          <input
+            type="text"
+            name="hometown"
+            value={details.hometown}
+            onChange={handleInputChange}
+            className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            placeholder="例: デリー (北インド)"
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">性格 / Personality</label>
