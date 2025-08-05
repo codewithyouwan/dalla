@@ -26,11 +26,11 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       overflow: hidden;
     }
-    colgroup col.col1 { width: 8%; } /* Reduced for headings */
-    colgroup col.col2 { width: 12%; } /* Reduced for headings */
-    colgroup col.col3 { width: 26%; } /* Increased for institution */
-    colgroup col.col4 { width: 26%; } /* Increased for institution */
-    colgroup col.col5 { width: 18%; } /* Reduced for degree */
+    colgroup col.col1 { width: 18%; } /* Increased for Year */
+    colgroup col.col2 { width: 12%; }
+    colgroup col.col3 { width: 26%; }
+    colgroup col.col4 { width: 26%; }
+    colgroup col.col5 { width: 18%; } /* Decreased for Degree */
     th, td {
       border: 1px solid #ddd;
       padding: 8px;
@@ -41,24 +41,40 @@
       background-color: #e8e8e8;
       font-weight: normal;
     }
-    .section-header {
-      background-color: #d0e0ff;
+    .section-education {
+      background-color: #d0e0ff; /* Light Blue for Education */
       font-weight: bold;
     }
-    .header-light-green {
-      background-color: #e6ffe6;
+    .section-aspirations {
+      background-color: #e8e8e8; /* Light Lime for Career Aspirations */
       font-weight: bold;
     }
-    .header-blue {
-      background-color: #cfe2f3;
+    .section-languages-tools {
+      background-color: #fce4ec; /* Light Rose for Languages/Dev Tools */
       font-weight: bold;
     }
-    .header-pink {
-      background-color: #ffcccc;
+    .section-internships {
+      background-color: #e6ffe6; /* Light Green for Internships */
       font-weight: bold;
     }
-    .header-purple {
-      background-color: #e0ccee;
+    .section-projects {
+      background-color: #fff3cd; /* Light Yellow for Projects */
+      font-weight: bold;
+    }
+    .section-product-dev {
+      background-color: #cfe2f3; /* Light Cyan for Product Development */
+      font-weight: bold;
+    }
+    .section-fields-interest {
+      background-color: #f3e5f5; /* Light Purple for Fields of Interest */
+      font-weight: bold;
+    }
+    .section-japan-companies {
+      background-color: #ffcccc; /* Light Pink for Japanese Companies */
+      font-weight: bold;
+    }
+    .section-career-dev {
+      background-color: #e0f7fa; /* Light Aqua for Career Development */
       font-weight: bold;
     }
     .th-white {
@@ -142,7 +158,7 @@
       <td colspan="2" class="text-left">{{hometown}}</td>
     </tr>
     <tr>
-      <th rowspan="4">志向</th>
+      <th rowspan="4" class="section-aspirations">志向</th>
       <th>希望業界</th>
       <td colspan="3" class="text-left">{{desiredIndustry}}</td>
     </tr>
@@ -159,17 +175,22 @@
       <td colspan="3" class="text-left">{{workStyle}}</td>
     </tr>
     <tr>
-      <th colspan="5" class="section-header">学歴</th>
+      <th colspan="5" class="section-education">学歴</th>
     </tr>
     {{#each education}}
     <tr>
       <td>{{year}}</td>
-      <td colspan="3" class="text-left">{{institution}}{{#if major}} (<strong>{{major}}</strong>) {{/if}}</td>
-      <td class="text-left">{{degree}}</td>
+      <td colspan="3" class="text-left">
+        {{institution}}
+        {{#if major}}
+          <br><strong>専攻: {{major}}</strong>
+        {{/if}}
+      </td>
+      <td colspan="1" class="text-left">{{degree}}</td>
     </tr>
     {{/each}}
     <tr>
-      <th colspan="5" class="section-header">言語/開発ツール</th>
+      <th colspan="5" class="section-languages-tools">言語/開発ツール</th>
     </tr>
     <tr>
       <th colspan="2">言語</th>
@@ -181,11 +202,11 @@
     </tr>
     {{#if internships.length}}
     <tr>
-      <th colspan="5" class="header-light-green">インターンシップ / Internships</th>
+      <th colspan="5" class="section-internships">インターンシップ / Internships</th>
     </tr>
     {{#each internships}}
     <tr>
-      <th colspan="5" class="header-light-green">インターンシップ {{math @index "+" 1}}</th>
+      <th colspan="5" class="section-internships">インターンシップ {{math @index "+" 1}}</th>
     </tr>
     <tr>
       <th colspan="2" class="text-left th-white">タイトル：</th>
@@ -242,11 +263,11 @@
     {{/if}}
     {{#if projects.length}}
     <tr>
-      <th colspan="5" class="header-light-green">プロジェクト / Projects</th>
+      <th colspan="5" class="section-projects">プロジェクト / Projects</th>
     </tr>
     {{#each projects}}
     <tr>
-      <th colspan="5" class="header-light-green">プロジェクト {{math @index "+" 1}}</th>
+      <th colspan="5" class="section-projects">プロジェクト {{math @index "+" 1}}</th>
     </tr>
     <tr>
       <th colspan="2" class="text-left th-white">タイトル：</th>
@@ -298,7 +319,7 @@
     {{/each}}
     {{/if}}
     <tr>
-      <th colspan="5" class="header-blue">製品開発について</th>
+      <th colspan="5" class="section-product-dev">製品開発について</th>
     </tr>
     <tr>
       <th colspan="2">興味を持つ理由</th>
@@ -309,7 +330,7 @@
       <td colspan="3" class="text-left">{{productDevRole}}</td>
     </tr>
     <tr>
-      <th colspan="5" class="header-blue">興味ある分野（左から1番→3番）</th>
+      <th colspan="5" class="section-fields-interest">興味ある分野（左から1番→3番）</th>
     </tr>
     <tr>
       <td colspan="2" class="text-left">{{#if interestFields.[0]}}{{interestFields.[0]}}{{else}}未指定{{/if}}</td>
@@ -317,7 +338,7 @@
       <td class="text-left">{{#if interestFields.[2]}}{{interestFields.[2]}}{{else}}未指定{{/if}}</td>
     </tr>
     <tr>
-      <th colspan="5" class="header-pink">日本企業について</th>
+      <th colspan="5" class="section-japan-companies">日本企業について</th>
     </tr>
     <tr>
       <th colspan="2">番興味がある点</th>
@@ -328,7 +349,7 @@
       <td colspan="3" class="text-left">{{japanCompanySkills}}</td>
     </tr>
     <tr>
-      <th colspan="5" class="header-purple">キャリアアップについて</th>
+      <th colspan="5" class="section-career-dev">キャリアアップについて</th>
     </tr>
     <tr>
       <th colspan="2">3大優先要素</th>
