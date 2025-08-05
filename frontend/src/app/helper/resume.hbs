@@ -26,11 +26,11 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       overflow: hidden;
     }
-    colgroup col.col1 { width: 15%; }
-    colgroup col.col2 { width: 15%; }
-    colgroup col.col3 { width: 23.33%; }
-    colgroup col.col4 { width: 23.33%; }
-    colgroup col.col5 { width: 23.33%; }
+    colgroup col.col1 { width: 10%; } /* Reduced from 15% */
+    colgroup col.col2 { width: 17%; } /* Increased from 15% */
+    colgroup col.col3 { width: 24.33%; } /* Adjusted from 23.33% */
+    colgroup col.col4 { width: 24.33%; } /* Adjusted from 23.33% */
+    colgroup col.col5 { width: 24.33%; } /* Adjusted from 23.33% */
     th, td {
       border: 1px solid #ddd;
       padding: 8px;
@@ -102,6 +102,12 @@
       flex-grow: 1;
       text-align: center;
     }
+    .employee-row {
+      height: 30px;
+    }
+    .name-cell {
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
@@ -116,10 +122,10 @@
       <col class="col4">
       <col class="col5">
     </colgroup>
-    <tr>
+    <tr class="employee-row">
       <th colspan="2">No.</th>
       <td colspan="2" class="text-left">{{employeeNumber}}</td>
-      <td rowspan="2">
+      <td rowspan="3">
         {{#if photo}}
           <img class="photo" src="{{photo}}" alt="Profile Photo">
         {{else}}
@@ -129,7 +135,11 @@
     </tr>
     <tr>
       <th colspan="2">氏名</th>
-      <td colspan="2" class="text-left">{{selectedName}}</td>
+      <td colspan="2" class="text-left name-cell">{{selectedName}}</td>
+    </tr>
+    <tr>
+      <th colspan="2">出身地</th>
+      <td colspan="2" class="text-left">{{hometown}}</td>
     </tr>
     <tr>
       <th rowspan="5">志向</th>
@@ -157,7 +167,7 @@
     </tr>
     {{#each education}}
     <tr>
-      <td>{{year}}年</td>
+      <td>{{year}}</td>
       <td colspan="3" class="text-left">{{institution}}{{#if major}} (<strong>{{major}}</strong>) {{/if}}</td>
       <td class="text-left">{{degree}}</td>
     </tr>
