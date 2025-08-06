@@ -19,6 +19,7 @@
    import Loader from '../components/Loader';
    import CustomToaster from '../components/Toast';
    import toast from 'react-hot-toast';
+   import Split from '../helper/split';
 
    const defaultDetails = {
      id_number: '',

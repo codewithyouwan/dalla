@@ -7,7 +7,7 @@ function checkValidityOfScores(total, vocabulary, reading, listening) {
   if (total < 0 || vocabulary < 0 || reading < 0 || listening < 0) {
     return "スコアは0以上でなければなりません。 \n Scores must be 0 or above.";
   }
-  return (total===(vocabulary + reading + listening));
+  return (Number(total)===(Number(vocabulary) + Number(reading) + Number(listening)));
 }
 export async function POST(request) {
   try {
