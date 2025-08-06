@@ -78,9 +78,7 @@ export async function POST(req) {
       projectDescription: escapeHtml(details.projectDescription),
       projectChallenges: escapeHtml(details.projectChallenges),
       leadership: escapeHtml(details.leadership),
-      careerPriorities: Array.isArray(details.careerPriorities)
-        ? details.careerPriorities.map(p => escapeHtml(p || '未入力'))
-        : ['未入力', '未入力', '未入力'],
+     careerPriorities: escapeHtml(details.careerPriorities || '未入力'),
       careerRoles: escapeHtml(details.careerRoles || '未入力'),
       education: Array.isArray(details.education)
         ? details.education.slice(0, 4).map((edu) => {
