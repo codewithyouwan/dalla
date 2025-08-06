@@ -16,9 +16,9 @@
    import JLPTExperience from '../components/resume/JLPTExperience';
    import Suggestions from '../components/resume/Suggestions';
    import ResumePreview from '../components/resume/ResumePreview';
-   import Loader from '../components/Loader';
    import CustomToaster from '../components/Toast';
    import toast from 'react-hot-toast';
+   import Split from '../helper/split';
 
    const defaultDetails = {
      id_number: '',
@@ -41,7 +41,7 @@
      interestFields: ['AI', 'Data Analysis', 'Testing'],
      japanCompanyInterest: 'Technology',
      japanCompanySkills: 'Work Culture',
-     careerPriorities: ['Growth', 'Impact', 'Balance'],
+     WorkValues: 'Team Work, Impact, Balance',
      careerRoles: 'Project Manager',
      japaneseLevel: 'Not certified',
      total: '',
@@ -216,31 +216,29 @@
        });
      };
 
-     const fetchCareerDevelopment = async () => {
-       return fetchWithToast('Career Development', async () => {
-         const res = await fetch('/api/careerDevelopment', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ id_number: details.id_number }),
-         });
-         if (!res.ok) throw new Error(`Career development API error: ${res.statusText}`);
-         const gptData = await res.json();
-         if (gptData.suggestions && gptData.suggestions.careerPriority1) {
-           const { careerPriority1, careerPriority2, careerPriority3, careerRoles } = gptData.suggestions;
-           const newPriorities = [careerPriority1, careerPriority2, careerPriority3].filter(p => p && p.trim());
-           if (newPriorities.length < 3) {
-             setError('Incomplete career priorities received');
-           }
-           setDetails((prev) => ({
-             ...prev,
-             careerPriorities: newPriorities,
-             careerRoles: careerRoles || prev.careerRoles,
-           }));
-         } else {
-           setError('No valid career development suggestions');
-         }
-       });
-     };
+     const fetchWorkValues = async () => {
+      return fetchWithToast('Career Development', async () => {
+        const res = await fetch('/api/workValues', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id_number: details.id_number }),
+        });
+        if (!res.ok) throw new Error(`Career development API error: ${res.statusText}`);
+        const gptData = await res.json();
+        if (gptData.suggestions && gptData.suggestions.careerPriorities) {
+          const careerPriorities = gptData.suggestions.careerPriorities;
+          if (careerPriorities.trim() === '') {
+            setError('Incomplete career priorities received');
+          }
+          setDetails((prev) => ({
+            ...prev,
+            careerPriorities,
+          }));
+        } else {
+          setError('No valid career development suggestions');
+        }
+      });
+    };
 
      const fetchFieldsOfInterest = async () => {
        return fetchWithToast('Fields of Interest', async () => {
@@ -541,13 +539,11 @@
              isLoading={isLoading}
            />
            <CareerDevelopment
-             careerPriorities={details.careerPriorities}
-             details={details}
-             handleInputChange={handleInputChange}
-             handleArrayInputChange={handleArrayInputChange}
-             fetchCareerDevelopment={fetchCareerDevelopment}
-             isLoading={isLoading}
-           />
+            WorkValues={details.careerPriorities}
+            setDetails={setDetails}
+            fetchWorkValues={fetchWorkValues}
+            isLoading={isLoading}
+          />
            <JLPTExperience
              details={details}
              handleInputChange={handleInputChange}

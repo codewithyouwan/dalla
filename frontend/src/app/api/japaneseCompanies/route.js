@@ -16,7 +16,7 @@ export async function POST(req) {
     // Fetch relevant data from Supabase
     const { data, error } = await supabase
       .from('data')
-      .select('interest_in_japanese_companies, aspects_to_learn, future_career_goals')
+      .select('interest_in_japanese_companies, aspects_to_learn')
       .eq('id_number', id_number)
       .single();
 
