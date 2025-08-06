@@ -30,6 +30,7 @@
      devField: '',
      jobType: '',
      domain: '',
+     desiredIndustry: '',
      hobby: '',
      hometown: '',
      type: '',
@@ -232,7 +233,7 @@
           }
           setDetails((prev) => ({
             ...prev,
-            careerPriorities,
+            WorkValues: careerPriorities,
           }));
         } else {
           setError('No valid career development suggestions');
@@ -539,7 +540,7 @@
              isLoading={isLoading}
            />
            <CareerDevelopment
-            WorkValues={details.careerPriorities}
+            WorkValues={details.WorkValues}
             setDetails={setDetails}
             fetchWorkValues={fetchWorkValues}
             isLoading={isLoading}

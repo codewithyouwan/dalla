@@ -127,16 +127,6 @@ export default function PersonalInfo({ details, handleInputChange }) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">性格 / Personality</label>
-          <input
-            type="text"
-            name="personality"
-            value={details.personality}
-            onChange={handleInputChange}
-            className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
-        </div>
-        <div>
           <label className="block text-sm font-medium text-gray-700">趣味 / Hobby</label>
           <textarea
             name="hobby"
