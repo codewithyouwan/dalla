@@ -203,25 +203,24 @@ export default function Prompt(data, whatFor) {
     `;
     return prompt;
   } else if (whatFor === whatForTypes[4]) {
-    const {interest_in_japanese_companies, aspects_to_learn, future_career_goals} = data;
+    const {interest_in_japanese_companies, aspects_to_learn} = data;
     const prompt = `
         <System Instructions>
-        Respond **only** with the exact format specified below, containing two Japanese lines within ===FORM2-START=== and ===FORM2-END===. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM1, FORM3). Use professional Japanese suitable for a CV, reflecting Japanese corporate culture (e.g., teamwork, continuous improvement, technical innovation). Limit each line to one sentence, maximum 15 words.
+        Respond **only** with the exact format specified below, containing two Japanese phrases (Each one a concise sentence 2-3 lines.) within ===FORM2-START=== and ===FORM2-END===. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM1, FORM3). Use professional Japanese suitable for a CV, reflecting Japanese corporate culture (e.g., teamwork, continuous improvement, technical innovation).
 
         <Employee Information>
         Interest in Japanese Companies: ${interest_in_japanese_companies || 'なし'}
         Aspects to Learn: ${aspects_to_learn || 'なし'}
-        Future Career Goals: ${future_career_goals?.join(', ') || 'なし'}
 
         <Prompt>
         Generate two items for the CV's "日本企業について" section:
-        - Most Interesting Aspect: Based on Interest in Japanese Companies (${interest_in_japanese_companies}), describe what excites you about working at Japanese companies in 1 sentence (max 15 words).
-        - Skills to Acquire: Combine Aspects to Learn (${aspects_to_learn}) and Future Career Goals (${future_career_goals}), describe skills to acquire in 1 sentence (max 15 words).
+        - Most Interesting Aspect: Based on Interest in Japanese Companies (${interest_in_japanese_companies}), describe what excites you about working at Japanese companies in a single phrase prefereable have 2-3 lines.
+        - Skills to Acquire: (${aspects_to_learn}) From this just remove the english names (after the '/') and just check the japanese names if there is any error then correct it and return it(Seperated by commas).
 
         <Output Format>
         ===FORM2-START===
-        番興味がある点: [1 sentence, max 15 words, reflecting Japanese corporate culture]
-        習得したいこと: [1 sentence, max 15 words, reflecting Japanese corporate culture]
+        番興味がある点: [Japanse phrase for why the person is interested in Japanese companies]
+        習得したいこと: [Japanse phrase for why the person wants to learn about Japanese companies]
         ===FORM2-END===
 
         <Example>
@@ -231,13 +230,11 @@ export default function Prompt(data, whatFor) {
         ===FORM2-END===
 
         <Rules>
-        - Output **exactly** two lines between ===FORM2-START=== and ===FORM2-END===.
-        - Each line starts with "番興味がある点: " or "習得したいこと: ", followed by 1 sentence (max 15 words).
-        - Convert input data into professional, CV-appropriate Japanese; do not copy verbatim.
-        - Reflect Japanese corporate culture (e.g., teamwork, continuous improvement).
+        - Output **exactly** two phrases between ===FORM2-START=== and ===FORM2-END===.
+        - Each phrase starts with "番興味がある点: " or "習得したいこと: ", followed by 1 phrase (2-3 lines).
         - Do **not** include other markers, text, or blank lines.
         - **Strictly** follow the format; any deviation will break the system.
-        - Suggested max_tokens: 100 to ensure concise output.
+        - There is no limit on max_tokens, but the output should be concise and professional.
       `;
     return prompt;
   } else if (whatFor === whatForTypes[5]) {

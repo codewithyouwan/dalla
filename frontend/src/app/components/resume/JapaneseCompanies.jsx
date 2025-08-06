@@ -1,5 +1,5 @@
 
-export default function JapaneseCompanies({ details, handleInputChange, fetchJapaneseCompanies, isLoading }) {
+export default function JapaneseCompanies({ details, handleInputChange, fetchJapaneseCompanies, isLoading}) {
   return (
     <div className="mb-8 whitespace-pre-line">
       <div className="flex justify-between items-center whitespace-pre-line">
@@ -15,8 +15,9 @@ export default function JapaneseCompanies({ details, handleInputChange, fetchJap
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">番興味がある点 / Most Interesting Aspect</label>
-          <input
+          <textarea
             type="text"
+            rows={1}
             name="japanCompanyInterest"
             value={details.japanCompanyInterest}
             onChange={handleInputChange}
@@ -25,8 +26,10 @@ export default function JapaneseCompanies({ details, handleInputChange, fetchJap
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">習得したいこと / Skills to Acquire</label>
-          <input
+          <textarea
             type="text"
+
+            rows={1}
             name="japanCompanySkills"
             value={details.japanCompanySkills}
             onChange={handleInputChange}
