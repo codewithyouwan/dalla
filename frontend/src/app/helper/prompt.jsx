@@ -100,6 +100,7 @@ export default function Prompt(data, whatFor) {
       - Each line starts with the specified label (希望業界: , 希望職種: , 目指す役割: , ワークスタイル: ).
       - For 希望業界, 希望職種, and 目指す役割, use comma-separated Japanese katakana names, removing English terms and correcting invalid katakana.
       - For ワークスタイル, use 1-3 words in Japanese.
+      - In the output if you comma use the Japanse comman '、' instead of the English comma ','.
       - If input is 'なし', empty, or contains only English terms, use defaults: 技術 (希望業界), エンジニア (希望職種), データ分析 (目指す役割), チームワーク (ワークスタイル).
       - Do **not** include other markers (e.g., FORM1, FORM3), text, or blank lines.
     `;
