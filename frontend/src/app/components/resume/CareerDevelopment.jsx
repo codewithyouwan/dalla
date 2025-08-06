@@ -1,4 +1,4 @@
-export default function CareerDevelopment({ careerPriorities, details, handleInputChange, handleArrayInputChange, fetchCareerDevelopment, isLoading }) {
+export default function CareerDevelopment({ careerPriorities, handleArrayInputChange, fetchCareerDevelopment, isLoading }) {
   return (
     <div className="mb-8 whitespace-pre-line">
       <div className="flex justify-between items-center">
@@ -23,16 +23,6 @@ export default function CareerDevelopment({ careerPriorities, details, handleInp
             />
           </div>
         ))}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">興味ある役割 / Desired Roles</label>
-          <input
-            type="text"
-            name="careerRoles"
-            value={details.careerRoles}
-            onChange={handleInputChange}
-            className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
-        </div>
       </div>
     </div>
   );

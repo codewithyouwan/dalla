@@ -543,8 +543,6 @@
            />
            <CareerDevelopment
              careerPriorities={details.careerPriorities}
-             details={details}
-             handleInputChange={handleInputChange}
              handleArrayInputChange={handleArrayInputChange}
              fetchCareerDevelopment={fetchCareerDevelopment}
              isLoading={isLoading}
