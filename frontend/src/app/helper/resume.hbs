@@ -61,10 +61,12 @@
       background-color: #fff3cd; /* Light Yellow for Projects */
       font-weight: bold;
     }
-    .section-product-dev {
-      background-color: #cfe2f3; /* Light Cyan for Product Development */
+    /*
+    {{!-- .section-product-dev {
+      background-color: #cfe2f3;  cyna color for product development.
       font-weight: bold;
-    }
+    } --}}
+    */
     .section-fields-interest {
       background-color: #f3e5f5; /* Light Purple for Fields of Interest */
       font-weight: bold;
@@ -318,17 +320,6 @@
     </tr>
     {{/each}}
     {{/if}}
-    <tr>
-      <th colspan="5" class="section-product-dev">製品開発について</th>
-    </tr>
-    <tr>
-      <th colspan="2">興味を持つ理由</th>
-      <td colspan="3" class="text-left">{{productDevReason}}</td>
-    </tr>
-    <tr>
-      <th colspan="2">果たしたい役割</th>
-      <td colspan="3" class="text-left">{{productDevRole}}</td>
-    </tr>
     <tr>
       <th colspan="5" class="section-fields-interest">興味ある分野（左から1番→3番）</th>
     </tr>

@@ -38,8 +38,6 @@
      devTools: 'Git, VS Code',
      internships: [],
      projects: [],
-     productDevReason: 'Problem Solving',
-     productDevRole: 'Data Scientist',
      interestFields: ['AI', 'Data Analysis', 'Testing'],
      japanCompanyInterest: 'Technology',
      japanCompanySkills: 'Work Culture',
@@ -523,12 +521,13 @@
              fetchInternshipExperience={fetchInternshipExperience}
              isLoading={isLoading}
            />
+           {/*
            <ProductDevelopment
              details={details}
              handleInputChange={handleInputChange}
              fetchProductDevelopment={fetchProductDevelopment}
              isLoading={isLoading}
-           />
+           />*/}
            <FieldsOfInterest
              details={details}
              handleArrayInputChange={handleArrayInputChange}
