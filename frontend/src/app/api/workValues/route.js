@@ -23,7 +23,7 @@ export async function POST(request) {
     // Fetch career development details from the data table
     const { data, error } = await supabase
       .from('data')
-      .select('job_role_priority_1, job_role_priority_2, job_role_priority_3, future_career_goals, work_values, jobs_to_try_in_japan')
+      .select('work_values')
       .eq('id_number', id_number)
       .single();
 
@@ -34,16 +34,11 @@ export async function POST(request) {
 
     // Preprocess data
     const careerData = {
-      job_role_priority_1: data.job_role_priority_1 || '',
-      job_role_priority_2: data.job_role_priority_2 || '',
-      job_role_priority_3: data.job_role_priority_3 || '',
-      future_career_goals: data.future_career_goals || [],
       work_values: data.work_values || [],
-      jobs_to_try_in_japan: data.jobs_to_try_in_japan || '',
     };
 
     // Generate prompt using Prompt function
-    const prompt = Prompt(careerData, 'careerDevelopment');
+    const prompt = Prompt(careerData, 'workValues');
 
     const token = process.env.NVIDIA_DEEPSEEK_R1_KEY;
     const endpoint = "https://integrate.api.nvidia.com/v1";
@@ -68,10 +63,10 @@ export async function POST(request) {
         { role: 'user', content: prompt },
       ],
       temperature: 0.2,
-    top_p: 0.7,
-    max_tokens: 8192,
-    chat_template_kwargs: {"thinking":false},
-    stream: false
+      top_p: 0.7,
+      max_tokens: 8192,
+      chat_template_kwargs: {"thinking": false},
+      stream: false
     });
 
     // Extract response content
@@ -90,26 +85,21 @@ export async function POST(request) {
     }
 
     const lines = form1Match[1].trim().split('\n').map(line => line.trim());
-    if (lines.length !== 4) {
+    if (lines.length !== 1) {
       console.error('Invalid line count in FORM1. Lines:', lines);
-      throw new Error(`Invalid LLaMA response format: Expected 4 lines, got ${lines.length}`);
+      throw new Error(`Invalid LLaMA response format: Expected 1 line, got ${lines.length}`);
     }
 
-    // Parse response into fields
-    const result = {
-      careerPriority1: lines[0].startsWith('優先要素1: ') ? lines[0].replace('優先要素1: ', '') : '',
-      careerPriority2: lines[1].startsWith('優先要素2: ') ? lines[1].replace('優先要素2: ', '') : '',
-      careerPriority3: lines[2].startsWith('優先要素3: ') ? lines[2].replace('優先要素3: ', '') : '',
-      careerRoles: lines[3].startsWith('興味ある役割: ') ? lines[3].replace('興味ある役割: ', '') : '',
-    };
+    // Parse response into field
+    const careerPriorities = lines[0].startsWith('3大優先要素: ') ? lines[0].replace('3大優先要素: ', '') : '';
 
-    // Validate that all fields are non-empty
-    if (!result.careerPriority1 || !result.careerPriority2 || !result.careerPriority3 || !result.careerRoles) {
-      console.error('Empty fields in parsed result:', result);
-      throw new Error('Invalid LLaMA response: One or more fields are empty');
+    // Validate that the field is non-empty
+    if (!careerPriorities) {
+      console.error('Empty careerPriorities in parsed result:', careerPriorities);
+      throw new Error('Invalid LLaMA response: careerPriorities is empty');
     }
 
-    return NextResponse.json({ suggestions: result }, { status: 200 });
+    return NextResponse.json({ suggestions: { careerPriorities } }, { status: 200 });
   } catch (error) {
     console.error('Error processing career development:', {
       message: error.message,

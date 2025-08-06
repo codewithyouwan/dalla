@@ -3,7 +3,7 @@
     In the whatFor array we have defined the types for which we have the prompts.
 */
 const whatForTypes = ['jlptExperience', 'careerAspirations', 'languagesAndTools',
-'internshipExperience', 'japaneseCompanies', 'careerDevelopment', 'fieldsOfInterest',
+'internshipExperience', 'japaneseCompanies', 'workValues', 'fieldsOfInterest',
 'productDevelopment', 'katakanaConversion', 'hobbyConversion','placeConversion'];
 
 export default function Prompt(data, whatFor) {
@@ -35,6 +35,7 @@ export default function Prompt(data, whatFor) {
         - 各パターンは、最初に「私は${validatedJapaneseLevel}を取得済み。」と明記し、その後1段落内で読解、語彙、リスニングの能力を**「私は...」で始まる自然な日本語**で丁寧かつ簡潔に記述してください。
         - 段落内で3つの能力を自然につなげ、CVに適したビジネス的な表現を使用してください。
         - スコアや点数、試験名（JLPTを除く）は記載しないでください。
+        - 文章の末尾を、「だ、である」で終わって欲しい。
         - ${validatedJapaneseLevel}に基づく能力の強みを強調してください。
         - ${validatedJapaneseLevel}が「Not certified」の場合、代わりに「私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。」と記載し、能力を控えめに記述してください。
 
@@ -238,53 +239,35 @@ export default function Prompt(data, whatFor) {
       `;
     return prompt;
   } else if (whatFor === whatForTypes[5]) {
-    const { job_role_priority_1, job_role_priority_2, job_role_priority_3, future_career_goals, work_values, jobs_to_try_in_japan } = data;
+    const { work_values } = data;
     const prompt = `
-        ＜システム指示/System Instructions>
-        以下のキャリア情報を元に、CVの「キャリアアップについて」セクションに記載するための簡潔でビジネスに適した値を生成してください。
-        出力は指定されたフォーマットに**厳密に**従い、余計な説明や追加のテキストを含めず、指定されたマーカー内に4行の日本語テキストのみを提供してください。
-        各項目は自然な日本語で、CVに適したプロフェッショナルな表現を使用してください。
+      <System Instructions>
+      Generate a concise, professional response for the "Career Development" section of a CV based on the provided work values. The output must strictly follow the specified format, containing only one line of Japanese text within the designated markers, without any additional explanations or text. Use natural, professional Japanese suitable for a CV.
 
-        ＜キャリア情報/Career Information>
-        優先職種1/Job Role Priority 1: ${job_role_priority_1 || 'なし'}
-        優先職種2/Job Role Priority 2: ${job_role_priority_2 || 'なし'}
-        優先職種3/Job Role Priority 3: ${job_role_priority_3 || 'なし'}
-        将来のキャリア目標/Future Career Goals: ${future_career_goals.join(', ') || 'なし'}
-        ワークバリュー/Work Values: ${work_values.join(', ') || 'なし'}
-        日本で試したい職種/Jobs to Try in Japan: ${jobs_to_try_in_japan || 'なし'}
+      <Career Information>
+      Work Values: ${work_values.join(', ') || 'none'}
 
-        <プロンプト/Prompt>
-        以下の4つの項目について、適切な値を生成してください :
-        - 優先要素1/Priority 1: 優先職種（${job_role_priority_1}）と将来のキャリア目標（${future_career_goals}）、ワークバリュー（${work_values}）を統合し、簡潔な文として記述。
-        - 優先要素2/Priority 2: 優先職種（${job_role_priority_2}）と将来のキャリア目標、ワークバリューを統合し、簡潔な文として記述。
-        - 優先要素3/Priority 3: 優先職種（${job_role_priority_3}）と将来のキャリア目標、ワークバリューを統合し、簡潔な文として記述。
-        - 興味ある役割/Desired Roles: 日本で試したい職種（${jobs_to_try_in_japan}）を元に、1単語または短いフレーズ（最大3語）で記述。
+      <Prompt>
+      Generate a single paragraph for the "3大優先要素" (Three Priority Elements) row, integrating the provided work values into a cohesive, professional statement. The paragraph should be 1-2 sentences, emphasizing professionalism and enthusiasm, and reflect the candidate's priorities based solely on the work values.
 
-        【出力フォーマット】
-        出力は以下のフォーマットに**厳密に**従ってください。余計なテキストや説明を一切含めず、===FORM1-START=== と ===FORM1-END=== の間に4行のみを記載してください。各行は指定されたラベルで始まり、内容は日本語で簡潔かつプロフェッショナルに記述してください。
+      [Output Format]
+      The output must strictly follow this format, containing only one line of Japanese text between ===FORM1-START=== and ===FORM1-END===, with no additional text or markers.
 
-        ===FORM1-START===
-        優先要素1: [優先職種1とキャリア目標・ワークバリューを統合した文]
-        優先要素2: [優先職種2とキャリア目標・ワークバリューを統合した文]
-        優先要素3: [優先職種3とキャリア目標・ワークバリューを統合した文]
-        興味ある役割: [日本で試したい職種を元にした1単語または短いフレーズ]
-        ===FORM1-END===
+      ===FORM1-START===
+      3大優先要素: [Concise paragraph integrating work values in professional Japanese]
+      ===FORM1-END===
 
-        【出力例】
-        ===FORM1-START===
-        優先要素1: 技術革新を通じて社会に貢献
-        優先要素2: チームをリードして成果を達成
-        優先要素3: ワークライフバランスを重視
-        興味ある役割: プロジェクトマネージャー
-        ===FORM1-END===
+      [Output Example]
+      ===FORM1-START===
+      3大優先要素: チームワークを大切にし、安定した環境の中で自らの技術力と人間的成長の両面を追求したいと考えています。多様な文化の中で学び続ける姿勢を持ち、周囲と協調しながら成長することを重視しています。
+      ===FORM1-END===
 
-        【構成ルール】
-        - 4つの項目をそれぞれ1行ずつ、**日本語で簡潔かつ正確に**記載。
-        - 優先要素1-3は簡潔な文（10-15語程度）で、職種、キャリア目標、ワークバリューを自然に統合。
-        - 興味ある役割は1単語または短いフレーズ（最大3語）で記述。
-        - 入力データをそのまま記載せず、適切に変換し、CVにふさわしいビジネス的な表現を使用。
-        - 専門性と意欲を強調し、自然な日本語で記述。
-        - 出力は===FORM1-START=== と ===FORM1-END=== の間に4行のみを含め、他のテキストやマーカーは一切含めない。
+      [Construction Rules]
+      - Generate one paragraph (1-2 sentences, 20-30 words) in natural, professional Japanese.
+      - Integrate the work values into a cohesive statement, emphasizing professionalism and enthusiasm.
+      - Do not use other career information (e.g., job roles, career goals).
+      - Avoid directly quoting the input; rephrase into a polished CV-appropriate expression.
+      - Output only the single line within ===FORM1-START=== and ===FORM1-END===, with no additional text.
       `;
     return prompt;
   } else if (whatFor === whatForTypes[6]) {

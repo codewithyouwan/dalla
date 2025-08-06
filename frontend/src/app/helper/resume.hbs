@@ -352,28 +352,14 @@
       <th colspan="5" class="section-career-dev">キャリアアップについて</th>
     </tr>
     <tr>
-      <th colspan="2">3大優先要素</th>
+      <th colspan="2">働く上での価値観</th>
       <td colspan="3" class="text-left">
-        {{#if careerPriorities.length}}
-          {{#each careerPriorities}}
-            {{this}}{{#unless @last}}、{{/unless}}
-          {{/each}}
-        {{else}}
-          未入力
-        {{/if}}
+        {{careerPriorities}}
       </td>
-    </tr>
-    <tr>
-      <th colspan="2">興味ある役割</th>
-      <td colspan="3" class="text-left">{{careerRoles}}</td>
     </tr>
     <tr>
       <th colspan="2">日本語レベル</th>
       <td colspan="3" class="text-left">{{selectedSuggestion}}</td>
-    </tr>
-    <tr>
-      <th colspan="2">性格</th>
-      <td colspan="3" class="text-left">{{personality}}</td>
     </tr>
     <tr>
       <th colspan="2">趣味</th>
