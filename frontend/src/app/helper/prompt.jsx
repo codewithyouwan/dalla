@@ -209,8 +209,8 @@ export default function Prompt(data, whatFor) {
 
         <Output Format>
         ===FORM2-START===
-        番興味がある点: [Japanse phrase for why the person is interested in Japanese companies]
-        習得したいこと: [Japanse phrase for why the person wants to learn about Japanese companies]
+        番興味がある点: [Japanse phrase for why the person is interested in Japanese companies in da/deru form only.]
+        習得したいこと: [Japanse phrase for why the person wants to learn about Japanese companies in da/deru form only.]
         ===FORM2-END===
 
         <Example>
