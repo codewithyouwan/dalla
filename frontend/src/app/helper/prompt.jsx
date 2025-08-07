@@ -36,6 +36,7 @@ export default function Prompt(data, whatFor) {
         - 段落内で3つの能力を自然につなげ、CVに適したビジネス的な表現を使用してください。
         - スコアや点数、試験名（JLPTを除く）は記載しないでください。
         - 文章の末尾を、「だ、である」で終わって欲しい。
+        - I would like all sentence endings to follow the “da/de aru” (plain) style.
         - ${validatedJapaneseLevel}に基づく能力の強みを強調してください。
         - ${validatedJapaneseLevel}が「Not certified」の場合、代わりに「私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。」と記載し、能力を控えめに記述してください。
 
@@ -63,15 +64,8 @@ export default function Prompt(data, whatFor) {
   } else if (whatFor === whatForTypes[1]) {
     const { preferred_industry, jobs_to_try_in_japan, job_role_priorities, work_style_preference } = data;
     const prompt = `
-      <System Instructions>
-      Respond **only** with the exact format specified below, containing four Japanese lines within ===FORM2-START=== and ===FORM2-END===. Use professional Japanese suitable for a CV. Do not include any additional text, explanations, or deviations.
-
-      <Employee Information>
-      Preferred Industry: ${preferred_industry?.length ? preferred_industry.join(', ') : 'なし'}
-      Jobs to Try in Japan: ${jobs_to_try_in_japan?.length ? jobs_to_try_in_japan.join(', ') : 'なし'}
-      Job Role Priorities: ${job_role_priorities?.length ? job_role_priorities.join(', ') : 'なし'}
-      Work Style Preference: ${work_style_preference?.length ? work_style_preference.join(', ') : 'なし'}
-
+    <System Instructions>
+    Respond **only** with the exact format specified below, containing four Japanese lines within ===FORM2-START=== and ===FORM2-END===. Use professional Japanese suitable for a CV. Do not include any additional text, explanations, or deviations.
       <Prompt>
       Generate four items for the CV's "志向" section:
       - 希望業界: Use all Japanese katakana names from Preferred Industry (${preferred_industry?.length ? preferred_industry.join(', ') : 'なし'}), comma-separated. Remove any English names. Validate and correct katakana if incorrect (e.g., convert "テクノロジ" to "テクノロジー"). If empty or only English, use "技術".
@@ -135,6 +129,7 @@ export default function Prompt(data, whatFor) {
         - 各パターンは2行で構成してください (プログラミング言語→開発ツールの順)。
         - 入力データをそのまま記載せず、適切に変換してください。開発ツールは、データベースクエリ、バージョン管理、コードエディタ・IDE、機械学習フレームワークから適切に選択・統合してください。
         - CVにふさわしいビジネス的な表現を使用し、専門性を強調してください。
+        - I would like all sentence endings to follow the “da/de aru” (plain) style.
 
         【出力形式の例】
 
@@ -201,6 +196,7 @@ export default function Prompt(data, whatFor) {
       - 入力データを適切に変換し、CVにふさわしいビジネス的な表現を使用。
       - 専門性と成果を強調し、自然な日本語で記述。
       - 出力は===FORM1-START=== と ===FORM1-END=== の間に7行のみを含め、他のテキストやマーカーは一切含めない。
+      - I would like all sentence endings to follow the “da/de aru” (plain) style.
     `;
     return prompt;
   } else if (whatFor === whatForTypes[4]) {
@@ -236,6 +232,7 @@ export default function Prompt(data, whatFor) {
         - Do **not** include other markers, text, or blank lines.
         - **Strictly** follow the format; any deviation will break the system.
         - There is no limit on max_tokens, but the output should be concise and professional.
+        - I would like all sentence endings to follow the “da/de aru” (plain) style.
       `;
     return prompt;
   } else if (whatFor === whatForTypes[5]) {
@@ -268,6 +265,7 @@ export default function Prompt(data, whatFor) {
       - Do not use other career information (e.g., job roles, career goals).
       - Avoid directly quoting the input; rephrase into a polished CV-appropriate expression.
       - Output only the single line within ===FORM1-START=== and ===FORM1-END===, with no additional text.
+      - I would like all sentence endings to follow the “da/de aru” (plain) style.
       `;
     return prompt;
   } else if (whatFor === whatForTypes[6]) {
@@ -294,6 +292,7 @@ export default function Prompt(data, whatFor) {
         - Each field must be unique and relevant to the user's data.
         - Just remove the English names (after the '/') in the input data and just check the japanese names if there is any error then correct it and retur it.
         - Everything before the '/' is the Japanese name so don't exclude anything if it's not incorrect of misspelled (Even things in brackets).
+        - I would like all sentence endings to follow the “da/de aru” (plain) style.
       `;
   } else if (whatFor === whatForTypes[7]) {
     const { job_role_priority_1, job_role_priority_2, job_role_priority_3, jobs_to_try_in_japan } = data;
@@ -332,6 +331,7 @@ export default function Prompt(data, whatFor) {
         - Do **not** include other markers, text, or blank lines.
         - **Strictly** follow the format; any deviation will break the system.
         - Suggested max_tokens: 100 to ensure concise output.
+        - I would like all sentence endings to follow the “da/de aru” (plain) style.
       `;
   } else if (whatFor === whatForTypes[8]) {
     const { institution_name, date_string, major } = data;
@@ -408,6 +408,7 @@ export default function Prompt(data, whatFor) {
     - Do **not** include any labels, additional text, or blank lines.
     - **Strictly** follow the format; any deviation will break the system.
     - Suggested max_tokens: 60 for concise output.
+    - I would like all sentence endings to follow the “da/de aru” (plain) style.
     `;
     return prompt;
   } else if (whatFor === whatForTypes[9]) {
@@ -443,10 +444,9 @@ export default function Prompt(data, whatFor) {
       - Phrases must describe activities (e.g., "クリケットをする", not "クリケット").
       - Convert input data into professional, CV-appropriate Japanese; do not copy verbatim.
       - If the input is vague or lengthy, simplify to relevant phrases; exclude non-hobby text like URLs.
-      - If fewer than 3 hobbies, use generic ones (e.g., "読書をする"、 "散歩をする").
       - Do **not** include other markers, text, or blank lines.
       - **Strictly** follow the format; any deviation will break the system.
-      - Suggested max_tokens: 50 for concise output.
+      - I would like all sentence endings to follow the “da/de aru” (plain) style.
     `;
     return prompt;
   } 
@@ -497,6 +497,7 @@ export default function Prompt(data, whatFor) {
       - Do **not** include other markers, text, or blank lines.
       - **Strictly** follow the format; any deviation will break the system.
       - Suggested max_tokens: 50 for concise output.
+      - I would like all sentence endings to follow the “da/de aru” (plain) style.
     `;
     return prompt;
   }
