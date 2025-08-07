@@ -78,7 +78,7 @@ export default function Prompt(data, whatFor) {
     - 希望業界: Use all Japanese katakana names from Preferred Industry (${preferred_industry?.length ? preferred_industry.join(', ') : 'なし'}), comma-separated with Japanese commas (、). Remove any English names. Validate and correct katakana if incorrect (e.g., convert "テクノロジ" to "テクノロジー"). If empty or only English, use "技術".
     - 希望職種: Use all Japanese katakana names from Jobs to Try in Japan (${jobs_to_try_in_japan?.length ? jobs_to_try_in_japan.join(', ') : 'なし'}), comma-separated with Japanese commas (、). Remove any English names. Validate and correct katakana if incorrect (e.g., "エンジニアリング" to "エンジニア"). If empty or only English, use "エンジニア".
     - 目指す役割: Use all Japanese katakana names from Job Role Priorities (${job_role_priorities?.length ? job_role_priorities.join(', ') : 'なし'}), comma-separated with Japanese commas (、). Remove any English names. Validate and correct katakana if incorrect (e.g., "マネージャ" to "マネージャー"). If empty or only English, use "データ分析".
-    - ワークスタイル: Based on Work Style Preference (${work_style_preference?.length ? work_style_preference.join(', ') : 'なし'}), describe the work style in a 2-3 line Japanese sentence (15-25 words). Filter out any English terms. If empty or only English, use "チームワークを重視し、協調性のある環境で専門性を活かしつつ、多様な課題に柔軟に対応する働き方を志向しています。継続的な学びを通じて成長を目指します。"
+    - ワークスタイル: Based on Work Style Preference (${work_style_preference?.length ? work_style_preference.join(', ') : 'なし'}), describe the work style in a 2-3 line Japanese sentence (15-25 words) ending with “da/de aru” style. Filter out any English terms. If empty or only English, use "チームワークを重視し、協調性のある環境で専門性を活かしつつ、多様な課題に柔軟に対応する働き方を志向しています。継続的な学びを通じて成長を目指します。"
 
     <Output Format>
     ===FORM2-START===
