@@ -255,16 +255,16 @@ export default function Prompt(data, whatFor) {
       The output must strictly follow this format, containing only one line of Japanese text between ===FORM1-START=== and ===FORM1-END===, with no additional text or markers.
 
       ===FORM1-START===
-      3大優先要素: [Concise paragraph integrating work values in professional Japanese]
+      3大優先要素: [Concise paragraph integrating work values in professional Japanese in "da, de aru" style]
       ===FORM1-END===
 
       [Output Example]
       ===FORM1-START===
-      3大優先要素: チームワークを大切にし、安定した環境の中で自らの技術力と人間的成長の両面を追求したいと考えています。多様な文化の中で学び続ける姿勢を持ち、周囲と協調しながら成長することを重視しています。
+      3大優先要素: チームワークを大切にし、安定した環境の中で自らの技術力と人間的成長の両面を追求したいと思っている。多様な文化の中で学び続ける姿勢を持ち、周囲と協調しながら成長することを重視している。
       ===FORM1-END===
 
       [Construction Rules]
-      - Generate one paragraph (1-2 sentences, 20-30 words) in natural, professional Japanese.
+      - Generate one paragraph (1-2 sentences) in natural, professional Japanese.
       - Integrate the work values into a cohesive statement, emphasizing professionalism and enthusiasm.
       - Do not use other career information (e.g., job roles, career goals).
       - Avoid directly quoting the input; rephrase into a polished CV-appropriate expression.
