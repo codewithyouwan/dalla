@@ -26,11 +26,11 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       overflow: hidden;
     }
-    colgroup col.col1 { width: 18%; } /* Increased for Year */
+    colgroup col.col1 { width: 16%; } /* Increased for Year */
     colgroup col.col2 { width: 12%; }
     colgroup col.col3 { width: 26%; }
     colgroup col.col4 { width: 26%; }
-    colgroup col.col5 { width: 18%; } /* Decreased for Degree */
+    colgroup col.col5 { width: 20%; } /* Decreased for Degree */
     th, td {
       border: 1px solid #ddd;
       padding: 8px;
@@ -247,7 +247,7 @@
     <tr>
       <th colspan="2" class="text-left th-white">課題</th>
       <td colspan="3" class="text-left">
-        <span class="indent">{{challenges}}</span>
+      <span class="text-left">{{challenges}}</span>
       </td>
     </tr>
     <tr>
@@ -288,13 +288,13 @@
       <th colspan="2" class="text-left th-white">具体的な内容</th>
       <td colspan="3" class="text-left">
         <b>果たした役割：</b><br>
-        <span class="indent">{{role}}</span>
+        <span class="indent">• {{role}}</span>
       </td>
     </tr>
     <tr>
       <th colspan="2" class="text-left th-white">課題</th>
       <td colspan="3" class="text-left">
-        <span class="indent">• {{challenges}}</span>
+        <span class="text-left">{{challenges}}</span>
       </td>
     </tr>
     <tr>
