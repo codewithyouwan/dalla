@@ -423,7 +423,7 @@ export default function Prompt(data, whatFor) {
     const { hobbies_Interests } = data;
     const prompt = `
      <System Instructions>
-      Respond **only** with the exact format specified below, containing one Japanese line within ===FORM1-START=== and ===FORM1-END===. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM2, FORM3). Use professional Japanese suitable for a CV. Output 3-4 short phrases (each 2-4 words) separated by commas.
+      Respond **only** with the exact format specified below, containing one Japanese line within ===FORM1-START=== and ===FORM1-END===. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM2, FORM3). Use professional Japanese suitable for a CV. Output 3-4 short phrases (each 2-4 words) separated by Japanese commas.
 
       <Employee Information>
       Hobby: ${hobbies_Interests || 'なし'}
@@ -432,10 +432,9 @@ export default function Prompt(data, whatFor) {
       Convert the hobby (${hobbies_Interests}) into 3-4 concise Japanese phrases for a CV's "趣味" section.
       - If the hobby is in English or lengthy, simplify it to 3-4 professional, CV-appropriate Japanese phrases (e.g., "Playing cricket" → "クリケットをする").
       - Each phrase must be 2-4 words, describing an activity (e.g., "サッカーをする", not just "サッカー").
-      - If the input contains multiple hobbies, select up to 4 distinct activities; if fewer, repeat or use generic ones.
-      - If the input is empty or 'なし', use generic but relevant hobbies (e.g., "読書をする,散歩をする,音楽を聴く").
       - Ignore any URLs or non-hobby text in the input.
       - Ensure the output reflects a professional tone suitable for a Japanese CV.
+      - VERY IMPORTANT: ONLY USE JAPANESE COMMAS (、) to separate the phrases, not English commas (,) otherwise our system can break.
 
       <Output Format>
       ===FORM1-START===
@@ -444,7 +443,7 @@ export default function Prompt(data, whatFor) {
 
       <Example>
       ===FORM1-START===
-      ギターを弾く,サッカーをする,バンドで演奏
+      ギターを弾く、サッカーをする、バンドで演奏
       ===FORM1-END===
 
       <Rules>
