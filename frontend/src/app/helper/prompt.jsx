@@ -77,33 +77,32 @@ export default function Prompt(data, whatFor) {
       - 希望業界: Use all Japanese katakana names from Preferred Industry (${preferred_industry?.length ? preferred_industry.join(', ') : 'なし'}), comma-separated. Remove any English names. Validate and correct katakana if incorrect (e.g., convert "テクノロジ" to "テクノロジー"). If empty or only English, use "技術".
       - 希望職種: Use all Japanese katakana names from Jobs to Try in Japan (${jobs_to_try_in_japan?.length ? jobs_to_try_in_japan.join(', ') : 'なし'}), comma-separated. Remove any English names. Validate and correct katakana if incorrect (e.g., "エンジニアリング" to "エンジニア"). If empty or only English, use "エンジニア".
       - 目指す役割: Use all Japanese katakana names from Job Role Priorities (${job_role_priorities?.length ? job_role_priorities.join(', ') : 'なし'}), comma-separated. Remove any English names. Validate and correct katakana if incorrect (e.g., "マネージャ" to "マネージャー"). If empty or only English, use "データ分析".
-      - ワークスタイル: Based on Work Style Preference (${work_style_preference?.length ? work_style_preference.join(', ') : 'なし'}), describe the work style in 1-3 words in Japanese. Filter out any English terms. If empty or only English, use "チームワーク".
+      - ワークスタイル: Based on Work Style Preference (${work_style_preference?.length ? work_style_preference.join(', ') : 'なし'}), describe the work style **in da/deru form** (plain declarative style, e.g., 重要である or 柔軟である). Filter out any English terms. If empty or only English, use "チームワークを重視する姿勢である".
 
       <Output Format>
       ===FORM2-START===
       希望業界: [comma-separated Japanese katakana names]
       希望職種: [comma-separated Japanese katakana names]
       目指す役割: [comma-separated Japanese katakana names]
-      ワークスタイル: [1-3 words]
+      ワークスタイル: [1 sentence in da/deru form]
       ===FORM2-END===
 
       <Example>
       ===FORM2-START===
-      希望業界: 情報技術,金融
-      希望職種: 開発エンジニア,データサイエンティスト
-      目指す役割: プロジェクト管理,チームリーダー
-      ワークスタイル: チームワーク
+      希望業界: 情報技術、金融
+      希望職種: 開発エンジニア、データサイエンティスト
+      目指す役割: プロジェクト管理、チームリーダー
+      ワークスタイル: 実装力を基盤に、企画・提案や研究的なアプローチも取り入れながら、多角的に課題解決に取り組むスタイルを志望する。特定分野にとらわれず、幅広い役割を担えるジェネラリストとしての成長を目指す。
       ===FORM2-END===
 
       <Rules>
       - Output **exactly** four lines between ===FORM2-START=== and ===FORM2-END===.
       - Each line starts with the specified label (希望業界: , 希望職種: , 目指す役割: , ワークスタイル: ).
       - For 希望業界, 希望職種, and 目指す役割, use comma-separated Japanese katakana names, removing English terms and correcting invalid katakana.
-      - For ワークスタイル, use 1-3 words in Japanese.
-      - In the output if you comma use the Japanse comman '、' instead of the English comma ','.
-      - If input is 'なし', empty, or contains only English terms, use defaults: 技術 (希望業界), エンジニア (希望職種), データ分析 (目指す役割), チームワーク (ワークスタイル).
-      - Do **not** include other markers (e.g., FORM1, FORM3), text, or blank lines.
-    `;
+      - For ワークスタイル, use a complete sentence or phrase strictly in da/deru form.
+      - In the output if you comma use the Japanse comma '、' instead of the English comma ','.
+      - If input is 'なし', empty, or contains only English terms, use defaults: 技術 (希望業界), エンジニア (希望職種), データ分析 (目指す役割), チームワークを重視する姿勢である (ワークスタイル).
+      - Do **not** include other markers (e.g., FORM1, FORM3), text, or blank lines.`
     return prompt;
   } else if (whatFor === whatForTypes[2]) {
     const { programming_languages, databases_querying, version_control, code_editors_ides, ml_frameworks } = data;
