@@ -128,9 +128,9 @@
          if (!res.ok) throw new Error(`Languages and tools API error: ${res.statusText}`);
          const gptData = await res.json();
          if (gptData.suggestions) {
-           const form2Match = gptData.suggestions.match(/===FORM2-START===[\s\S]*?\n([\s\S]*?)\n===FORM2-END===/);
-           if (form2Match) {
-             const lines = form2Match[1].trim().split('\n').map(line => line.trim());
+           const formMatch = gptData.suggestions.match(/===FORM-START===[\s\S]*?\n([\s\S]*?)\n===FORM-END===/);
+           if (formMatch) {
+             const lines = formMatch[1].trim().split('\n').map(line => line.trim());
              if (lines.length >= 2) {
                setDetails((prev) => ({
                  ...prev,

@@ -101,47 +101,40 @@ export default function Prompt(data, whatFor) {
   } else if (whatFor === whatForTypes[2]) {
     const { programming_languages, databases_querying, version_control, code_editors_ides, ml_frameworks } = data;
     const prompt = `
-        ＜従業員情報/Employee Information>
-        プログラミング言語/Programming Languages: ${programming_languages || 'なし'}
-        データベースクエリ/Databases Querying: ${databases_querying || 'なし'}
-        バージョン管理/Version Control: ${version_control || 'なし'}
-        コードエディタ・IDE/Code Editors & IDEs: ${code_editors_ides || 'なし'}
-        機械学習フレームワーク/ML Frameworks: ${ml_frameworks || 'なし'}
+    <System Instructions>
+    Respond **only** with the exact format specified below, containing two Japanese lines within ===FORM-START=== and ===FORM-END===. Use professional Japanese suitable for a CV. Do not include any additional text, explanations, or deviations.
 
-        <プロンプト/Prompt>
-        この従業員情報を元に、CVの「言語/開発ツール」セクションに記載するための簡潔でビジネスに適した値を生成してください。
-        以下の2つの項目について、適切な値を生成してください :
-        - プログラミング言語/Languages: プログラミング言語（${programming_languages}）をカンマ区切りで簡潔に記述。
-        - 開発ツール/Development Tools: データベースクエリ（${databases_querying}）、バージョン管理（${version_control})、コードエディタ・IDE（${code_editors_ides}）、機械学習フレームワーク（${ml_frameworks}）を統合し、適切な開発ツールをカンマ区切りで簡潔に記述。
-        企業が私の技術的スキルを適切に理解できるように、**簡潔かつ正確に**記載してください。
-        2パターンの値セットを作成し、各パターンは2つの値 (プログラミング言語→開発ツールの順) で構成してください。
-        各値は改行で区切り、**日本語で簡潔かつ正確に**記載してください。
-        各行の先頭に「プログラミング言語: 」および「開発ツール: 」のラベルを付けてください。
+    <Employee Information>
+    Programming Languages: ${programming_languages || 'None'}
+    Databases Querying: ${databases_querying || 'None'}
+    Version Control: ${version_control || 'None'}
+    Code Editors & IDEs: ${code_editors_ides || 'None'}
+    ML Frameworks: ${ml_frameworks || 'None'}
 
-        出力は以下のフォーマットに**厳密に**従ってください。各パターンの出力は、それぞれ次のようにマーカーで囲ってください：
+    <Prompt>
+    Based on the provided employee information, generate concise, business-appropriate values for the CV's "Languages/Development Tools" section. Generate values for the following two items:
+    - Programming Languages: List the programming languages (${programming_languages}) as a concise, comma-separated list using Japanese commas (、).
+    - Development Tools: Combine databases querying (${databases_querying}), version control (${version_control}), code editors & IDEs (${code_editors_ides}), and ML frameworks (${ml_frameworks}) into a concise, comma-separated list using Japanese commas (、). Select and integrate relevant tools to clearly represent technical expertise.
+    Ensure the values are **concise and accurate** to help employers understand the candidate's technical skills. Use professional Japanese for a CV, with Japanese commas (、) for all lists.
 
-        - 詳細な記述 (複数のスキル/ツールを詳細に) には ===FORM1-START=== と ===FORM1-END=== を使用してください。
-        - 中程度の記述 (主要なスキル/ツールに絞る) には ===FORM2-START=== と ===FORM2-END=== を使用してください。
+    <Output Format>
+    ===FORM-START===
+    プログラミング言語: [comma-separated list with Japanese commas]
+    開発ツール: [comma-separated list with Japanese commas]
+    ===FORM-END===
 
-        【各パターの構成ルール】
+    <Example>
+    ===FORM-START===
+    プログラミング言語: Python、JavaScript、Java、SQL
+    開発ツール: Git、VS Code、Docker、TensorFlow
+    ===FORM-END===
 
-        - 2つの項目 (プログラミング言語、開発ツール) について、それぞれ1行ずつ、**日本語で簡潔に**記載してください。
-        - 各パターンは2行で構成してください (プログラミング言語→開発ツールの順)。
-        - 入力データをそのまま記載せず、適切に変換してください。開発ツールは、データベースクエリ、バージョン管理、コードエディタ・IDE、機械学習フレームワークから適切に選択・統合してください。
-        - CVにふさわしいビジネス的な表現を使用し、専門性を強調してください。
-        - I would like all sentence endings to follow the “da/de aru” (plain) style.
-
-        【出力形式の例】
-
-        ===FORM1-START===
-        プログラミング言語: Python, JavaScript, Java, SQL
-        開発ツール: Git, VS Code, Docker, TensorFlow
-        ===FORM1-END===
-
-        ===FORM2-START===
-        プログラミング言語: Python, JavaScript
-        開発ツール: Git, VS Code
-        ===FORM2-END===
+    <Rules>
+    - Output **exactly** two lines between ===FORM-START=== and ===FORM-END===.
+    - Each line starts with the specified label (プログラミング言語: , 開発ツール: ).
+    - Use Japanese commas (、) for separating items in both lists.
+    - If an input is 'None', empty, or invalid, exclude it from the output or use a suitable default (e.g., 'Python' for languages, 'Git' for tools) if no valid items are provided.
+    - Do **not** include other markers, text, or blank lines.
         `;
     return prompt;
   } else if (whatFor === whatForTypes[3]) {
