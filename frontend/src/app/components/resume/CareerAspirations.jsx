@@ -36,7 +36,8 @@ export default function CareerAspirations({ details, handleInputChange, fetchCar
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">目指す役割 / Target Role</label>
-          <input
+          <textarea
+            rows={2}
             type="text"
             name="targetRole"
             value={details.targetRole}
@@ -47,7 +48,8 @@ export default function CareerAspirations({ details, handleInputChange, fetchCar
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">ワークスタイル / Work Style</label>
-          <input
+          <textarea
+            rows={2}
             type="text"
             name="workStyle"
             value={details.workStyle}
