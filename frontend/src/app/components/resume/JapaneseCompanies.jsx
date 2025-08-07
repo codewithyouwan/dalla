@@ -17,7 +17,7 @@ export default function JapaneseCompanies({ details, handleInputChange, fetchJap
           <label className="block text-sm font-medium text-gray-700">番興味がある点 / Most Interesting Aspect</label>
           <textarea
             type="text"
-            rows={1}
+            rows={3}
             name="japanCompanyInterest"
             value={details.japanCompanyInterest}
             onChange={handleInputChange}
@@ -28,8 +28,7 @@ export default function JapaneseCompanies({ details, handleInputChange, fetchJap
           <label className="block text-sm font-medium text-gray-700">習得したいこと / Skills to Acquire</label>
           <textarea
             type="text"
-
-            rows={1}
+            rows={2}
             name="japanCompanySkills"
             value={details.japanCompanySkills}
             onChange={handleInputChange}
