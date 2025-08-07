@@ -216,7 +216,7 @@ export default function Prompt(data, whatFor) {
 
         <Prompt>
         Generate two items for the CV's "日本企業について" section:
-        - Most Interesting Aspect: Based on Interest in Japanese Companies (${interest_in_japanese_companies}), describe what excites you about working at Japanese companies in a single phrase prefereable have 2-3 lines.
+        - Most Interesting Aspect: Based on Interest in Japanese Companies (${interest_in_japanese_companies}), describe what excites the person about working at Japanese companies in a single phrase prefereable have 2-3 lines.
         - Skills to Acquire: (${aspects_to_learn}) From this just remove the english names (after the '/') and just check the japanese names if there is any error then correct it and return it(Seperated by commas).
 
         <Output Format>
@@ -227,16 +227,17 @@ export default function Prompt(data, whatFor) {
 
         <Example>
         ===FORM2-START===
-        番興味がある点: 生産技術を通じてものづくりの革新を推進すること
+        番興味がある点: 日本企業の品質や継続的改善（カイゼン）へのこだわり、チームワークを重んじる文化に強く共感し、そういった環境でエンジニアとして成長したいと思っている。
         習得したいこと: ものづくり現場の課題を発見し改善する提案力と技術力
         ===FORM2-END===
 
         <Rules>
+        - Write as the person is writing the sentences himself.
+        - Use the da/deru form for the japanse sentences.
         - Output **exactly** two phrases between ===FORM2-START=== and ===FORM2-END===.
         - Each phrase starts with "番興味がある点: " or "習得したいこと: ", followed by 1 phrase (2-3 lines).
         - Do **not** include other markers, text, or blank lines.
         - **Strictly** follow the format; any deviation will break the system.
-        - There is no limit on max_tokens, but the output should be concise and professional.
       `;
     return prompt;
   } else if (whatFor === whatForTypes[5]) {
