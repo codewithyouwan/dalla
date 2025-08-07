@@ -46,7 +46,7 @@
       font-weight: bold;
     }
     .section-aspirations {
-      background-color: #e8e8e8; /* Light Lime for Career Aspirations */
+      background-color: #e8e8e8; /* Light Gray for Career Aspirations */
       font-weight: bold;
     }
     .section-languages-tools {
@@ -61,12 +61,6 @@
       background-color: #fff3cd; /* Light Yellow for Projects */
       font-weight: bold;
     }
-    /*
-    {{!-- .section-product-dev {
-      background-color: #cfe2f3;  cyna color for product development.
-      font-weight: bold;
-    } --}}
-    */
     .section-fields-interest {
       background-color: #f3e5f5; /* Light Purple for Fields of Interest */
       font-weight: bold;
@@ -125,6 +119,15 @@
     }
     .name-cell {
       font-size: 16px;
+    }
+    @page {
+      margin: 20mm;
+      @bottom-right {
+        content: counter(page) " / " counter(pages);
+        font-family: 'Noto Sans JP', sans-serif;
+        font-size: 10px;
+        color: #333;
+      }
     }
   </style>
 </head>
@@ -185,7 +188,7 @@
       <td colspan="3" class="text-left">
         {{institution}}
         {{#if major}}
-          <br><strong>専攻: {{major}}</strong>
+          <br>専攻: {{major}}
         {{/if}}
       </td>
       <td colspan="1" class="text-left">{{degree}}</td>
@@ -238,19 +241,13 @@
       <th colspan="2" class="text-left th-white">具体的な内容</th>
       <td colspan="3" class="text-left">
         <b>果たした役割：</b><br>
-        <span class="indent">{{role}}</span><br>
-        <span class="indent">ディープラーニングモデルの設計・訓練</span><br>
-        <span class="indent">データの収集と前処理</span><br>
-        <span class="indent">モデルの評価と改善</span>
+        <span class="indent">• {{role}}</span>
       </td>
     </tr>
     <tr>
       <th colspan="2" class="text-left th-white">課題</th>
       <td colspan="3" class="text-left">
-        <span class="indent">{{challenges}}</span><br>
-        <span class="indent">-> マネージャーからの継続的な指導を受けつつ、自主学習を行った</span><br>
-        <span class="indent">-> モデルに供給するためのデータを適切にクリーニングする必要があった</span><br>
-        <span class="indent">-> 少量のデータセットを手動でチェックし、アルゴリズムを適用して検証した</span>
+        <span class="indent">{{challenges}}</span>
       </td>
     </tr>
     <tr>
@@ -284,10 +281,6 @@
       <td colspan="3" class="text-left">{{description}}</td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">エンドユーザー</th>
-      <td colspan="3" class="text-left">アプリを使用する一般ユーザー</td>
-    </tr>
-    <tr>
       <th colspan="2" class="text-left th-white">内容</th>
       <td colspan="3" class="text-left">{{description}}</td>
     </tr>
@@ -295,19 +288,13 @@
       <th colspan="2" class="text-left th-white">具体的な内容</th>
       <td colspan="3" class="text-left">
         <b>果たした役割：</b><br>
-        <span class="indent">{{role}}</span><br>
-        <span class="indent">ディープラーニングモデルの設計・訓練</span><br>
-        <span class="indent">データの収集と前処理</span><br>
-        <span class="indent">モデルの評価と改善</span>
+        <span class="indent">{{role}}</span>
       </td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">課題：</th>
+      <th colspan="2" class="text-left th-white">課題</th>
       <td colspan="3" class="text-left">
-        <span class="indent">{{challenges}}</span><br>
-        <span class="indent">-> マネージャーからの継続的な指導を受けつつ、自主学習を行った</span><br>
-        <span class="indent">-> モデルに供給するためのデータを適切にクリーニングする必要があった</span><br>
-        <span class="indent">-> 少量のデータセットを手動でチェックし、アルゴリズムを適用して検証した</span>
+        <span class="indent">• {{challenges}}</span>
       </td>
     </tr>
     <tr>
@@ -344,9 +331,7 @@
     </tr>
     <tr>
       <th colspan="2">働く上での価値観</th>
-      <td colspan="3" class="text-left">
-        {{careerPriorities}}
-      </td>
+      <td colspan="3" class="text-left">{{careerPriorities}}</td>
     </tr>
     <tr>
       <th colspan="2">日本語レベル</th>
@@ -360,6 +345,7 @@
   <div class="footer">
     <span>{{employeeNumber}}</span>
     <span>モラブ阪神工業株式会社</span>
+    <span class="page-number"></span>
   </div>
 </body>
 </html>
