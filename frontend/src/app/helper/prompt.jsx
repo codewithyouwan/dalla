@@ -65,7 +65,7 @@ export default function Prompt(data, whatFor) {
     const { preferred_industry, jobs_to_try_in_japan, job_role_priorities, work_style_preference } = data;
     const prompt = `
     <System Instructions>
-    Respond **only** with the exact format specified below, containing four Japanese lines within ===FORM2-START=== and ===FORM2-END===. Use professional Japanese suitable for a CV. Do not include any additional text, explanations, or deviations.
+      Respond **only** with the exact format specified below, containing four Japanese lines within ===FORM2-START=== and ===FORM2-END===. Use professional Japanese suitable for a CV. Do not include any additional text, explanations, or deviations If the output demands sentences then keep them strictly in da/deru form only.
       <Prompt>
       Generate four items for the CV's "志向" section:
       - 希望業界: Use all Japanese katakana names from Preferred Industry (${preferred_industry?.length ? preferred_industry.join(', ') : 'なし'}), comma-separated. Remove any English names. Validate and correct katakana if incorrect (e.g., convert "テクノロジ" to "テクノロジー"). If empty or only English, use "技術".
@@ -102,7 +102,7 @@ export default function Prompt(data, whatFor) {
     const { programming_languages, databases_querying, version_control, code_editors_ides, ml_frameworks } = data;
     const prompt = `
     <System Instructions>
-    Respond **only** with the exact format specified below, containing two Japanese lines within ===FORM-START=== and ===FORM-END===. Use professional Japanese suitable for a CV. Do not include any additional text, explanations, or deviations.
+    Respond **only** with the exact format specified below, containing two Japanese lines within ===FORM-START=== and ===FORM-END===. Use professional Japanese suitable for a CV. Do not include any additional text, explanations, or deviations. If japanese sentence are required then keep them strictly in da/deru form only.
 
     <Employee Information>
     Programming Languages: ${programming_languages || 'None'}
@@ -196,7 +196,7 @@ export default function Prompt(data, whatFor) {
     const {interest_in_japanese_companies, aspects_to_learn} = data;
     const prompt = `
         <System Instructions>
-        Respond **only** with the exact format specified below, containing two Japanese phrases (Each one a concise sentence 2-3 lines.) within ===FORM2-START=== and ===FORM2-END===. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM1, FORM3). Use professional Japanese suitable for a CV, reflecting Japanese corporate culture (e.g., teamwork, continuous improvement, technical innovation).
+        Respond **only** with the exact format specified below, containing two Japanese phrases (Each one a concise sentence 2-3 lines.) within ===FORM2-START=== and ===FORM2-END===. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM1, FORM3). Use professional Japanese suitable for a CV, reflecting Japanese corporate culture (e.g., teamwork, continuous improvement, technical innovation). For the sentences always follow the da/deru form only.
 
         <Employee Information>
         Interest in Japanese Companies: ${interest_in_japanese_companies || 'なし'}
@@ -232,7 +232,7 @@ export default function Prompt(data, whatFor) {
     const { work_values } = data;
     const prompt = `
       <System Instructions>
-      Generate a concise, professional response for the "Career Development" section of a CV based on the provided work values. The output must strictly follow the specified format, containing only one line of Japanese text within the designated markers, without any additional explanations or text. Use natural, professional Japanese suitable for a CV.
+      Generate a concise, professional response for the "Career Development" section of a CV based on the provided work values. The output must strictly follow the specified format, containing only one line of Japanese text (Only in da/deru form) within the designated markers, without any additional explanations or text. Use natural, professional Japanese suitable for a CV.
 
       <Career Information>
       Work Values: ${work_values.join(', ') || 'none'}
@@ -291,7 +291,7 @@ export default function Prompt(data, whatFor) {
     const { job_role_priority_1, job_role_priority_2, job_role_priority_3, jobs_to_try_in_japan } = data;
     return `
         <System Instructions>
-        Respond **only** with the exact format specified below, containing two Japanese lines within ===FORM1-START=== and ===FORM1-END===. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM2, FORM3). Use professional Japanese suitable for a CV, reflecting Japanese corporate culture (e.g., teamwork, continuous improvement, technical innovation). Limit each line to one sentence, maximum 15 words. Do **not** include the labels "興味を持つ理由: " or "果たしたい役割: " in the output lines; only provide the content after these labels.
+        Respond **only** with the exact format specified below, containing two Japanese lines within ===FORM1-START=== and ===FORM1-END===. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM2, FORM3). Use professional Japanese suitable for a CV, reflecting Japanese corporate culture (e.g., teamwork, continuous improvement, technical innovation). Limit each line to one sentence, maximum 15 words. Do **not** include the labels "興味を持つ理由: " or "果たしたい役割: " in the output lines; only provide the content after these labels. If japanese sentences are required then always use da/deru form only.
 
         <Employee Information>
         Job Role Priority 1: ${job_role_priority_1 || 'なし'}
