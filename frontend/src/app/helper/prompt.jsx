@@ -65,7 +65,7 @@ export default function Prompt(data, whatFor) {
     const { preferred_industry, jobs_to_try_in_japan, job_role_priorities, work_style_preference } = data;
     const prompt = `
     <System Instructions>
-      Respond **only** with the exact format specified below, containing four Japanese lines within ===FORM2-START=== and ===FORM2-END===. Use professional Japanese suitable for a CV. Do not include any additional text, explanations, or deviations If the output demands sentences then keep them strictly in da/deru form only.
+      Respond **only** with the exact format specified below, containing four Japanese lines within ===FORM2-START=== and ===FORM2-END===. Use professional Japanese suitable for a CV. Do not include any additional text, explanations, or deviations.
       <Prompt>
       Generate four items for the CV's "志向" section:
       - 希望業界: Use all Japanese katakana names from Preferred Industry (${preferred_industry?.length ? preferred_industry.join(', ') : 'なし'}), comma-separated. Remove any English names. Validate and correct katakana if incorrect (e.g., convert "テクノロジ" to "テクノロジー"). If empty or only English, use "技術".
@@ -78,7 +78,7 @@ export default function Prompt(data, whatFor) {
       希望業界: [comma-separated Japanese katakana names]
       希望職種: [comma-separated Japanese katakana names]
       目指す役割: [comma-separated Japanese katakana names]
-      ワークスタイル: [1 sentence in da/deru form]
+      ワークスタイル: [1 sentence (Can have multiple lines) in da/deru form]
       ===FORM2-END===
 
       <Example>
