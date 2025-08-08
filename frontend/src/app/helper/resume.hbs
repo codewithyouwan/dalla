@@ -22,15 +22,8 @@
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       overflow: hidden;
     }
-    colgroup col.col1 { width: 16%; } /* Increased for Year */
-    colgroup col.col2 { width: 12%; }
-    colgroup col.col3 { width: 26%; }
-    colgroup col.col4 { width: 26%; }
-    colgroup col.col5 { width: 20%; } /* Decreased for Degree */
     th, td {
       border: 1px solid #ddd;
       padding: 8px;
@@ -42,35 +35,34 @@
       font-weight: normal;
     }
     .section-education {
-      background-color: #d0e0ff; /* Light Blue for Education */
+      background-color: #d0e0ff;
       font-weight: bold;
     }
     .section-aspirations {
-      background-color: #e8e8e8; /* Light Gray for Career Aspirations */
-      font-weight: bold;
+      background-color: #e8e8e8;
     }
     .section-languages-tools {
-      background-color: #fce4ec; /* Light Rose for Languages/Dev Tools */
+      background-color: #fce4ec;
       font-weight: bold;
     }
     .section-internships {
-      background-color: #e6ffe6; /* Light Green for Internships */
+      background-color: #e6ffe6;
       font-weight: bold;
     }
     .section-projects {
-      background-color: #fff3cd; /* Light Yellow for Projects */
+      background-color: #fff3cd;
       font-weight: bold;
     }
     .section-fields-interest {
-      background-color: #f3e5f5; /* Light Purple for Fields of Interest */
+      background-color: #f3e5f5;
       font-weight: bold;
     }
     .section-japan-companies {
-      background-color: #ffcccc; /* Light Pink for Japanese Companies */
+      background-color: #ffcccc;
       font-weight: bold;
     }
     .section-career-dev {
-      background-color: #e0f7fa; /* Light Aqua for Career Development */
+      background-color: #e0f7fa;
       font-weight: bold;
     }
     .th-white {
@@ -135,13 +127,14 @@
   <div class="header-note">
     *個人情報に付きお取り扱いご注意願います。
   </div>
+  <!-- Header Table -->
   <table>
     <colgroup>
-      <col class="col1">
-      <col class="col2">
-      <col class="col3">
-      <col class="col4">
-      <col class="col5">
+      <col class="col1" style="width: 16%;">
+      <col class="col2" style="width: 12%;">
+      <col class="col3" style="width: 26%;">
+      <col class="col4" style="width: 26%;">
+      <col class="col5" style="width: 20%;">
     </colgroup>
     <tr class="employee-row">
       <th colspan="2">No.</th>
@@ -162,50 +155,80 @@
       <th colspan="2">出身地</th>
       <td colspan="2" class="text-left">{{hometown}}</td>
     </tr>
+  </table>
+  <!-- Career Aspirations Table -->
+  <table>
+    <colgroup>
+      <col style="width: 10%;">
+      <col style="width: 18%;">
+      <col style="width: 72%;">
+    </colgroup>
     <tr>
       <th rowspan="4" class="section-aspirations">志向</th>
       <th>希望業界</th>
-      <td colspan="3" class="text-left">{{desiredIndustry}}</td>
+      <td class="text-left">{{#if desiredIndustry}}{{desiredIndustry}}{{else}}未入力{{/if}}</td>
     </tr>
     <tr>
       <th>希望職種</th>
-      <td colspan="3" class="text-left">{{desiredJobType}}</td>
+      <td class="text-left">{{#if desiredJobType}}{{desiredJobType}}{{else}}未入力{{/if}}</td>
     </tr>
     <tr>
       <th>目指す役割</th>
-      <td colspan="3" class="text-left">{{targetRole}}</td>
+      <td class="text-left">{{#if targetRole}}{{targetRole}}{{else}}未入力{{/if}}</td>
     </tr>
     <tr>
       <th>ワークスタイル</th>
-      <td colspan="3" class="text-left">{{workStyle}}</td>
+      <td class="text-left">{{#if workStyle}}{{workStyle}}{{else}}未入力{{/if}}</td>
     </tr>
+  </table>
+  <!-- Education Table -->
+  <table>
+    <colgroup>
+      <col style="width: 20%;">
+      <col style="width: 60%;">
+      <col style="width: 15%;">
+    </colgroup>
     <tr>
-      <th colspan="5" class="section-education">学歴</th>
+      <th colspan="3" class="section-education">学歴</th>
     </tr>
     {{#each education}}
     <tr>
       <td>{{year}}</td>
-      <td colspan="3" class="text-left">
+      <td class="text-left">
         {{institution}}
         {{#if major}}
           <br>専攻: {{major}}
         {{/if}}
       </td>
-      <td colspan="1" class="text-left">{{degree}}</td>
+      <td class="text-left">{{degree}}</td>
     </tr>
     {{/each}}
+  </table>
+  <!-- Languages and Tools Table -->
+  <table>
+    <colgroup>
+      <col style="width: 20%;">
+      <col style="width: 80%;">
+    </colgroup>
     <tr>
       <th colspan="5" class="section-languages-tools">言語/開発ツール</th>
     </tr>
     <tr>
-      <th colspan="2">言語</th>
-      <td colspan="3" class="text-left">{{languages}}</td>
+      <th>言語</th>
+      <td class="text-left">{{#if languages}}{{languages}}{{else}}未入力{{/if}}</td>
     </tr>
     <tr>
-      <th colspan="2">開発ツール</th>
-      <td colspan="3" class="text-left">{{devTools}}</td>
+      <th>開発ツール</th>
+      <td class="text-left">{{#if devTools}}{{devTools}}{{else}}未入力{{/if}}</td>
     </tr>
-    {{#if internships.length}}
+  </table>
+  <!-- Internships Table -->
+  {{#if internships.length}}
+  <table>
+    <colgroup>
+      <col style="width: 20%;">
+      <col style="width: 80%;">
+    </colgroup>
     <tr>
       <th colspan="5" class="section-internships">インターンシップ / Internships</th>
     </tr>
@@ -214,53 +237,60 @@
       <th colspan="5" class="section-internships">インターンシップ {{math @index "+" 1}}</th>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">タイトル</th>
-      <td colspan="3" class="text-left">{{title}}</td>
+      <th class="text-left th-white">タイトル</th>
+      <td class="text-left">{{title}}</td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">企業</th>
-      <td colspan="3" class="text-left">{{company}}</td>
+      <th class="text-left th-white">企業</th>
+      <td class="text-left">{{company}}</td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">期間</th>
-      <td colspan="3" class="text-left">{{period}}</td>
+      <th class="text-left th-white">期間</th>
+      <td class="text-left">{{period}}</td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">概要</th>
-      <td colspan="3" class="text-left">{{description}}</td>
+      <th class="text-left th-white">概要</th>
+      <td class="text-left">{{description}}</td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">エンドユーザー</th>
-      <td colspan="3" class="text-left">アプリを使用する一般ユーザー</td>
+      <th class="text-left th-white">エンドユーザー</th>
+      <td class="text-left">アプリを使用する一般ユーザー</td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">内容</th>
-      <td colspan="3" class="text-left">{{description}}</td>
+      <th class="text-left th-white">内容</th>
+      <td class="text-left">{{description}}</td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">具体的な内容</th>
-      <td colspan="3" class="text-left">
+      <th class="text-left th-white">具体的な内容</th>
+      <td class="text-left">
         <b>果たした役割：</b><br>
-        <span class="indent">• {{role}}</span>
+        <span class="indent">{{role}}</span>
       </td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">課題</th>
-      <td colspan="3" class="text-left">
-      <span class="text-left">{{challenges}}</span>
+      <th class="text-left th-white">課題</th>
+      <td class="text-left">
+        <span class="indent">• {{challenges}}</span>
       </td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">得られた成果</th>
-      <td colspan="3" class="text-left">{{outcome}}</td>
+      <th class="text-left th-white">得られた成果</th>
+      <td class="text-left">{{outcome}}</td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">直面した課題</th>
-      <td colspan="3" class="text-left">{{challenges}}</td>
+      <th class="text-left th-white">直面した課題</th>
+      <td class="text-left">{{challenges}}</td>
     </tr>
     {{/each}}
-    {{/if}}
-    {{#if projects.length}}
+  </table>
+  {{/if}}
+  <!-- Projects Table -->
+  {{#if projects.length}}
+  <table>
+    <colgroup>
+      <col style="width: 20%;">
+      <col style="width: 80%;">
+    </colgroup>
     <tr>
       <th colspan="5" class="section-projects">プロジェクト / Projects</th>
     </tr>
@@ -269,77 +299,99 @@
       <th colspan="5" class="section-projects">プロジェクト {{math @index "+" 1}}</th>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">タイトル</th>
-      <td colspan="3" class="text-left">{{title}}</td>
+      <th class="text-left th-white">タイトル</th>
+      <td class="text-left">{{title}}</td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">期間</th>
-      <td colspan="3" class="text-left">{{period}}</td>
+      <th class="text-left th-white">期間</th>
+      <td class="text-left">{{period}}</td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">概要</th>
-      <td colspan="3" class="text-left">{{description}}</td>
+      <th class="text-left th-white">概要</th>
+      <td class="text-left">{{description}}</td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">内容</th>
-      <td colspan="3" class="text-left">{{description}}</td>
+      <th class="text-left th-white">内容</th>
+      <td class="text-left">{{description}}</td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">具体的な内容</th>
-      <td colspan="3" class="text-left">
+      <th class="text-left th-white">具体的な内容</th>
+      <td class="text-left">
         <b>果たした役割：</b><br>
-        <span class="indent">• {{role}}</span>
+        <span class="indent">{{role}}</span>
       </td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">課題</th>
-      <td colspan="3" class="text-left">
-        <span class="text-left">{{challenges}}</span>
+      <th class="text-left th-white">課題</th>
+      <td class="text-left">
+        <span class="indent">• {{challenges}}</span>
       </td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">得られた成果</th>
-      <td colspan="3" class="text-left">{{outcome}}</td>
+      <th class="text-left th-white">得られた成果</th>
+      <td class="text-left">{{outcome}}</td>
     </tr>
     <tr>
-      <th colspan="2" class="text-left th-white">直面した課題</th>
-      <td colspan="3" class="text-left">{{challenges}}</td>
+      <th class="text-left th-white">直面した課題</th>
+      <td class="text-left">{{challenges}}</td>
     </tr>
     {{/each}}
-    {{/if}}
+  </table>
+  {{/if}}
+  <!-- Fields of Interest Table -->
+  <table>
+    <colgroup>
+      <col style="width: 33.33%;">
+      <col style="width: 33.33%;">
+      <col style="width: 33.34%;">
+    </colgroup>
     <tr>
-      <th colspan="5" class="section-fields-interest">興味ある分野（左から1番→3番）</th>
+      <th colspan="3" class="section-fields-interest">興味ある分野（左から1番→3番）</th>
     </tr>
     <tr>
-      <td colspan="2" class="text-left">{{#if interestFields.[0]}}{{interestFields.[0]}}{{else}}未指定{{/if}}</td>
-      <td colspan="2" class="text-left">{{#if interestFields.[1]}}{{interestFields.[1]}}{{else}}未指定{{/if}}</td>
+      <td class="text-left">{{#if interestFields.[0]}}{{interestFields.[0]}}{{else}}未指定{{/if}}</td>
+      <td class="text-left">{{#if interestFields.[1]}}{{interestFields.[1]}}{{else}}未指定{{/if}}</td>
       <td class="text-left">{{#if interestFields.[2]}}{{interestFields.[2]}}{{else}}未指定{{/if}}</td>
     </tr>
+  </table>
+  <!-- Japanese Companies Table -->
+  <table>
+    <colgroup>
+      <col style="width: 20%;">
+      <col style="width: 80%;">
+    </colgroup>
     <tr>
       <th colspan="5" class="section-japan-companies">日本企業について</th>
     </tr>
     <tr>
-      <th colspan="2">番興味がある点</th>
-      <td colspan="3" class="text-left">{{japanCompanyInterest}}</td>
+      <th>番興味がある点</th>
+      <td class="text-left">{{japanCompanyInterest}}</td>
     </tr>
     <tr>
-      <th colspan="2">習得したいこと</th>
-      <td colspan="3" class="text-left">{{japanCompanySkills}}</td>
+      <th>習得したいこと</th>
+      <td class="text-left">{{japanCompanySkills}}</td>
     </tr>
+  </table>
+  <!-- Career Development Table -->
+  <table>
+    <colgroup>
+      <col style="width: 20%;">
+      <col style="width: 80%;">
+    </colgroup>
     <tr>
       <th colspan="5" class="section-career-dev">キャリアアップについて</th>
     </tr>
     <tr>
-      <th colspan="2">働く上での価値観</th>
-      <td colspan="3" class="text-left">{{careerPriorities}}</td>
+      <th >働く上での価値観</th>
+      <td class="text-left">{{careerPriorities}}</td>
     </tr>
     <tr>
-      <th colspan="2">日本語レベル</th>
-      <td colspan="3" class="text-left">{{selectedSuggestion}}</td>
+      <th>日本語レベル</th>
+      <td class="text-left">{{selectedSuggestion}}</td>
     </tr>
     <tr>
-      <th colspan="2">趣味</th>
-      <td colspan="3" class="text-left">{{hobby}}</td>
+      <th >趣味</th>
+      <td class="text-left">{{hobby}}</td>
     </tr>
   </table>
   <div class="footer">
