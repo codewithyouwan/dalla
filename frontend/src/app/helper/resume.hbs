@@ -22,9 +22,7 @@
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
-      border-radius: 8px;
       overflow: hidden;
-      margin-bottom: 10px;
     }
     th, td {
       border: 1px solid #ddd;
@@ -37,35 +35,35 @@
       font-weight: normal;
     }
     .section-education {
-      background-color: #d0e0ff; /* Light Blue for Education */
+      background-color: #d0e0ff;
       font-weight: bold;
     }
     .section-aspirations {
-      background-color: #e8e8e8; /* Light Gray for Career Aspirations */
+      background-color: #e8e8e8;
       font-weight: bold;
     }
     .section-languages-tools {
-      background-color: #fce4ec; /* Light Rose for Languages/Dev Tools */
+      background-color: #fce4ec;
       font-weight: bold;
     }
     .section-internships {
-      background-color: #e6ffe6; /* Light Green for Internships */
+      background-color: #e6ffe6;
       font-weight: bold;
     }
     .section-projects {
-      background-color: #fff3cd; /* Light Yellow for Projects */
+      background-color: #fff3cd;
       font-weight: bold;
     }
     .section-fields-interest {
-      background-color: #f3e5f5; /* Light Purple for Fields of Interest */
+      background-color: #f3e5f5;
       font-weight: bold;
     }
     .section-japan-companies {
-      background-color: #ffcccc; /* Light Pink for Japanese Companies */
+      background-color: #ffcccc;
       font-weight: bold;
     }
     .section-career-dev {
-      background-color: #e0f7fa; /* Light Aqua for Career Development */
+      background-color: #e0f7fa;
       font-weight: bold;
     }
     .th-white {
@@ -133,11 +131,11 @@
   <!-- Header Table -->
   <table>
     <colgroup>
-      <col class="col1" style="width: 18%;">
+      <col class="col1" style="width: 16%;">
       <col class="col2" style="width: 12%;">
       <col class="col3" style="width: 26%;">
       <col class="col4" style="width: 26%;">
-      <col class="col5" style="width: 18%;">
+      <col class="col5" style="width: 20%;">
     </colgroup>
     <tr class="employee-row">
       <th colspan="2">No.</th>
@@ -162,37 +160,34 @@
   <!-- Career Aspirations Table -->
   <table>
     <colgroup>
-      <col style="width: 20%;">
-      <col style="width: 80%;">
+      <col style="width: 10%;">
+      <col style="width: 18%;">
+      <col style="width: 72%;">
     </colgroup>
     <tr>
-      <th rowspan="5" class="section-aspirations">志向</th>
+      <th rowspan="4" class="section-aspirations">志向</th>
       <th>希望業界</th>
-      <td class="text-left">{{desiredIndustry}}</td>
+      <td class="text-left">{{#if desiredIndustry}}{{desiredIndustry}}{{else}}未入力{{/if}}</td>
     </tr>
     <tr>
       <th>希望職種</th>
-      <td class="text-left">{{desiredJobType}}</td>
+      <td class="text-left">{{#if desiredJobType}}{{desiredJobType}}{{else}}未入力{{/if}}</td>
     </tr>
     <tr>
       <th>目指す役割</th>
-      <td class="text-left">{{targetRole}}</td>
+      <td class="text-left">{{#if targetRole}}{{targetRole}}{{else}}未入力{{/if}}</td>
     </tr>
     <tr>
       <th>ワークスタイル</th>
-      <td class="text-left">{{workStyle}}</td>
-    </tr>
-    <tr>
-      <th>働く上での価値観</th>
-      <td class="text-left">{{careerPriorities}}</td>
+      <td class="text-left">{{#if workStyle}}{{workStyle}}{{else}}未入力{{/if}}</td>
     </tr>
   </table>
   <!-- Education Table -->
   <table>
     <colgroup>
-      <col style="width: 15%;">
+      <col style="width: 20%;">
       <col style="width: 60%;">
-      <col style="width: 25%;">
+      <col style="width: 15%;">
     </colgroup>
     <tr>
       <th colspan="3" class="section-education">学歴</th>
@@ -236,8 +231,8 @@
   <table>
     <colgroup>
       <col class="col1" style="width: 18%;">
-      <col class="col2" style="width: 12%;">
-      <col class="col3" style="width: 26%;">
+      <col class="col2" style="width: 4%;">
+      <col class="col3" style="width: 34%;">
       <col class="col4" style="width: 26%;">
       <col class="col5" style="width: 18%;">
     </colgroup>
@@ -301,8 +296,8 @@
   <table>
     <colgroup>
       <col class="col1" style="width: 18%;">
-      <col class="col2" style="width: 12%;">
-      <col class="col3" style="width: 26%;">
+      <col class="col2" style="width: 4%;">
+      <col class="col3" style="width: 34%;">
       <col class="col4" style="width: 26%;">
       <col class="col5" style="width: 18%;">
     </colgroup>
