@@ -31,6 +31,7 @@
      jobType: '',
      domain: '',
      desiredIndustry: '',
+     desiredJobType: '',
      hobby: '',
      hometown: '',
      type: '',
@@ -326,9 +327,6 @@
 
      const compileResume = async () => {
        return fetchWithToast('Resume Compilation', async () => {
-         if (!Array.isArray(details.careerPriorities) || details.careerPriorities.length === 0) {
-           setError('Career priorities are missing or invalid');
-         }
          const formData = new FormData();
          formData.append('details', JSON.stringify(details));
          if (details.photo) {
@@ -395,7 +393,6 @@
              setDetails((prev) => ({
                ...prev,
                id_number: idNumber,
-               employeeNumber: idNumber,
                name: data.name,
                katakana: data.katakana || '',
                hobby: data.hobby || '',
