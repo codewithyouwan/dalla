@@ -138,13 +138,13 @@ export default function Prompt(data, whatFor) {
         `;
     return prompt;
   } else if (whatFor === whatForTypes[3]) {
-        const { title, company, period, team_size, technologies, summary, purpose, role, challenges, outcome, isInternship } = data;
+    const { title, company, period, team_size, technologies, summary, purpose, role, challenges, outcome, isInternship } = data;
     const experienceType = isInternship ? 'Internship' : 'Project';
     // #region internshipExperience
     const prompt = `
       <System Instructions>
       Based on the following ${experienceType} information, generate concise, professional values for the CV "${experienceType}" section.
-      Strictly follow the specified format, including only 7 lines of Japanese text within the designated markers, with no additional explanations or text.
+      Strictly follow the specified format, including only 8 lines of Japanese text within the designated markers, with no additional explanations or text.
       Use natural, professional Japanese for each field, ensuring the Title, Period, and ${isInternship ? 'Company' : 'Project Name'} are in Japanese, with Period formatted as "YYYY年MM月 – YYYY年MM月".
 
       <${experienceType} Information>
@@ -160,36 +160,38 @@ export default function Prompt(data, whatFor) {
       Outcome: ${outcome || 'None'}
 
       <Prompt>
-      Generate values for the following 7 fields:
+      Generate values for the following 8 fields:
       - Title: Describe the ${experienceType} title (${title}) concisely in Japanese.
       - ${isInternship ? 'Company' : 'Project Name'}: Describe the ${isInternship ? 'company name (${company})' : 'project name (${title})'} in Japanese.
       - Period: Format the period (${period}) as "YYYY年MM月 – YYYY年MM月" in Japanese.
-      - Role: Describe the role in the ${experienceType} (${role}) concisely in Japanese.
+      - Role: Describe the role in the ${experienceType} (${role}) concisely in Japanese, using "果たした役割".
       - Description: Combine the purpose (${purpose}), technologies (${technologies}), and team size (${team_size}) into a detailed, concise description, distinct from the summary.
-      - Challenges: Describe the challenges (${challenges}) concisely and specifically in Japanese.
-      - Outcome: Describe the outcome (${outcome}) concisely, emphasizing team or individual contributions.
+      - Summary: Provide a concise overview of the ${experienceType} (${summary}) in Japanese, focusing on the main objective or scope.
+      - Challenges: Describe the challenges (${challenges}) concisely and specifically in Japanese, using "課題".
+      - Outcome: Describe the outcome (${outcome}) concisely in Japanese, emphasizing team or individual contributions, using "得られた成果".
 
       <Output Format>
-      Strictly follow the format below, including only 7 lines between ===FORM1-START=== and ===FORM1-END===. Each line starts with the specified label, written in concise, professional Japanese.
+      Strictly follow the format below, including only 8 lines between ===FORM1-START=== and ===FORM1-END===. Each line starts with the specified label, written in concise, professional Japanese.
 
       <Output Example>
       ===FORM1-START===
       タイトル: 機械学習インターンシップ
       会社: テック株式会社
       期間: 2023年06月 – 2023年08月
-      担当した役割: データサイエンティスト
-      具体的な内容: 3人チームでPythonを使用し、機械学習モデルの設計・開発
-      直面した課題: データクリーニングの複雑さ
-      成果: モデル精度を20%向上
+      果たした役割: データサイエンティスト
+      内容: 3人チームでPythonを使用し、機械学習モデルの設計・開発
+      概要: 顧客データの分析モデル構築
+      課題: データクリーニングの複雑さ
+      得られた成果: モデル精度を20%向上
       ===FORM1-END===
 
       <Rules>
-      - Include exactly 7 lines, one for each field, in concise, accurate Japanese.
+      - Include exactly 8 lines, one for each field, in concise, accurate Japanese.
       - Reflect the input data for Title, ${isInternship ? 'Company' : 'Project Name'}, and Period directly, with Period in "YYYY年MM月 – YYYY年MM月" format.
       - Ensure "Description" is distinct from "Summary" by integrating purpose, technologies, and team size, avoiding redundancy.
       - Use professional, CV-appropriate expressions, emphasizing expertise and outcomes.
-      - Use the "da/de aru" (plain) style for sentence endings.
-      - Include only the 7 lines between ===FORM1-START=== and ===FORM1-END===, with no other text or markers.
+      - Use the "da/de aru" (plain) style for sentence endings this is a strict requirement without this our system can break.
+      - Include only the 8 lines between ===FORM1-START=== and ===FORM1-END===, with no other text or markers.
     `;
     // #endregion
     return prompt;
@@ -366,13 +368,13 @@ export default function Prompt(data, whatFor) {
     Input: Institution Name: "Tokyo University", Date String: "Apr 2014 – Mar 2016", Major: "Computer Science"
     ===FORM1-START===
     トウキョウダイガク **[コンピューターサイエンス]**
-    2014年4月 – 2016年3月
+    2014年04月 – 2016年03月
     ===FORM1-END===
 
     Input: Institution Name: "B.S.S Pranavananda Academy Raipur Science Higher Secondary", Date String: "Aug 2016 – Oct 2017", Major: "なし"
     ===FORM1-START===
     ビーエスエス プラナヴァナンダ アカデミー
-    2016年8月 – 2017年10月
+    2016年08月 – 2017年10月
     ===FORM1-END===
 
     Input: Institution Name: "Shri Shankaracharya Institute of Professional Management and Technology", Date String: "August 2016 – September 2021", Major: "Civil Engineering"
@@ -397,8 +399,9 @@ export default function Prompt(data, whatFor) {
     - First line: Katakana institution name, followed by Katakana major in bold brackets (e.g., **[土木工学]**) if major is provided and not empty or 'なし', or just the institution name otherwise.
     - Second line: Date range as "YYYY年MM月 – YYYY年MM月" for ranges, "YYYY年" for single years, or empty string.
     - Exclude non-institution details from the institution name.
+    - If the institution name is IIT then not need to convert it to katakana just return it as it is.
     - Ensure phonetic accuracy for institution names and majors, and correct date range conversion.
-    - Use Japanese month names (e.g., "January" → "1月", "October" → "10月").
+    - Use Japanese month names (e.g., "January" → "01月", "October" → "10月").
     - Do **not** include any labels, additional text, or blank lines.
     - **Strictly** follow the format; any deviation will break the system.
     - Suggested max_tokens: 60 for concise output.

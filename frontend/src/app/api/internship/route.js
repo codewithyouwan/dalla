@@ -119,7 +119,7 @@ export async function POST(request) {
           {
             role: "system",
             content:
-              "Generate the response exactly as specified in the prompt. Include only the formatted output with no additional text, explanations, or deviations. Use ===FORM1-START=== and ===FORM1-END=== with exactly seven lines of Japanese text, each starting with the specified labels.",
+              "Generate the response exactly as specified in the prompt. Include only the formatted output with no additional text, explanations, or deviations. Use ===FORM1-START=== and ===FORM1-END=== with exactly eight lines of Japanese text, each starting with the specified labels.",
           },
           { role: "user", content: prompt },
         ],
@@ -143,19 +143,20 @@ export async function POST(request) {
       }
 
       const lines = form1Match[1].trim().split('\n').map((line) => line.trim());
-      if (lines.length !== 7) {
+      if (lines.length !== 8) {
         console.error('Invalid line count in FORM1. Lines:', lines);
-        throw new Error(`Invalid LLaMA response format: Expected 7 lines, got ${lines.length}`);
+        throw new Error(`Invalid LLaMA response format: Expected 8 lines, got ${lines.length}`);
       }
 
       return {
         title: lines[0].startsWith('タイトル: ') ? lines[0].replace('タイトル: ', '') : '',
         company: experience.isInternship ? (lines[1].startsWith('会社: ') ? lines[1].replace('会社: ', '') : '') : undefined,
         period: lines[2].startsWith('期間: ') ? lines[2].replace('期間: ', '') : '',
-        role: lines[3].startsWith('担当した役割: ') ? lines[3].replace('担当した役割: ', '') : '',
-        description: lines[4].startsWith('具体的な内容: ') ? lines[4].replace('具体的な内容: ', '') : '',
-        challenges: lines[5].startsWith('直面した課題: ') ? lines[5].replace('直面した課題: ', '') : '',
-        outcome: lines[6].startsWith('成果: ') ? lines[6].replace('成果: ', '') : '',
+        role: lines[3].startsWith('果たした役割: ') ? lines[3].replace('果たした役割: ', '') : '',
+        description: lines[4].startsWith('内容: ') ? lines[4].replace('内容: ', '') : '',
+        summary: lines[5].startsWith('概要: ') ? lines[5].replace('概要: ', '') : '',
+        challenges: lines[6].startsWith('課題: ') ? lines[6].replace('課題: ', '') : '',
+        outcome: lines[7].startsWith('得られた成果: ') ? lines[7].replace('得られた成果: ', '') : '',
       };
     };
 
@@ -168,7 +169,7 @@ export async function POST(request) {
     );
 
     // Validate non-empty fields
-    const validateEntry = (entry) => entry.title && entry.period && entry.role && entry.description && entry.challenges && entry.outcome;
+    const validateEntry = (entry) => entry.title && entry.period && entry.role && entry.description && entry.summary && entry.challenges && entry.outcome;
     const validInternships = processedInternships.filter(validateEntry);
     const validProjects = processedProjects.filter(validateEntry);
 
