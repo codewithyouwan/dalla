@@ -1,10 +1,16 @@
 import OpenAI from 'openai';
+import {NextResponse} from 'next/server';
 
 export const runtime = 'nodejs';
-export default async function AI(prompt){
-    if(!prompt || typeof prompt !== 'string') {
-        return "Invalid prompt provided. Please provide a valid string.";
+export async function POST(request){
+    if(request.method!== 'POST'){
+        return NextResponse.json({ error: 'Method not allowed' }, { status: 405});
     }
+    const prompt = await request.json().then(data => data.PromptData);
+    if(!prompt) { 
+        return NextResponse.json({error:"Invalid prompt provided. Please provide a valid string."},{status: 400});
+    }
+    console.log("Received prompt:", prompt);
     const token = process.env.NVIDIA_DEEPSEEK_R1_KEY;
     const endpoint = 'https://integrate.api.nvidia.com/v1';
     const openai = new OpenAI({
@@ -13,7 +19,7 @@ export default async function AI(prompt){
     });
     if (!token) {
     console.error('NVIDIA_DEEPSEEK_R1_KEY is not set in environment variables');
-    return "No API key provided. Please set the NVIDIA_DEEPSEEK_R1_KEY environment variable.";
+    return NextResponse.json({error: 'NVIDIA_DEEPSEEK_R1_KEY is not set'}, { status: 500 });
     }
     try {
     const completion = await openai.chat.completions.create({
@@ -33,10 +39,10 @@ export default async function AI(prompt){
         presence_penalty: 0,
         stream: false,
     });
-    const suggestions = completion.choices[0]?.message?.content || '';
-    return suggestions;
+    const suggestions = completion.choices[0].message.content;
+    return NextResponse.json({Suggestions: suggestions}, { status: 200 });
     }
     catch (err){
-        return {"error": "NVIDIA API error: " + err.message};
+        return NextResponse.json({ error: 'Error processing request', details: err.message }, { status: 500 });
     }
 }
