@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import Prompt from '../../helper/prompt';
-import OpenAI from 'openai';
 
 export const runtime = 'nodejs';
 
@@ -34,44 +33,24 @@ export async function GET(request) {
     let hobby = data.hobbies_interests ? data.hobbies_interests.trim() : '';
     let hometown = data.place_of_belonging ? data.place_of_belonging.trim() : '';
 
-    const token = process.env.NVIDIA_DEEPSEEK_R1_KEY;
-    const endpoint = 'https://integrate.api.nvidia.com/v1';
-    const openai = new OpenAI({
-      apiKey: token,
-      baseURL: endpoint,
-    });
-
     // Process hobby
-    if (!token) {
-      console.error('NVIDIA_DEEPSEEK_R1_KEY is not set in environment variables');
-      hobby = '読書';
-    } else if (hobby) {
+    if(!hobby) hobby = '読書';
       try {
         const hobbyPrompt = Prompt({ hobbies_Interests: hobby }, 'hobbyConversion');
-        const completion = await openai.chat.completions.create({
-          model: 'nvidia/llama-3.1-nemotron-ultra-253b-v1',
-          messages: [
-            {
-              role: 'system',
-              content:
-                'Generate the response exactly as specified in the prompt. Include only the formatted output with no additional text, explanations, or deviations. Use ===FORM1-START=== and ===FORM1-END=== with exactly one line of Japanese text.',
-            },
-            { role: 'user', content: hobbyPrompt },
-          ],
-          temperature: 0.3,
-          top_p: 0.9,
-          max_tokens: 50,
-          frequency_penalty: 0,
-          presence_penalty: 0,
-          stream: false,
+        const completion = await fetch('http://localhost:3000/api/aiRequests', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({PromptData: hobbyPrompt })
         });
-
-        const suggestions = completion.choices[0]?.message?.content || '';
+        const suggestions=await completion.json();
+        // const suggestions = completion.choices[0]?.message?.content || '';
         if (!suggestions) {
-          console.error('No hobby suggestions returned from NVIDIA API');
+          console.error("There is an error from the aiRequests api. ",suggestions.details);
           hobby = '読書';
         } else {
-          const form1Match = suggestions.match(/===FORM1-START===[\s\S]*?\n([\s\S]*?)\n===FORM1-END===/);
+          const form1Match = suggestions.Suggestions.match(/===FORM1-START===[\s\S]*?\n([\s\S]*?)\n===FORM1-END===/);
           if (!form1Match) {
             console.error('Hobby FORM1 parsing failed. Full response:', suggestions);
             hobby = '読書';
@@ -84,41 +63,24 @@ export async function GET(request) {
         console.error('NVIDIA API error for hobby:', err.message);
         hobby = '読書';
       }
-    } else {
-      hobby = '読書';
-    }
 
     // Process place of belonging
-    if (!token) {
-      console.error('NVIDIA_DEEPSEEK_R1_KEY is not set in environment variables');
-      hometown = 'インド';
-    } else {
       try {
         const placePrompt = Prompt({ place_of_belonging: hometown }, 'placeConversion');
-        const completion = await openai.chat.completions.create({
-          model: 'nvidia/llama-3.1-nemotron-ultra-253b-v1',
-          messages: [
-            {
-              role: 'system',
-              content:
-                'Generate the response exactly as specified in the prompt. Include only the formatted output with no additional text, explanations, or deviations. Use ===FORM1-START=== and ===FORM1-END=== with exactly one line of Japanese text.',
-            },
-            { role: 'user', content: placePrompt },
-          ],
-          temperature: 0.3,
-          top_p: 0.9,
-          max_tokens: 50,
-          frequency_penalty: 0,
-          presence_penalty: 0,
-          stream: false,
+        const completion = await fetch('http://localhost:3000/api/aiRequests', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({PromptData: placePrompt })
         });
-
-        const suggestions = completion.choices[0]?.message?.content || '';
+        const suggestions = await completion.json();
         if (!suggestions) {
           console.error('No place suggestions returned from NVIDIA API');
           hometown = 'インド';
         } else {
-          const form1Match = suggestions.match(/===FORM1-START===[\s\S]*?\n([\s\S]*?)\n===FORM1-END===/);
+          console.log('Place suggestions:', suggestions);
+          const form1Match = suggestions.Suggestions.match(/===FORM1-START===[\s\S]*?\n([\s\S]*?)\n===FORM1-END===/);
           if (!form1Match) {
             console.error('Place FORM1 parsing failed. Full response:', suggestions);
             hometown = 'インド';
@@ -131,7 +93,6 @@ export async function GET(request) {
         console.error('NVIDIA API error for place:', err.message);
         hometown = 'インド';
       }
-    }
 
     const nameParts = fullNameEnglish.split(' ').filter(Boolean);
     const initials = nameParts.length >= 2 
@@ -151,7 +112,6 @@ export async function GET(request) {
     console.error('Error fetching employee data:', {
       message: error.message,
       stack: error.stack,
-      id_number: idNumber || 'undefined',
     });
     return NextResponse.json({ error: `Server error: ${error.message}` }, { status: 500 });
   }

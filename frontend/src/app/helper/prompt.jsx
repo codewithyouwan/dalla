@@ -432,7 +432,7 @@ export default function Prompt(data, whatFor) {
 
       <Example>
       ===FORM1-START===
-      ギターを弾く、サッカーをする、バンドで演奏
+      ギターを弾く、サッカーをする、バンドで演奏。
       ===FORM1-END===
 
       <Rules>
@@ -444,6 +444,7 @@ export default function Prompt(data, whatFor) {
       - Do **not** include other markers, text, or blank lines.
       - **Strictly** follow the format; any deviation will break the system.
       - I would like all sentence endings to follow the “da/de aru” (plain) style.
+      - Finish the sentence with a full stop (。) at the end of the line.
     `;
     return prompt;
   } 
@@ -472,7 +473,7 @@ export default function Prompt(data, whatFor) {
 
       <Output Format>
       ===FORM1-START===
-      [Single katakana phrase, optionally with region in parentheses]
+      [Single katakana phrase, optionally with region in full-width parentheses ]
       ===FORM1-END===
 
       <Examples>
