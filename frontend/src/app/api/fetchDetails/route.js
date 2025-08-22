@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import Prompt from '../../helper/prompt';
 import OpenAI from 'openai';
+import AI from '../aiRequests/Nvidia';
 
 export const runtime = 'nodejs';
 
@@ -48,25 +49,9 @@ export async function GET(request) {
     } else if (hobby) {
       try {
         const hobbyPrompt = Prompt({ hobbies_Interests: hobby }, 'hobbyConversion');
-        const completion = await openai.chat.completions.create({
-          model: 'nvidia/llama-3.1-nemotron-ultra-253b-v1',
-          messages: [
-            {
-              role: 'system',
-              content:
-                'Generate the response exactly as specified in the prompt. Include only the formatted output with no additional text, explanations, or deviations. Use ===FORM1-START=== and ===FORM1-END=== with exactly one line of Japanese text.',
-            },
-            { role: 'user', content: hobbyPrompt },
-          ],
-          temperature: 0.3,
-          top_p: 0.9,
-          max_tokens: 50,
-          frequency_penalty: 0,
-          presence_penalty: 0,
-          stream: false,
-        });
-
-        const suggestions = completion.choices[0]?.message?.content || '';
+        const suggestions = await AI(hobbyPrompt);
+        console.log('Hobby suggestions or error from NVIDIA:', suggestions);
+        // const suggestions = completion.choices[0]?.message?.content || '';
         if (!suggestions) {
           console.error('No hobby suggestions returned from NVIDIA API');
           hobby = '読書';
@@ -95,25 +80,9 @@ export async function GET(request) {
     } else {
       try {
         const placePrompt = Prompt({ place_of_belonging: hometown }, 'placeConversion');
-        const completion = await openai.chat.completions.create({
-          model: 'nvidia/llama-3.1-nemotron-ultra-253b-v1',
-          messages: [
-            {
-              role: 'system',
-              content:
-                'Generate the response exactly as specified in the prompt. Include only the formatted output with no additional text, explanations, or deviations. Use ===FORM1-START=== and ===FORM1-END=== with exactly one line of Japanese text.',
-            },
-            { role: 'user', content: placePrompt },
-          ],
-          temperature: 0.3,
-          top_p: 0.9,
-          max_tokens: 50,
-          frequency_penalty: 0,
-          presence_penalty: 0,
-          stream: false,
-        });
+        const completion = await AI(placePrompt);
 
-        const suggestions = completion.choices[0]?.message?.content || '';
+        const suggestions = completion;
         if (!suggestions) {
           console.error('No place suggestions returned from NVIDIA API');
           hometown = 'インド';
