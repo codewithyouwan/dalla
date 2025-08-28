@@ -76,6 +76,67 @@
         )
       };
     },[error]);
+      useEffect(() => {
+    const fetchResume = async () => {
+      if (hasFetchedResume.current) return;
+      hasFetchedResume.current = true;
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const id_number = details.id_number || sessionId;
+        const response = await fetch(`/api/fetchSavedData?id_number=${encodeURIComponent(id_number)}`);
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          if (response.status === 404) {
+            console.log('No existing resume data found, using defaults');
+            return;
+          }
+          throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
+        }
+
+        const { data } = await response.json();
+        setDetails((prev) => ({
+          ...prev,
+          id_number: data.id_number || prev.id_number,
+          employeeNumber: data.employee_number?.toString() || '',
+          name: data.name || prev.name,
+          katakana: data.katakana || '',
+          initials: data.initials || '',
+          hometown: data.hometown || '',
+          hobby: data.hobby || '',
+          desiredIndustry: data.desired_industry || '',
+          desiredJobType: data.desired_job_type || '',
+          targetRole: data.target_role || '',
+          workStyle: data.work_style || '',
+          education: data.education || prev.education,
+          languages: data.languages || prev.languages,
+          devTools: data.dev_tools || prev.devTools,
+          internships: data.internships || prev.internships,
+          projects: data.projects || prev.projects,
+          japanCompanyInterest: data.japan_company_interest || '',
+          japanCompanySkills: data.japan_company_skills || '',
+          careerPriorities: data.career_priorities || prev.careerPriorities,
+          careerRoles: data.career_roles || prev.careerRoles,
+          japaneseLevel: data.japanese_level || prev.japaneseLevel,
+          total: data.total_score || '',
+          vocabulary: data.vocabulary_score || '',
+          reading: data.reading_score || '',
+          listening: data.listening_score || '',
+          jlpt_description: data.jlpt_description || '',
+        }));
+      } catch (err) {
+        setError(`Failed to load resume: ${err.message}`);
+        console.error('Load resume error:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchResume();
+  }, [sessionId]);
     const fetchWithToast = async (componentName, fetchFn) => {
       setLoadingComponent(componentName);
       setIsLoading(true);
@@ -352,30 +413,57 @@
      };
 
      const saveResume = async () => {
-       return fetchWithToast('Resume Save', async () => {
-         const formData = new FormData();
-         formData.append('details', JSON.stringify(details));
-         if (details.photo) {
-           formData.append('photo', details.photo);
-         }
-         if (tempPdfPath) {
-           formData.append('tempPdfPath', tempPdfPath);
-         }
-         formData.append('sessionId', sessionId);
-         const response = await fetch('/api/uploadResume', {
-           method: 'POST',
-           body: formData,
-         });
-         if (!response.ok) {
-           const errorData = await response.json();
-           setError(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
-         }
-         const data = await response.json();
-         setPreviewLink(data.resumeLink.replace('/view', '/preview').split('/temp/')[1]);
-         setTempPdfPath(null);
-         return data; // Return for toast success
-       });
-     };
+        setIsLoading(true);
+        setError(null);
+        try {
+          const formData = new FormData();
+          formData.append('details', JSON.stringify(details));
+          formData.append('id_number', details.id_number || sessionId);
+
+          const response = await fetch('/api/saveResume', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
+          }
+
+          const data = await response.json();
+          alert('Resume saved successfully!');
+        } catch (err) {
+          setError(`Failed to save resume: ${err.message}`);
+          console.error('Save resume error:', err);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+    //  const saveResume = async () => {
+    //    return fetchWithToast('Resume Save', async () => {
+    //      const formData = new FormData();
+    //      formData.append('details', JSON.stringify(details));
+    //      if (details.photo) {
+    //        formData.append('photo', details.photo);
+    //      }
+    //      if (tempPdfPath) {
+    //        formData.append('tempPdfPath', tempPdfPath);
+    //      }
+    //      formData.append('sessionId', sessionId);
+    //      const response = await fetch('/api/uploadResume', {
+    //        method: 'POST',
+    //        body: formData,
+    //      });
+    //      if (!response.ok) {
+    //        const errorData = await response.json();
+    //        setError(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
+    //      }
+    //      const data = await response.json();
+    //      setPreviewLink(data.resumeLink.replace('/view', '/preview').split('/temp/')[1]);
+    //      setTempPdfPath(null);
+    //      return data; // Return for toast success
+    //    });
+    //  };
 
      useEffect(() => {
        const encryptedId = searchParams.get('encrypted_id');
