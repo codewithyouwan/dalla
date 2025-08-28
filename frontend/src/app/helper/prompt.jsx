@@ -164,11 +164,11 @@ export default function Prompt(data, whatFor) {
       - Title: Describe the ${experienceType} title (${title}) concisely in Japanese.
       - ${isInternship ? 'Company' : 'Project Name'}: Describe the ${isInternship ? 'company name (${company})' : 'project name (${title})'} in Japanese.
       - Period: Format the period (${period}) as "YYYY年MM月 – YYYY年MM月" in Japanese.
-      - Role: Describe the role in the ${experienceType} (${role}) concisely in Japanese, using "果たした役割".
-      - Description: Combine the purpose (${purpose}), technologies (${technologies}), and team size (${team_size}) into a detailed, concise description, distinct from the summary.
-      - Summary: Provide a concise overview of the ${experienceType} (${summary}) in Japanese, focusing on the main objective or scope.
-      - Challenges: Describe the challenges (${challenges}) concisely and specifically in Japanese, using "課題".
-      - Outcome: Describe the outcome (${outcome}) concisely in Japanese, emphasizing team or individual contributions, using "得られた成果".
+      - Role: Describe the role in the ${experienceType} (${role}) concisely in Japanese, using "果たした役割" and end the sentence with (。) ALWAYS.
+      - Description: Combine the purpose (${purpose}), technologies (${technologies}), and team size (${team_size}) into a detailed, concise description, distinct from the summary ending with a (。) ALWAYS.
+      - Summary: Provide a concise overview of the ${experienceType} (${summary}) in Japanese, focusing on the main objective or scope also ending with (。).
+      - Challenges: Describe the challenges (${challenges}) concisely and specifically in Japanese, using "課題" also ending with (。).
+      - Outcome: Describe the outcome (${outcome}) concisely in Japanese, emphasizing team or individual contributions, using "得られた成果" also ending with (。).
 
       <Output Format>
       Strictly follow the format below, including only 8 lines between ===FORM1-START=== and ===FORM1-END===. Each line starts with the specified label, written in concise, professional Japanese.
@@ -178,11 +178,11 @@ export default function Prompt(data, whatFor) {
       タイトル: 機械学習インターンシップ
       会社: テック株式会社
       期間: 2023年06月 – 2023年08月
-      果たした役割: データサイエンティスト
-      内容: 3人チームでPythonを使用し、機械学習モデルの設計・開発
-      概要: 顧客データの分析モデル構築
-      課題: データクリーニングの複雑さ
-      得られた成果: モデル精度を20%向上
+      果たした役割: データサイエンティスト。
+      内容: 3人チームでPythonを使用し、機械学習モデルの設計・開発。
+      概要: 顧客データの分析モデル構築。
+      課題: データクリーニングの複雑さ。
+      得られた成果: モデル精度を20%向上。
       ===FORM1-END===
 
       <Rules>
@@ -190,7 +190,7 @@ export default function Prompt(data, whatFor) {
       - Reflect the input data for Title, ${isInternship ? 'Company' : 'Project Name'}, and Period directly, with Period in "YYYY年MM月 – YYYY年MM月" format.
       - Ensure "Description" is distinct from "Summary" by integrating purpose, technologies, and team size, avoiding redundancy.
       - Use professional, CV-appropriate expressions, emphasizing expertise and outcomes.
-      - Use the "da/de aru" (plain) style for sentence endings this is a strict requirement without this our system can break.
+      - Use the "da/de aru" (plain) style and place a (。) in the end this is a strict requirement without this our system can break.
       - Include only the 8 lines between ===FORM1-START=== and ===FORM1-END===, with no other text or markers.
     `;
     // #endregion

@@ -12,7 +12,7 @@ export async function POST(request) {
 
   // Configure Azure AI Inference client for GPT model
   const callGrokAPI = async (prompt) => {
-    const token = process.env.GROK3_API_KEY;
+    const token = process.env["GITHUB_TOKEN"];
     const endpoint = "https://models.github.ai/inference";
     const model = "openai/gpt-4.1";
 
@@ -42,7 +42,7 @@ export async function POST(request) {
 
       return response.body.choices[0].message.content;
     } catch (error) {
-      console.error('Grok API error:', error);
+      console.error('Gpt API error:', error);
       throw error;
     }
   };
@@ -98,10 +98,18 @@ export async function POST(request) {
       }
       const prompt = Prompt({ institution_name: name, date_string: dateString, major: major || 'なし' }, 'katakanaConversion');
       try {
-        const response = await callGrokAPI(prompt);
-        console.log(`Raw response for ${name}, ${dateString}, ${major}:`, response); // Debugging
+        const completion = await fetch('http://localhost:3000/api/aiRequests', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ PromptData: prompt })
+        });
+        const response = await completion.json();
+        // console.log(response);
+        console.log(`Raw response for ${name}, ${dateString}, ${major}:`, response.Suggestions); // Debugging
         // Handle malformed end marker (e.g., ===FORM1 instead of ===FORM1-END===)
-        const normalizedResponse = response.replace(/===FORM1($|\n)/, '===FORM1-END===');
+        const normalizedResponse = response.Suggestions.replace(/===FORM1($|\n)/, '===FORM1-END===');
         const match = normalizedResponse.match(/===FORM1-START===\n(.*)\n(.*)\n===FORM1-END===/);
         if (match) {
           return {
