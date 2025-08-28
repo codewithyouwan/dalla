@@ -56,18 +56,18 @@
    };
 
    export default function MakeResume() {
-     const [details, setDetails] = useState(defaultDetails);
-     const [suggestions, setSuggestions] = useState([]);
-     const [isLoading, setIsLoading] = useState(false);
-     const [error, setError] = useState(null);
-     const [selectedSuggestion, setSelectedSuggestion] = useState('');
-     const [selectedIndex, setSelectedIndex] = useState(null);
-     const [previewLink, setPreviewLink] = useState(null);
-     const [tempPdfPath, setTempPdfPath] = useState(null);
-     const [sessionId, setSessionId] = useState(uuidv4());
-     const [loadingComponent, setLoadingComponent] = useState(null); // New state which is loading.
-     const searchParams = useSearchParams();
-     const hasFetchedCareerData = useRef(false);
+    const [details, setDetails] = useState(defaultDetails);
+    const [suggestions, setSuggestions] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [selectedSuggestion, setSelectedSuggestion] = useState('');
+    const [selectedIndex, setSelectedIndex] = useState(null);
+    const [previewLink, setPreviewLink] = useState(null);
+    const [tempPdfPath, setTempPdfPath] = useState(null);
+    const [sessionId, setSessionId] = useState(uuidv4());
+    const [loadingComponent, setLoadingComponent] = useState(null); // New state which is loading.
+    const searchParams = useSearchParams();
+    const hasFetchedCareerData = useRef(false);
     useEffect(()=>{
       if(error){
         toast(error,{
@@ -76,221 +76,221 @@
         )
       };
     },[error]);
-     const fetchWithToast = async (componentName, fetchFn) => {
-       setLoadingComponent(componentName);
-       setIsLoading(true);
-       setError(null);
-       return toast.promise(
-         fetchFn(),
-         {
-           loading: `Loading ${componentName}...`,
-           success: <b>{componentName} loaded successfully!</b>,
-           error: <b>Failed to load {componentName}.{toast(error)}</b>,
-         },
-       ).finally(() => {
-         setLoadingComponent(null);
-         setIsLoading(false);
-       });
-     };
+    const fetchWithToast = async (componentName, fetchFn) => {
+      setLoadingComponent(componentName);
+      setIsLoading(true);
+      setError(null);
+      return toast.promise(
+        fetchFn(),
+        {
+          loading: `Loading ${componentName}...`,
+          success: <b>{componentName} loaded successfully!</b>,
+          error: (error) => <b>Failed to load {componentName}.{toast(error)}</b>,
+        },
+      ).finally(() => {
+        setLoadingComponent(null);
+        setIsLoading(false);
+      });
+    };
 
-     // #region careeraspirations.
-     const fetchCareerAspirations = async () => {
-       return fetchWithToast('Career Aspirations', async () => {
-         if (!details.id_number) throw new Error('id_number is required');
-         const res = await fetch('/api/careerAspirations', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ id_number: details.id_number }),
-         });
-         if (!res.ok) throw new Error(`Career aspirations API error: ${res.statusText}`);
-         const gptData = await res.json();
-         if (gptData.suggestions) {
-           setDetails((prev) => ({
-             ...prev,
-             desiredIndustry: gptData.suggestions.desiredIndustry || prev.desiredIndustry,
-             desiredJobType: gptData.suggestions.desiredJobType || prev.desiredJobType,
-             targetRole: gptData.suggestions.targetRole || prev.targetRole,
-             workStyle: gptData.suggestions.workStyle || prev.workStyle,
-           }));
-         } else {
-           setError('No career aspirations suggestions');
-         }
-       });
-     };
-     // #endregion
-
-     const fetchLanguagesAndTools = async () => {
-       return fetchWithToast('Languages and Tools', async () => {
-         const res = await fetch('/api/languagesAndTools', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ id_number: details.id_number }),
-         });
-         if (!res.ok) throw new Error(`Languages and tools API error: ${res.statusText}`);
-         const gptData = await res.json();
-         if (gptData.suggestions) {
-           const formMatch = gptData.suggestions.match(/===FORM-START===[\s\S]*?\n([\s\S]*?)\n===FORM-END===/);
-           if (formMatch) {
-             const lines = formMatch[1].trim().split('\n').map(line => line.trim());
-             if (lines.length >= 2) {
-               setDetails((prev) => ({
-                 ...prev,
-                 languages: lines[0].replace('プログラミング言語: ', '') || '',
-                 devTools: lines[1].replace('開発ツール: ', '') || '',
-               }));
-             } else {
-               setError('Invalid languages and tools response format');
-             }
-           } else {
-             setError('Failed to parse languages and tools response');
-           }
-         } else {
-           setError('No languages and tools suggestions');
-         }
-       });
-     };
-
-     const fetchInternshipExperience = async () => {
-       return fetchWithToast('Internship Experience', async () => {
-         const res = await fetch('/api/internship', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ id_number: details.id_number }),
-         });
-         if (!res.ok) setError(`Experience API error: ${res.statusText}`);
-         const gptData = await res.json();
-         if (gptData.suggestions) {
-           const { internships, projects } = gptData.suggestions;
-           setDetails((prev) => ({
-             ...prev,
-             internships: internships || [],
-             projects: projects || [],
-           }));
-         } else {
-           setError('No experience suggestions');
-         }
-       });
-     };
-
-     const handlefetchEducation = async () => {
-       return fetchWithToast('Education', async () => {
-         const res = await fetch('/api/fetchEducation', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ id_number: details.id_number }),
-         });
-         if (!res.ok) throw new Error(`Education fetch error: ${res.statusText}`);
-         const data = await res.json();
-         if (data.education && Array.isArray(data.education)) {
-           setDetails((prev) => ({
-             ...prev,
-             education: data.education.length > 0 ? data.education : prev.education,
-           }));
-         } else {
-           setError('No education data found');
-         }
-       });
-     };
-
-     const fetchJapaneseCompanies = async () => {
-       return fetchWithToast('Japanese Companies', async () => {
-         const res = await fetch('/api/japaneseCompanies', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ id_number: details.id_number }),
-         });
-         if (!res.ok) throw new Error(`Japanese companies API error: ${res.statusText}`);
-         const gptData = await res.json();
-         if (gptData.suggestions) {
-           const lines = gptData.suggestions.split('\n').map(line => line.trim());
-           if (lines.length >= 2) {
-             setDetails((prev) => ({
-               ...prev,
-               japanCompanyInterest: lines[0] || '',
-               japanCompanySkills: lines[1] || '',
-             }));
-           } else {
-             setError('Invalid Japanese companies response format');
-           }
-         } else {
-           setError('No Japanese companies suggestions');
-         }
-       });
-     };
-
-     const fetchWorkValues = async () => {
-      return fetchWithToast('Career Development', async () => {
-        const res = await fetch('/api/workValues', {
+    // #region careeraspirations.
+    const fetchCareerAspirations = async () => {
+      return fetchWithToast('Career Aspirations', async () => {
+        if (!details.id_number) throw new Error('id_number is required');
+        const res = await fetch('/api/careerAspirations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id_number: details.id_number }),
         });
-        if (!res.ok) throw new Error(`Career development API error: ${res.statusText}`);
+        if (!res.ok) throw new Error(`Career aspirations API error: ${res.statusText}`);
         const gptData = await res.json();
-        if (gptData.suggestions && gptData.suggestions.careerPriorities) {
-          const careerPriorities = gptData.suggestions.careerPriorities;
-          if (careerPriorities.trim() === '') {
-            setError('Incomplete career priorities received');
-          }
+        if (gptData.suggestions) {
           setDetails((prev) => ({
             ...prev,
-            WorkValues: careerPriorities,
+            desiredIndustry: gptData.suggestions.desiredIndustry || prev.desiredIndustry,
+            desiredJobType: gptData.suggestions.desiredJobType || prev.desiredJobType,
+            targetRole: gptData.suggestions.targetRole || prev.targetRole,
+            workStyle: gptData.suggestions.workStyle || prev.workStyle,
           }));
         } else {
-          setError('No valid career development suggestions');
+          setError('No career aspirations suggestions');
+        }
+      });
+    };
+    // #endregion
+
+    const fetchLanguagesAndTools = async () => {
+      return fetchWithToast('Languages and Tools', async () => {
+        const res = await fetch('/api/languagesAndTools', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id_number: details.id_number }),
+        });
+        if (!res.ok) throw new Error(`Languages and tools API error: ${res.statusText}`);
+        const gptData = await res.json();
+        if (gptData.suggestions) {
+          const formMatch = gptData.suggestions.match(/===FORM-START===[\s\S]*?\n([\s\S]*?)\n===FORM-END===/);
+          if (formMatch) {
+            const lines = formMatch[1].trim().split('\n').map(line => line.trim());
+            if (lines.length >= 2) {
+              setDetails((prev) => ({
+                ...prev,
+                languages: lines[0].replace('プログラミング言語: ', '') || '',
+                devTools: lines[1].replace('開発ツール: ', '') || '',
+              }));
+            } else {
+              setError('Invalid languages and tools response format');
+            }
+          } else {
+            setError('Failed to parse languages and tools response');
+          }
+        } else {
+          setError('No languages and tools suggestions');
         }
       });
     };
 
-     const fetchFieldsOfInterest = async () => {
-       return fetchWithToast('Fields of Interest', async () => {
-         const res = await fetch('/api/fieldsOfInterest', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ id_number: details.id_number }),
-         });
-         if (!res.ok) setError(`Fields of Interest API error: ${res.statusText}`);
-         const data = await res.json();
-         if (data.suggestions) {
-           const { field1, field2, field3 } = data.suggestions;
-           const newFields = [field1, field2, field3].filter(Boolean);
-           if (newFields.length < 3) {
-             setError('Incomplete fields of interest received');
-           }
-           setDetails((prev) => ({
-             ...prev,
-             interestFields: newFields,
-           }));
-         } else {
-           setError('No fields of interest suggestions');
-         }
-       });
-     };
+    const fetchInternshipExperience = async () => {
+      return fetchWithToast('Internship Experience', async () => {
+        const res = await fetch('/api/internship', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id_number: details.id_number }),
+        });
+        if (!res.ok) setError(`Experience API error: ${res.statusText}`);
+        const gptData = await res.json();
+        if (gptData.suggestions) {
+          const { internships, projects } = gptData.suggestions;
+          setDetails((prev) => ({
+            ...prev,
+            internships: internships || [],
+            projects: projects || [],
+          }));
+        } else {
+          setError('No experience suggestions');
+        }
+      });
+    };
 
-     const fetchProductDevelopment = async () => {
-       return fetchWithToast('Product Development', async () => {
-         const res = await fetch('/api/productDevelopment', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ id_number: details.id_number }),
-         });
-         if (!res.ok) throw new Error(`Product development API error: ${res.statusText}`);
-         const data = await res.json();
-         if (data.suggestions) {
-           const { productDevReason, productDevRole } = data.suggestions;
-           if (!productDevReason || !productDevRole) {
-             setError('Incomplete product development suggestions received');
-           }
-           setDetails((prev) => ({
-             ...prev,
-             productDevReason,
-             productDevRole,
-           }));
-         } else {
-           setError('No product development suggestions');
-         }
-       });
-     };
+    const handlefetchEducation = async () => {
+      return fetchWithToast('Education', async () => {
+        const res = await fetch('/api/fetchEducation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id_number: details.id_number }),
+        });
+        if (!res.ok) throw new Error(`Education fetch error: ${res.statusText}`);
+        const data = await res.json();
+        if (data.education && Array.isArray(data.education)) {
+          setDetails((prev) => ({
+            ...prev,
+            education: data.education.length > 0 ? data.education : prev.education,
+          }));
+        } else {
+          setError('No education data found');
+        }
+      });
+    };
+
+    const fetchJapaneseCompanies = async () => {
+      return fetchWithToast('Japanese Companies', async () => {
+        const res = await fetch('/api/japaneseCompanies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id_number: details.id_number }),
+        });
+        if (!res.ok) throw new Error(`Japanese companies API error: ${res.statusText}`);
+        const gptData = await res.json();
+        if (gptData.suggestions) {
+          const lines = gptData.suggestions.split('\n').map(line => line.trim());
+          if (lines.length >= 2) {
+            setDetails((prev) => ({
+              ...prev,
+              japanCompanyInterest: lines[0] || '',
+              japanCompanySkills: lines[1] || '',
+            }));
+          } else {
+            setError('Invalid Japanese companies response format');
+          }
+        } else {
+          setError('No Japanese companies suggestions');
+        }
+      });
+    };
+
+    const fetchWorkValues = async () => {
+    return fetchWithToast('Career Development', async () => {
+      const res = await fetch('/api/workValues', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_number: details.id_number }),
+      });
+      if (!res.ok) throw new Error(`Career development API error: ${res.statusText}`);
+      const gptData = await res.json();
+      if (gptData.suggestions && gptData.suggestions.careerPriorities) {
+        const careerPriorities = gptData.suggestions.careerPriorities;
+        if (careerPriorities.trim() === '') {
+          setError('Incomplete career priorities received');
+        }
+        setDetails((prev) => ({
+          ...prev,
+          WorkValues: careerPriorities,
+        }));
+      } else {
+        setError('No valid career development suggestions');
+      }
+    });
+    };
+
+    const fetchFieldsOfInterest = async () => {
+      return fetchWithToast('Fields of Interest', async () => {
+        const res = await fetch('/api/fieldsOfInterest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id_number: details.id_number }),
+        });
+        if (!res.ok) setError(`Fields of Interest API error: ${res.statusText}`);
+        const data = await res.json();
+        if (data.suggestions) {
+          const { field1, field2, field3 } = data.suggestions;
+          const newFields = [field1, field2, field3].filter(Boolean);
+          if (newFields.length < 3) {
+            setError('Incomplete fields of interest received');
+          }
+          setDetails((prev) => ({
+            ...prev,
+            interestFields: newFields,
+          }));
+        } else {
+          setError('No fields of interest suggestions');
+        }
+      });
+    };
+
+    const fetchProductDevelopment = async () => {
+      return fetchWithToast('Product Development', async () => {
+        const res = await fetch('/api/productDevelopment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id_number: details.id_number }),
+        });
+        if (!res.ok) throw new Error(`Product development API error: ${res.statusText}`);
+        const data = await res.json();
+        if (data.suggestions) {
+          const { productDevReason, productDevRole } = data.suggestions;
+          if (!productDevReason || !productDevRole) {
+            setError('Incomplete product development suggestions received');
+          }
+          setDetails((prev) => ({
+            ...prev,
+            productDevReason,
+            productDevRole,
+          }));
+        } else {
+          setError('No product development suggestions');
+        }
+      });
+    };
 
       const fetchJLPTSuggestions = async () => {
        return fetchWithToast('JLPT Suggestions', async () => {
