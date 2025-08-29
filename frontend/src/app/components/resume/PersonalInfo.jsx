@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Cropper from 'react-easy-crop';
 import { getCroppedImg } from '../../helper/ImageCrop/cropUtils';
 
-export default function PersonalInfo({ details, handleInputChange }) {
+export default function PersonalInfo({ details, handleInputChange, fetchDetails, isLoading }) {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
   const [imageToCrop, setImageToCrop] = useState(null);
@@ -88,16 +88,26 @@ export default function PersonalInfo({ details, handleInputChange }) {
 
   return (
     <div className="mb-8 whitespace-pre-line">
-      <h2 className="text-xl text-black font-semibold mb-3">{"個人情報 \n Personal Information"}</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl text-black font-semibold mb-3">個人情報<br />Personal Information</h2>
+        <button
+          onClick={fetchDetails}
+          disabled={isLoading}
+          className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 whitespace-pre-line ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {isLoading ? '取得中...\nFetching...' : '個人情報を取得\nFetch Personal Data'}
+        </button>
+      </div>
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">社員番号 \n Employee Number</label>
+          <label className="block text-sm font-medium text-gray-700">社員番号 / Employee Number</label>
           <input
-            type="number"
+            type="text"
             name="employeeNumber"
             value={details.employeeNumber}
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            placeholder="例: 123456"
           />
         </div>
         <div>
@@ -108,8 +118,8 @@ export default function PersonalInfo({ details, handleInputChange }) {
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
-            {nameOptions.map((option, index) => (
-              <option key={index} value={option.value}>
+            {nameOptions.map((option) => (
+              <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
@@ -123,14 +133,14 @@ export default function PersonalInfo({ details, handleInputChange }) {
             value={details.hometown}
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            placeholder="例: デリー (北インド)"
+            placeholder="例: 東京"
           />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">趣味 / Hobby</label>
-          <textarea
-            name="hobby"
+          <input
             type="text"
+            name="hobby"
             value={details.hobby}
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
