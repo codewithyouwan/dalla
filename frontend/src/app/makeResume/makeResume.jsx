@@ -82,18 +82,20 @@ export default function MakeResume() {
 
       setIsLoading(true);
       setError(null);
+      const encryptedId = searchParams.get('encrypted_id');
+      let id_number = details.id_number || sessionId;
 
-      try {
-        const encryptedId = searchParams.get('encrypted_id');
-        let id_number = details.id_number || sessionId;
-
-        if (encryptedId) {
-          const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET || 'default-secure-key-32chars1234567';
-          const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedId), secretKey);
-          id_number = bytes.toString(CryptoJS.enc.Utf8) || id_number;
-          if (!id_number) throw new Error('Invalid employee ID');
+      if (encryptedId) {
+        const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET || 'default-secure-key-32chars1234567';
+        const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedId), secretKey);
+        id_number = bytes.toString(CryptoJS.enc.Utf8) || id_number;
+        if (!id_number) throw new Error('Invalid employee ID');
+        else{
+          setDetails((prev) => ({ ...prev, id_number:id_number }));
+          console.log('Decrypted id_number:', id_number);
         }
-
+      try {
+        
         const response = await fetch(`/api/fetchSavedData?id_number=${id_number}`);
 
         if (!response.ok) {
@@ -108,7 +110,6 @@ export default function MakeResume() {
         const { data } = await response.json();
         setDetails((prev) => ({
           ...prev,
-          id_number: data.id_number || prev.id_number,
           employeeNumber: data.employee_number?.toString() || '',
           name: data.name || prev.name,
           katakana: data.katakana || '',
@@ -141,10 +142,10 @@ export default function MakeResume() {
       } finally {
         setIsLoading(false);
       }
-    };
-    fetchWithToast('Resume Data', fetchResume)
+    }};
+    fetchWithToast('Resume Data', fetchResume);
     // fetchResume();
-  }, [sessionId, searchParams]);
+  }, []);
 
   const fetchWithToast = async (componentName, fetchFn) => {
     setLoadingComponent(componentName);
@@ -162,7 +163,6 @@ export default function MakeResume() {
       setIsLoading(false);
     });
   };
-
   const fetchCareerAspirations = async () => {
     return fetchWithToast('Career Aspirations', async () => {
       if (!details.id_number) throw new Error('id_number is required');
@@ -519,9 +519,10 @@ export default function MakeResume() {
         <PersonalInfo
           details={details}
           handleInputChange={handleInputChange}
-          fetchDetails={() => fetchWithToast('Personal Details', async () => {
-            const id_number = details.id_number || sessionId;
-            const res = await fetch(`/api/fetchDetails?id_number=${encodeURIComponent(id_number)}`);
+          fetchPersonalDetails={() => fetchWithToast('Personal Details', async () => {
+            const id = details.id_number;
+            console.log("Personal Info ID:", id);
+            const res = await fetch(`/api/fetchDetails?id_number=${id}`);
             if (!res.ok) {
               const errorData = await res.json();
               throw new Error(`HTTP ${res.status}: ${errorData.error || 'Unknown error'}`);

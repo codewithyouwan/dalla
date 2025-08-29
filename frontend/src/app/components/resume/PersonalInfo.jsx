@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Cropper from 'react-easy-crop';
 import { getCroppedImg } from '../../helper/ImageCrop/cropUtils';
 
-export default function PersonalInfo({ details, handleInputChange, fetchDetails, isLoading }) {
+export default function PersonalInfo({ details, handleInputChange, fetchPersonalDetails, isLoading }) {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
   const [imageToCrop, setImageToCrop] = useState(null);
@@ -91,7 +91,7 @@ export default function PersonalInfo({ details, handleInputChange, fetchDetails,
       <div className="flex justify-between items-center">
         <h2 className="text-xl text-black font-semibold mb-3">個人情報<br />Personal Information</h2>
         <button
-          onClick={fetchDetails}
+          onClick={fetchPersonalDetails}
           disabled={isLoading}
           className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 whitespace-pre-line ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
