@@ -46,10 +46,8 @@ const defaultDetails = {
   WorkValues: 'Team Work, Impact, Balance',
   careerRoles: 'Project Manager',
   japaneseLevel: 'Not certified',
-  total: '',
-  vocabulary: '',
-  reading: '',
-  listening: '',
+  marks: {total:'0', vocabulary:'0', reading:'0', listening:'0', language_and_reading:'0'},
+  examMonth: '7月',
   personality: 'Diligent',
   selectedSuggestion: '',
   photo: null,
@@ -76,7 +74,7 @@ export default function MakeResume() {
   }, [error]);
 
   useEffect(() => {
-    const fetchResume = async () => {
+    const fetchData = async () => {
       if (hasFetchedResume.current) return;
       hasFetchedResume.current = true;
       const encryptedId = searchParams.get('encrypted_id');
@@ -127,18 +125,20 @@ export default function MakeResume() {
           careerPriorities: data.career_priorities || prev.careerPriorities,
           careerRoles: data.career_roles || prev.careerRoles,
           japaneseLevel: data.japanese_level || prev.japaneseLevel,
-          total: data.total_score || '',
-          vocabulary: data.vocabulary_score || '',
-          reading: data.reading_score || '',
-          listening: data.listening_score || '',
-          jlpt_description: data.jlpt_description || '',
+          marks: {total:(toString(data.total_score) || prev.marks.total), vocabulary:(toString(data.vocabulary_score) || prev.marks.vocabulary), reading:(toString(data.reading_score) || prev.marks.reading), listening:(toString(data.listening_score) || prev.marks.listening), language_and_reading:(toString(data.language_and_reading_score) || prev.marks.language_and_reading)},
+          examMonth: data.exam_month || '7月',
+          WorkValues: data.work_values,
+          interestFields: data.interest_fields||prev.interestFields,
+          selectedSuggestion: data.jlpt_description || prev.jlpt_description,
         }));
+        console.log(data.marks);
+        console.log(data.jlpt_description);
       } catch (err) {
-        setError(`Failed to load resume: ${err.message}`);
+        setError(`Failed to load data: ${err.message}`);
         console.error('Load resume error:', err);
       }
     }};
-    fetchWithToast('Resume Data', fetchResume);
+    fetchWithToast('Saved Data', fetchData);
     // fetchResume();
   }, []);
 
@@ -357,13 +357,11 @@ export default function MakeResume() {
 
   const fetchJLPTSuggestions = async () => {
     return fetchWithToast('JLPT Suggestions', async () => {
-      const japaneseLevel = details.japaneseLevel || 'Not certified';
+      console.log(details.marks);
       const payload = {
-        total: details.total,
-        vocabulary: details.vocabulary,
-        reading: details.reading,
-        listening: details.listening,
-        japaneseLevel,
+        marks:details.marks,
+        japaneseLevel:details.japaneseLevel||'Not certified',
+        examMonth: details.examMonth,
       };
       const response = await fetch('/api/gpt', {
         method: 'POST',

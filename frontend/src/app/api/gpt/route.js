@@ -3,18 +3,20 @@ import { AzureKeyCredential } from "@azure/core-auth";
 import Prompt from "../../helper/prompt";
 
 export const runtime = 'nodejs';
-function checkValidityOfScores(total, vocabulary, reading, listening) {
-  if (total < 0 || vocabulary < 0 || reading < 0 || listening < 0) {
+function checkValidityOfScores(total, vocabulary, reading, listening, language_and_reading) {
+  if (total < 0 || vocabulary < 0 || reading < 0 || listening < 0 || language_and_reading < 0) {
     return "スコアは0以上でなければなりません。 \n Scores must be 0 or above.";
   }
-  return (Number(total)===(Number(vocabulary) + Number(reading) + Number(listening)));
+  return (Number(total)===(Number(vocabulary) + Number(reading) + Number(listening)+Number(language_and_reading)));
 }
 export async function POST(request) {
   try {
-    const { total, vocabulary, reading, listening } = await request.json();
+    const data = await request.json();
     
-    const prompt = Prompt({ total, vocabulary, reading, listening }, 'jlptExperience');
-    let validity = checkValidityOfScores(total, vocabulary, reading, listening);
+    const prompt = Prompt(data, 'jlptExperience');
+    const {marks} = data;
+    const {total, vocabulary, reading, listening, language_and_reading} = marks;
+    let validity = checkValidityOfScores(total, vocabulary, reading, listening,language_and_reading);
     if(validity!==true) {
       if(validity === false)
       {

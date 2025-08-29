@@ -8,61 +8,62 @@ const whatForTypes = ['jlptExperience', 'careerAspirations', 'languagesAndTools'
 
 export default function Prompt(data, whatFor) {
   if (whatFor === whatForTypes[0]) {
-    const { marks, japaneseLevel } = data;
-const validatedJapaneseLevel = japaneseLevel || 'Not certified';
-const currentYear = new Date().getFullYear(); // Get the current year dynamically
+  const { marks, japaneseLevel, examMonth } = data;
+  console.log(marks);
+  const {total, vocabulary, reading, listening,language_and_reading} = marks;
+  const validatedJapaneseLevel = japaneseLevel || 'Not certified';
+  const currentYear = new Date().getFullYear(); // Get the current year dynamically
+  const prompt = `
+      ＜Reference Information>
+      JLPT Level: ${validatedJapaneseLevel}
+      Total Score: ${total || '未入力'}
+      Vocabulary Score: ${vocabulary || '未入力'}
+      ${validatedJapaneseLevel=='N5'||validatedJapaneseLevel=='N4'?('Language and Reading Score: '+(language_and_reading || '未入力')):
+        'Reading Score: '+ (reading || '未入力')+' Listening Score: '+(listening || '未入力')}
 
-const prompt = `
-    ＜Reference Information>
-    JLPT Level: ${validatedJapaneseLevel}
-    Total Score: ${total || '未入力'}
-    Vocabulary Score: ${vocabulary || '未入力'}
-    Reading Score: ${reading || '未入力'}
-    Listening Score: ${listening || '未入力'}
+      <Prompt>
+      Based on this information (JLPT level and scores), please generate appropriate content to describe my Japanese language ability in vocabulary, reading, and listening for inclusion in a CV. 
+      To ensure that companies can accurately understand my Japanese level, explicitly mention the JLPT level and concisely describe the three abilities (reading, vocabulary/grammar, listening) in **first person (“私は...”)** natural Japanese, as a single paragraph.
+      Create 3 variations, each consisting of one paragraph.  
+      At the beginning of each paragraph, mention the JLPT level (${validatedJapaneseLevel}), and reflect it in the ability description.
+      ⚠️ Always use the current year (${currentYear}) and (${examMonth}) when writing the JLPT test date in the output. Do not hardcode 2025.
 
-    <Prompt>
-    Based on this information (JLPT level and scores), please generate appropriate content to describe my Japanese language ability in vocabulary, reading, and listening for inclusion in a CV. 
-    To ensure that companies can accurately understand my Japanese level, explicitly mention the JLPT level and concisely describe the three abilities (reading, vocabulary/grammar, listening) in **first person (“私は...”)** natural Japanese, as a single paragraph.
-    Create 3 variations, each consisting of one paragraph.  
-    At the beginning of each paragraph, mention the JLPT level (${validatedJapaneseLevel}), and reflect it in the ability description.
-    ⚠️ Always use the current year (${currentYear}) when writing the JLPT test date in the output. Do not hardcode 2025.
+      Please follow the output format **strictly**. Enclose each variation as follows:
 
-    Please follow the output format **strictly**. Enclose each variation as follows:
+      - For the longer paragraph pattern, use ===FORM1-START=== and ===FORM1-END===.
+      - For the medium-length paragraph pattern, use ===FORM2-START=== and ===FORM2-END===.
+      - For the most concise paragraph pattern, use ===FORM3-START=== and ===FORM3-END===.
 
-    - For the longer paragraph pattern, use ===FORM1-START=== and ===FORM1-END===.
-    - For the medium-length paragraph pattern, use ===FORM2-START=== and ===FORM2-END===.
-    - For the most concise paragraph pattern, use ===FORM3-START=== and ===FORM3-END===.
+      【Rules for each pattern】
 
-    【Rules for each pattern】
+      - Each paragraph must start with “${currentYear}年${examMonth}月${validatedJapaneseLevel}にJLPTのN4を受験し、合格。” and then describe reading, vocabulary, and listening skills naturally in first-person Japanese, within a single paragraph.  
+      - Connect the three abilities smoothly, using professional expressions suitable for a CV.  
+      - Do not include scores, numbers, or exam names (other than JLPT).  
+      - Sentences must end with 「だ」 or 「である」 style (plain form).  
+      - Emphasize strengths based on ${validatedJapaneseLevel}.  
+      - If ${validatedJapaneseLevel} is “Not certified”, instead write: 「私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。」 and describe abilities modestly.
 
-    - Each paragraph must start with “私は${validatedJapaneseLevel}を取得済み。” and then describe reading, vocabulary, and listening skills naturally in first-person Japanese, within a single paragraph.  
-    - Connect the three abilities smoothly, using professional expressions suitable for a CV.  
-    - Do not include scores, numbers, or exam names (other than JLPT).  
-    - Sentences must end with 「だ」 or 「である」 style (plain form).  
-    - Emphasize strengths based on ${validatedJapaneseLevel}.  
-    - If ${validatedJapaneseLevel} is “Not certified”, instead write: 「私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。」 and describe abilities modestly.
+      【Output format example】
 
-    【Output format example】
+      ===FORM1-START===
+      ${currentYear}年${examMonth}月にJLPTのN4を受験し、合格。私は専門的な文書を正確に理解し、適切に対応できます。また、ビジネスシーンで使用される語彙や文法を幅広く活用でき、会議での発言や指示を聞き取り、適切に反応できます。
+      ===FORM1-END===
 
-    ===FORM1-START===
-    ${currentYear}年7月にJLPTのN4を受験し、合格。私は専門的な文書を正確に理解し、適切に対応できます。また、ビジネスシーンで使用される語彙や文法を幅広く活用でき、会議での発言や指示を聞き取り、適切に反応できます。
-    ===FORM1-END===
+      ===FORM2-START===
+      ${currentYear}年${examMonth}月にJLPTのN4を受験し、合格。私は専門文書をスムーズに読解し、ビジネス語彙を効果的に使用でき、会議内容を正確に理解できます。
+      ===FORM2-END===
 
-    ===FORM2-START===
-    ${currentYear}年7月にJLPTのN4を受験し、合格。私は専門文書をスムーズに読解し、ビジネス語彙を効果的に使用でき、会議内容を正確に理解できます。
-    ===FORM2-END===
+      ===FORM3-START===
+      ${currentYear}年${examMonth}月にJLPTのN4を受験し、合格。私は文書を読解し、ビジネス語彙を活用し、会議を理解できます。
+      ===FORM3-END===
 
-    ===FORM3-START===
-    ${currentYear}年7月にJLPTのN4を受験し、合格。私は文書を読解し、ビジネス語彙を活用し、会議を理解できます。
-    ===FORM3-END===
+      【Not certified example】
 
-    【Not certified example】
-
-    ===FORM1-START===
-    私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。私は簡単な文書を理解し、日常的な語彙を適切に使用し、基本的な会話内容を聞き取れます。
-    ===FORM1-END===
-    `;
-  return prompt;
+      ===FORM1-START===
+      私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。私は簡単な文書を理解し、日常的な語彙を適切に使用し、基本的な会話内容を聞き取れます。
+      ===FORM1-END===
+      `;
+    return prompt;
   } else if (whatFor === whatForTypes[1]) {
     const { preferred_industry, jobs_to_try_in_japan, job_role_priorities, work_style_preference } = data;
     const prompt = `
