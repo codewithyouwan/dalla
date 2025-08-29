@@ -79,9 +79,6 @@ export default function MakeResume() {
     const fetchResume = async () => {
       if (hasFetchedResume.current) return;
       hasFetchedResume.current = true;
-
-      setIsLoading(true);
-      setError(null);
       const encryptedId = searchParams.get('encrypted_id');
       let id_number = details.id_number || sessionId;
 
@@ -139,8 +136,6 @@ export default function MakeResume() {
       } catch (err) {
         setError(`Failed to load resume: ${err.message}`);
         console.error('Load resume error:', err);
-      } finally {
-        setIsLoading(false);
       }
     }};
     fetchWithToast('Resume Data', fetchResume);

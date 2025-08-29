@@ -8,59 +8,61 @@ const whatForTypes = ['jlptExperience', 'careerAspirations', 'languagesAndTools'
 
 export default function Prompt(data, whatFor) {
   if (whatFor === whatForTypes[0]) {
-    const { total, listening, vocabulary, reading, japaneseLevel } = data;
-    const validatedJapaneseLevel = japaneseLevel || 'Not certified';
-    const prompt = `
-        ＜参考情報/Reference Information>
-        JLPTレベル/Japanese Level: ${validatedJapaneseLevel}
-        総合スコア/Total Score: ${total || '未入力'}
-        語彙スコア/Vocabulary Score: ${vocabulary || '未入力'}
-        読解スコア/Reading Score: ${reading || '未入力'}
-        聴解スコア/Listening Score: ${listening || '未入力'}
+    const { marks, japaneseLevel } = data;
+const validatedJapaneseLevel = japaneseLevel || 'Not certified';
+const currentYear = new Date().getFullYear(); // Get the current year dynamically
 
-        <プロンプト/Prompt>
-        この情報（JLPTレベルとスコア）を元に、語彙、読み、リスニングについて、日本語能力をCVに記載するための適切な内容を生成してください。
-        企業が私の日本語レベルを正確に理解できるように、JLPTレベルを明示的に記載しつつ、3つの能力（読解、語彙[文法]、リスニング）を**一人称（「私は...」）**の自然な日本語で、1つの段落として簡潔に説明してください。
-        3パターンを作成し、各パターンは1段落で構成してください。
-        JLPTレベル（${validatedJapaneseLevel}）を段落の冒頭で言及し、能力の説明に反映してください。
+const prompt = `
+    ＜Reference Information>
+    JLPT Level: ${validatedJapaneseLevel}
+    Total Score: ${total || '未入力'}
+    Vocabulary Score: ${vocabulary || '未入力'}
+    Reading Score: ${reading || '未入力'}
+    Listening Score: ${listening || '未入力'}
 
-        出力は以下のフォーマットに**厳密に**従ってください。各パターンの出力は、それぞれ次のようにマーカーで囲ってください：
+    <Prompt>
+    Based on this information (JLPT level and scores), please generate appropriate content to describe my Japanese language ability in vocabulary, reading, and listening for inclusion in a CV. 
+    To ensure that companies can accurately understand my Japanese level, explicitly mention the JLPT level and concisely describe the three abilities (reading, vocabulary/grammar, listening) in **first person (“私は...”)** natural Japanese, as a single paragraph.
+    Create 3 variations, each consisting of one paragraph.  
+    At the beginning of each paragraph, mention the JLPT level (${validatedJapaneseLevel}), and reflect it in the ability description.
+    ⚠️ Always use the current year (${currentYear}) when writing the JLPT test date in the output. Do not hardcode 2025.
 
-        - 長めの段落パターンには ===FORM1-START=== と ===FORM1-END=== を使用してください。
-        - 中くらいの長さの段落パターンには ===FORM2-START=== と ===FORM2-END=== を使用してください。
-        - 最も簡潔な段落パターンには ===FORM3-START=== と ===FORM3-END=== を使用してください。
+    Please follow the output format **strictly**. Enclose each variation as follows:
 
-        【各パターンの構成ルール】
+    - For the longer paragraph pattern, use ===FORM1-START=== and ===FORM1-END===.
+    - For the medium-length paragraph pattern, use ===FORM2-START=== and ===FORM2-END===.
+    - For the most concise paragraph pattern, use ===FORM3-START=== and ===FORM3-END===.
 
-        - 各パターンは、最初に「私は${validatedJapaneseLevel}を取得済み。」と明記し、その後1段落内で読解、語彙、リスニングの能力を**「私は...」で始まる自然な日本語**で丁寧かつ簡潔に記述してください。
-        - 段落内で3つの能力を自然につなげ、CVに適したビジネス的な表現を使用してください。
-        - スコアや点数、試験名（JLPTを除く）は記載しないでください。
-        - 文章の末尾を、「だ、である」で終わって欲しい。
-        - I would like all sentence endings to follow the “da/de aru” (plain) style.
-        - ${validatedJapaneseLevel}に基づく能力の強みを強調してください。
-        - ${validatedJapaneseLevel}が「Not certified」の場合、代わりに「私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。」と記載し、能力を控えめに記述してください。
+    【Rules for each pattern】
 
-        【出力形式の例】
+    - Each paragraph must start with “私は${validatedJapaneseLevel}を取得済み。” and then describe reading, vocabulary, and listening skills naturally in first-person Japanese, within a single paragraph.  
+    - Connect the three abilities smoothly, using professional expressions suitable for a CV.  
+    - Do not include scores, numbers, or exam names (other than JLPT).  
+    - Sentences must end with 「だ」 or 「である」 style (plain form).  
+    - Emphasize strengths based on ${validatedJapaneseLevel}.  
+    - If ${validatedJapaneseLevel} is “Not certified”, instead write: 「私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。」 and describe abilities modestly.
 
-        ===FORM1-START===
-        私はN3を取得済み。私は専門的な文書を正確に理解し、適切に対応できます。また、ビジネスシーンで使用される語彙や文法を幅広く活用でき、会議での発言や指示を聞き取り、適切に反応できます。
-        ===FORM1-END===
+    【Output format example】
 
-        ===FORM2-START===
-        私はN3を取得済み。私は専門文書をスムーズに読解し、ビジネス語彙を効果的に使用でき、会議内容を正確に理解できます。
-        ===FORM2-END===
+    ===FORM1-START===
+    ${currentYear}年7月にJLPTのN4を受験し、合格。私は専門的な文書を正確に理解し、適切に対応できます。また、ビジネスシーンで使用される語彙や文法を幅広く活用でき、会議での発言や指示を聞き取り、適切に反応できます。
+    ===FORM1-END===
 
-        ===FORM3-START===
-        私はN3を取得済み。私は文書を読解し、ビジネス語彙を活用し、会議を理解できます。
-        ===FORM3-END===
+    ===FORM2-START===
+    ${currentYear}年7月にJLPTのN4を受験し、合格。私は専門文書をスムーズに読解し、ビジネス語彙を効果的に使用でき、会議内容を正確に理解できます。
+    ===FORM2-END===
 
-        【Not certifiedの例】
+    ===FORM3-START===
+    ${currentYear}年7月にJLPTのN4を受験し、合格。私は文書を読解し、ビジネス語彙を活用し、会議を理解できます。
+    ===FORM3-END===
 
-        ===FORM1-START===
-        私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。私は簡単な文書を理解し、日常的な語彙を適切に使用し、基本的な会話内容を聞き取れます。
-        ===FORM1-END===
-        `;
-    return prompt;
+    【Not certified example】
+
+    ===FORM1-START===
+    私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。私は簡単な文書を理解し、日常的な語彙を適切に使用し、基本的な会話内容を聞き取れます。
+    ===FORM1-END===
+    `;
+  return prompt;
   } else if (whatFor === whatForTypes[1]) {
     const { preferred_industry, jobs_to_try_in_japan, job_role_priorities, work_style_preference } = data;
     const prompt = `
@@ -89,7 +91,7 @@ export default function Prompt(data, whatFor) {
       ワークスタイル: 実装力を基盤に、企画・提案や研究的なアプローチも取り入れながら、多角的に課題解決に取り組むスタイルを志望する。特定分野にとらわれず、幅広い役割を担えるジェネラリストとしての成長を目指す。
       ===FORM2-END===
 
-      <Rules>
+      <Rules> (Follow these strictly otherwise our system can break)
       - Output **exactly** four lines between ===FORM2-START=== and ===FORM2-END===.
       - Each line starts with the specified label (希望業界: , 希望職種: , 目指す役割: , ワークスタイル: ).
       - For 希望業界, 希望職種, and 目指す役割, use comma-separated Japanese katakana names, removing English terms and correcting invalid katakana.
@@ -185,7 +187,7 @@ export default function Prompt(data, whatFor) {
       得られた成果: モデル精度を20%向上。
       ===FORM1-END===
 
-      <Rules>
+      <Rules> (Follow them strictly otherwise our system can break)
       - Include exactly 8 lines, one for each field, in concise, accurate Japanese.
       - Reflect the input data for Title, ${isInternship ? 'Company' : 'Project Name'}, and Period directly, with Period in "YYYY年MM月 – YYYY年MM月" format.
       - Ensure "Description" is distinct from "Summary" by integrating purpose, technologies, and team size, avoiding redundancy.
