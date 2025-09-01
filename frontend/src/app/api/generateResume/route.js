@@ -119,7 +119,7 @@ export async function POST(req) {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
         dumpio: true, // Enable browser logs for debugging
       });
       console.log('Browser launched successfully with bundled Chrome');
