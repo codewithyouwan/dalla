@@ -17,8 +17,7 @@ services:
       - dalla-network
     environment:
       - NODE_ENV=production
-      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
       - PUPPETEER_CACHE_DIR=/app/.puppeteer_cache
 
   backend:

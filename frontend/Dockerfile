@@ -4,7 +4,6 @@ WORKDIR /app
 
 # Install system dependencies for Puppeteer
 RUN apk add --no-cache \
-  chromium \
   nss \
   freetype \
   harfbuzz \
@@ -20,16 +19,14 @@ RUN apk add --no-cache \
   libatk-bridge-2.0 \
   libatk-1.0 \
   at-spi2-atk \
+  alsa-lib \
+  mesa-gl \
   nodejs \
   yarn
 
 # Set environment variables for Puppeteer
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
 ENV PUPPETEER_CACHE_DIR=/app/.puppeteer_cache
-
-# Verify Chromium installation
-RUN chromium-browser --version && which chromium-browser
 
 # Install pnpm and dependencies
 COPY package.json pnpm-lock.yaml ./
@@ -40,14 +37,15 @@ RUN pnpm run build
 
 # Clear any existing Puppeteer cache
 RUN rm -rf /root/.cache/puppeteer /opt/render/.cache/puppeteer /app/.puppeteer_cache
+# Log Puppeteer Chrome binary path for debugging
+RUN find /app/node_modules/puppeteer -name "chrome" -type f || echo "No Chrome binary found"
 
 # Runner stage
 FROM node:22-alpine AS runner
 WORKDIR /app
 
-# Install Chromium and dependencies in the runner stage
+# Install system dependencies for Puppeteer
 RUN apk add --no-cache \
-  chromium \
   nss \
   freetype \
   harfbuzz \
@@ -62,15 +60,13 @@ RUN apk add --no-cache \
   libxtst \
   libatk-bridge-2.0 \
   libatk-1.0 \
-  at-spi2-atk
+  at-spi2-atk \
+  alsa-lib \
+  mesa-gl
 
 # Set environment variables for Puppeteer
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
 ENV PUPPETEER_CACHE_DIR=/app/.puppeteer_cache
-
-# Verify Chromium installation
-RUN chromium-browser --version && which chromium-browser
 
 # Copy built assets and dependencies
 COPY --from=builder /app/.next ./.next
@@ -81,6 +77,8 @@ COPY --from=builder /app/temp ./temp
 
 # Clear any existing Puppeteer cache
 RUN rm -rf /root/.cache/puppeteer /opt/render/.cache/puppeteer /app/.puppeteer_cache
+# Log Puppeteer Chrome binary path for debugging
+RUN find /app/node_modules/puppeteer -name "chrome" -type f || echo "No Chrome binary found"
 
 ENV NODE_ENV production
 EXPOSE 3000

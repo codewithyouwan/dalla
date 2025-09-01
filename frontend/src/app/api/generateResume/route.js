@@ -46,7 +46,6 @@ export async function POST(req) {
 
     console.log('Raw form-data details:', detailsRaw);
     console.log('Raw form-data sessionId:', sessionId);
-    console.log('PUPPETEER_EXECUTABLE_PATH:', process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser');
     console.log('PUPPETEER_CACHE_DIR:', process.env.PUPPETEER_CACHE_DIR || '/app/.puppeteer_cache');
 
     let details;
@@ -118,7 +117,6 @@ export async function POST(req) {
 
     try {
       const browser = await puppeteer.launch({
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
         headless: 'new',
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
         dumpio: true, // Enable browser logs for debugging
