@@ -144,6 +144,19 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
             )}
           </>
         )}
+        {
+          details.selectedSuggestion!==''&&(
+            <div>
+              <label className="block text-sm font-medium text-gray-700">選択された提案 / Selected Suggestion</label>
+              <textarea
+                value={details.selectedSuggestion}
+                onChange={(e)=>{setDetails((prev)=>({...prev, selectedSuggestion: e.target.value}));}}
+                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-gray-100"
+                rows="4"
+              />
+            </div>
+          )
+        }
         {details.suggestions && details.suggestions.length > 0 && (
           <div className="mt-4">
             <h3 className="text-sm font-medium text-black">提案 / Suggestions</h3>

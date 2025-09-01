@@ -18,9 +18,12 @@ export async function GET(request) {
       .eq('id_number', id_number)
       .single();
 
-    if (error || !data) {
+    if (error) {
       console.error('Supabase error:', error?.message || 'No resume data found', { id_number });
       return NextResponse.json({ error: 'Resume data not found' }, { status: 404 });
+    }else if(!data){
+        console.warning('No resume data found for this id_number', { id_number });
+        return NextResponse.json({ error: 'Resume data not found' }, { status: 404 });
     }
 
     return NextResponse.json({ data }, { status: 200 });

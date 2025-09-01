@@ -138,7 +138,7 @@ export default function MakeResume() {
             vocabulary:data.vocabulary_score || prev.marks.vocabulary, 
             reading:data.reading_score || prev.marks.reading, 
             listening:data.listening_score || prev.marks.listening, 
-            language_and_reading:data.language_and_reading_score || prev.marks.language_and_reading
+            language_and_reading:data.language_and_reading || prev.marks.language_and_reading
           },
           examMonth: data.exam_month || '7月',
           WorkValues: data.work_values,
@@ -395,8 +395,6 @@ export default function MakeResume() {
       setDetails((prev) => ({
         ...prev,
         suggestions: trimmedForms,
-        selectedIndex: null,
-        selectedSuggestion: '',
       }));
     });
   };
