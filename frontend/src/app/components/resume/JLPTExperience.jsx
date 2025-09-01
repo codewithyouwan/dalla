@@ -1,23 +1,25 @@
 export default function JLPTExperience({ details, handleInputChange, setDetails, isLoading, fetchJLPTSuggestions }) {
   const isN5orN4 = details.japaneseLevel==='N5' || details.japaneseLevel==='N4';
+  console.log("IS N5 or N4:", isN5orN4);
 
   const handleSuggestionSelect = (suggestion, index) => {
     setDetails((prev) => ({
       ...prev,
       selectedSuggestion: suggestion,
-      jlpt_description: suggestion, // Store in jlpt_description for resume
+      // jlpt_description: suggestion, // Store in jlpt_description for resume
       selectedIndex: index,
     }));
     console.log('Selected JLPT suggestion:', suggestion, 'Index:', index);
   };
 
-  // const handleFetchSuggestions = async () => {
-  //   try {
-  //     await fetchJLPTSuggestions();
-  //   } catch (err) {
-  //     console.error('Error fetching JLPT suggestions:', err);
-  //   }
-  // };
+  // marks: 
+  // {
+  //   total:'0',
+  //   vocabulary:'0', 
+  //   reading:'0',
+  //   listening:'0',
+  //   language_and_reading:'0'
+  // },
 
   return (
     <div className="mb-8 whitespace-pre-line">
@@ -58,6 +60,7 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
           >
             <option value="7月">7月</option>
             <option value="12月">12月</option>
+            <option value="Not Selected">Other</option>
           </select>
         </div>
         {details.japaneseLevel !== 'Not certified' && (
@@ -69,8 +72,8 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
                   <input
                     type="text"
                     name="total"
-                    value={details.total}
-                    onChange={(e)=>{setDetails((prev)=>({...prev, total:e.target.value}));}}
+                    value={details.marks.total}
+                    onChange={(e)=>{setDetails((prev)=>({...prev, marks:{...prev.marks,total:e.target.value}}));}}
                     className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
@@ -79,8 +82,8 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
                   <input
                     type="text"
                     name="vocabulary"
-                    value={details.languageAndReading}
-                    onChange={(e)=>{setDetails((prev)=>({...prev, language_and_reading:e.target.value}));}}
+                    value={details.marks.language_and_reading}
+                    onChange={(e)=>{setDetails((prev)=>({...prev, marks:{...prev.marks,language_and_reading:e.target.value}}));}}
                     className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
@@ -89,8 +92,8 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
                   <input
                     type="text"
                     name="listening"
-                    value={details.listening}
-                    onChange={(e)=>{setDetails((prev)=>({...prev, listening:e.target.value}));}}
+                    value={details.marks.listening}
+                    onChange={(e)=>{setDetails((prev)=>({...prev, marks:{...prev.marks, listening:e.target.value}}));}}
                     className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
@@ -102,8 +105,8 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
                   <input
                     type="text"
                     name="total"
-                    value={details.total}
-                    onChange={handleInputChange}
+                    value={details.marks.total}
+                    onChange={(e)=>{setDetails((prev)=>({...prev, marks:{...prev.marks,total:e.target.value}}));}}
                     className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
@@ -112,8 +115,8 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
                   <input
                     type="text"
                     name="vocabulary"
-                    value={details.vocabulary}
-                    onChange={handleInputChange}
+                    value={details.marks.vocabulary}
+                    onChange={(e)=>{setDetails((prev)=>({...prev, marks:{...prev.marks,vocabulary:e.target.value}}));}}
                     className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
@@ -122,8 +125,8 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
                   <input
                     type="text"
                     name="reading"
-                    value={details.reading}
-                    onChange={handleInputChange}
+                    value={details.marks.reading}
+                    onChange={(e)=>{setDetails((prev)=>({...prev, marks:{...prev.marks,reading:e.target.value}}));}}
                     className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
@@ -132,8 +135,8 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
                   <input
                     type="text"
                     name="listening"
-                    value={details.listening}
-                    onChange={handleInputChange}
+                    value={details.marks.listening}
+                    onChange={(e)=>{setDetails((prev)=>({...prev, marks:{...prev.marks, listening:e.target.value}}));}}
                     className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>

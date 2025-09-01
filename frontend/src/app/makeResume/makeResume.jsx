@@ -46,8 +46,15 @@ const defaultDetails = {
   WorkValues: 'Team Work, Impact, Balance',
   careerRoles: 'Project Manager',
   japaneseLevel: 'Not certified',
-  marks: {total:'0', vocabulary:'0', reading:'0', listening:'0', language_and_reading:'0',},
-  examMonth: '7月',
+  marks: 
+  {
+    total:'0',
+    vocabulary:'0', 
+    reading:'0',
+    listening:'0',
+    language_and_reading:'0'
+  },
+  examMonth: 'Not Selected',
   personality: 'Diligent',
   selectedSuggestion: '',
   photo: null,
@@ -126,7 +133,13 @@ export default function MakeResume() {
           careerPriorities: data.career_priorities || prev.careerPriorities,
           careerRoles: data.career_roles || prev.careerRoles,
           japaneseLevel: data.japanese_level || prev.japaneseLevel,
-          marks: {total:data.total_score || prev.marks.total, vocabulary:data.vocabulary_score || prev.marks.vocabulary, reading:data.reading_score || prev.marks.reading, listening:data.listening_score || prev.marks.listening, language_and_reading:data.language_and_reading_score || prev.marks.language_and_reading},
+          marks: {
+            total:data.total_score || prev.marks.total, 
+            vocabulary:data.vocabulary_score || prev.marks.vocabulary, 
+            reading:data.reading_score || prev.marks.reading, 
+            listening:data.listening_score || prev.marks.listening, 
+            language_and_reading:data.language_and_reading_score || prev.marks.language_and_reading
+          },
           examMonth: data.exam_month || '7月',
           WorkValues: data.work_values,
           interestFields: data.interest_fields||prev.interestFields,
@@ -358,16 +371,17 @@ export default function MakeResume() {
 
   const fetchJLPTSuggestions = async () => {
     return fetchWithToast('JLPT Suggestions', async () => {
-      console.log(details.marks, 'Before fetching in the function');;
+      // console.log(details.marks, 'Before fetching in the function');
       const payload = {
         marks:details.marks,
         japaneseLevel:details.japaneseLevel||'Not certified',
         examMonth: details.examMonth,
       };
+      console.log('Payload for JLPT suggestions:', payload);
       const response = await fetch('/api/gpt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({PromptData: payload}),
       });
       if (!response.ok) {
         const data = await response.json();
@@ -432,22 +446,33 @@ export default function MakeResume() {
   };
 
   const handleInputChange = (e) => {
-    const { name, value, type, files } = e.target;
-    if (type === 'file') {
-      const file = files[0];
-      if (file && file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) {
-        setDetails((prev) => ({ ...prev, photo: file }));
-      } else {
-        toast.error('Please upload a JPEG image under 5MB');
-      }
+  const { name, value, type, files } = e.target;
+  if (type === 'file') {
+    const file = files[0];
+    if (file && file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) {
+      setDetails((prev) => ({ ...prev, photo: file }));
     } else {
-      if (name === 'employeeNumber' && value !== '' && !/^\d+$/.test(value)) {
-        toast.error('Employee Number must be a number');
-        return;
-      }
+      toast.error('Please upload a JPEG image under 5MB');
+    }
+  } else {
+    if (name === 'employeeNumber' && value !== '' && !/^\d+$/.test(value)) {
+      toast.error('Employee Number must be a number');
+      return;
+    }
+    if (['total', 'vocabulary', 'reading', 'listening', 'language_and_reading'].includes(name)) {
+      setDetails((prev) => ({
+        ...prev,
+        marks: {
+          ...prev.marks,
+          [name]: value,
+        },
+      }));
+    } else {
       setDetails((prev) => ({ ...prev, [name]: value }));
     }
-  };
+  }
+};
+
 
   const handleArrayInputChange = (e, index, field, arrayName) => {
     const { value } = e.target;
