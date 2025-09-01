@@ -46,7 +46,7 @@ const defaultDetails = {
   WorkValues: 'Team Work, Impact, Balance',
   careerRoles: 'Project Manager',
   japaneseLevel: 'Not certified',
-  marks: {total:'0', vocabulary:'0', reading:'0', listening:'0', language_and_reading:'0'},
+  marks: {total:'0', vocabulary:'0', reading:'0', listening:'0', language_and_reading:'0',},
   examMonth: '7月',
   personality: 'Diligent',
   selectedSuggestion: '',
@@ -103,6 +103,7 @@ export default function MakeResume() {
         }
 
         const { data } = await response.json();
+        if(!data) return;
         setDetails((prev) => ({
           ...prev,
           employeeNumber: data.employee_number?.toString() || '',
@@ -125,13 +126,13 @@ export default function MakeResume() {
           careerPriorities: data.career_priorities || prev.careerPriorities,
           careerRoles: data.career_roles || prev.careerRoles,
           japaneseLevel: data.japanese_level || prev.japaneseLevel,
-          marks: {total:(toString(data.total_score) || prev.marks.total), vocabulary:(toString(data.vocabulary_score) || prev.marks.vocabulary), reading:(toString(data.reading_score) || prev.marks.reading), listening:(toString(data.listening_score) || prev.marks.listening), language_and_reading:(toString(data.language_and_reading_score) || prev.marks.language_and_reading)},
+          marks: {total:data.total_score || prev.marks.total, vocabulary:data.vocabulary_score || prev.marks.vocabulary, reading:data.reading_score || prev.marks.reading, listening:data.listening_score || prev.marks.listening, language_and_reading:data.language_and_reading_score || prev.marks.language_and_reading},
           examMonth: data.exam_month || '7月',
           WorkValues: data.work_values,
           interestFields: data.interest_fields||prev.interestFields,
           selectedSuggestion: data.jlpt_description || prev.jlpt_description,
         }));
-        console.log(data.marks);
+        console.log(data.marks,'After fetching');
         console.log(data.jlpt_description);
       } catch (err) {
         setError(`Failed to load data: ${err.message}`);
@@ -357,7 +358,7 @@ export default function MakeResume() {
 
   const fetchJLPTSuggestions = async () => {
     return fetchWithToast('JLPT Suggestions', async () => {
-      console.log(details.marks);
+      console.log(details.marks, 'Before fetching in the function');;
       const payload = {
         marks:details.marks,
         japaneseLevel:details.japaneseLevel||'Not certified',

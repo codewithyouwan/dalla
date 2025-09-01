@@ -9,7 +9,7 @@ const whatForTypes = ['jlptExperience', 'careerAspirations', 'languagesAndTools'
 export default function Prompt(data, whatFor) {
   if (whatFor === whatForTypes[0]) {
   const { marks, japaneseLevel, examMonth } = data;
-  console.log(marks);
+  console.log(marks, "In prompt");
   const {total, vocabulary, reading, listening,language_and_reading} = marks;
   const validatedJapaneseLevel = japaneseLevel || 'Not certified';
   const currentYear = new Date().getFullYear(); // Get the current year dynamically

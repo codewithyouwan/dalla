@@ -15,6 +15,7 @@ export async function POST(request) {
     
     const prompt = Prompt(data, 'jlptExperience');
     const {marks} = data;
+    console.log("Marks received for JLPT description generation:", marks);
     const {total, vocabulary, reading, listening, language_and_reading} = marks;
     let validity = checkValidityOfScores(total, vocabulary, reading, listening,language_and_reading);
     if(validity!==true) {

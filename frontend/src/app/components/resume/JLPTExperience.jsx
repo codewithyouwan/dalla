@@ -1,5 +1,5 @@
 export default function JLPTExperience({ details, handleInputChange, setDetails, isLoading, fetchJLPTSuggestions }) {
-  const isN5orN4 = ['N5', 'N4'].includes(details.japaneseLevel);
+  const isN5orN4 = details.japaneseLevel==='N5' || details.japaneseLevel==='N4';
 
   const handleSuggestionSelect = (suggestion, index) => {
     setDetails((prev) => ({
@@ -11,20 +11,20 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
     console.log('Selected JLPT suggestion:', suggestion, 'Index:', index);
   };
 
-  const handleFetchSuggestions = async () => {
-    try {
-      await fetchJLPTSuggestions();
-    } catch (err) {
-      console.error('Error fetching JLPT suggestions:', err);
-    }
-  };
+  // const handleFetchSuggestions = async () => {
+  //   try {
+  //     await fetchJLPTSuggestions();
+  //   } catch (err) {
+  //     console.error('Error fetching JLPT suggestions:', err);
+  //   }
+  // };
 
   return (
     <div className="mb-8 whitespace-pre-line">
       <div className="flex items-center justify-between mb-4 whitespace-pre-line">
         <h2 className="text-xl text-black font-semibold mb-3">{"JLPT経験 \n JLPT Experience"}</h2>
         <button
-          onClick={handleFetchSuggestions}
+          onClick={fetchJLPTSuggestions}
           disabled={isLoading || details.japaneseLevel === 'Not certified'}
           className={`mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isLoading || details.japaneseLevel === 'Not certified' ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
@@ -37,7 +37,7 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
           <select
             name="japaneseLevel"
             value={details.japaneseLevel || 'Not certified'}
-            onChange={handleInputChange}
+            onChange={(e)=>{setDetails((prev)=>({...prev, japaneseLevel:e.target.value}));}}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
             <option value="N1">N1</option>
@@ -53,7 +53,7 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
           <select
             name="examMonth"
             value={details.examMonth}
-            onChange={handleInputChange}
+            onChange={(e)=>{setDetails((prev)=>({...prev, examMonth:e.target.value}));}}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
             <option value="7月">7月</option>
@@ -67,7 +67,7 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
                 <div>
                   <label className="block text-sm font-medium text-gray-700">総合スコア / Total Score (180)</label>
                   <input
-                    type="number"
+                    type="text"
                     name="total"
                     value={details.total}
                     onChange={(e)=>{setDetails((prev)=>({...prev, total:e.target.value}));}}
@@ -77,7 +77,7 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
                 <div>
                   <label className="block text-sm font-medium text-gray-700">言語知識（文字・語彙・文法）・読解スコア / Language Knowledge & Reading Score (120)</label>
                   <input
-                    type="number"
+                    type="text"
                     name="vocabulary"
                     value={details.languageAndReading}
                     onChange={(e)=>{setDetails((prev)=>({...prev, language_and_reading:e.target.value}));}}
@@ -87,7 +87,7 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
                 <div>
                   <label className="block text-sm font-medium text-gray-700">聴解スコア / Listening Score (60)</label>
                   <input
-                    type="number"
+                    type="text"
                     name="listening"
                     value={details.listening}
                     onChange={(e)=>{setDetails((prev)=>({...prev, listening:e.target.value}));}}
@@ -100,40 +100,40 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
                 <div>
                   <label className="block text-sm font-medium text-gray-700">総合スコア / Total Score (180)</label>
                   <input
-                    type="number"
+                    type="text"
                     name="total"
                     value={details.total}
-                    onChange={(e)=>{setDetails((prev)=>({...prev, total:e.target.value}));}}
+                    onChange={handleInputChange}
                     className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">語彙・文法スコア / Vocabulary&Grammar Score (60)</label>
                   <input
-                    type="number"
+                    type="text"
                     name="vocabulary"
                     value={details.vocabulary}
-                    onChange={(e)=>{setDetails((prev)=>({...prev, vocabulary:e.target.value}));}}
+                    onChange={handleInputChange}
                     className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">読解スコア / Reading Score (60)</label>
                   <input
-                    type="number"
+                    type="text"
                     name="reading"
                     value={details.reading}
-                    onChange={(e)=>{setDetails((prev)=>({...prev, reading:e.target.value}));}}
+                    onChange={handleInputChange}
                     className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">聴解スコア / Listening Score (60)</label>
                   <input
-                    type="number"
+                    type="text"
                     name="listening"
                     value={details.listening}
-                    onChange={(e)=>{setDetails((prev)=>({...prev, listening:e.target.value}));}}
+                    onChange={handleInputChange}
                     className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
