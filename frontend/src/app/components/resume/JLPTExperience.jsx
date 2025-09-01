@@ -1,12 +1,10 @@
 export default function JLPTExperience({ details, handleInputChange, setDetails, isLoading, fetchJLPTSuggestions }) {
   const isN5orN4 = details.japaneseLevel==='N5' || details.japaneseLevel==='N4';
-  console.log("IS N5 or N4:", isN5orN4);
 
   const handleSuggestionSelect = (suggestion, index) => {
     setDetails((prev) => ({
       ...prev,
       selectedSuggestion: suggestion,
-      // jlpt_description: suggestion, // Store in jlpt_description for resume
       selectedIndex: index,
     }));
     console.log('Selected JLPT suggestion:', suggestion, 'Index:', index);

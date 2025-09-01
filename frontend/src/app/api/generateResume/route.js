@@ -1,9 +1,9 @@
+import { NextResponse } from 'next/server';
 import puppeteer from 'puppeteer';
 import handlebars from 'handlebars';
 import fs from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { NextResponse } from 'next/server';
 import sharp from 'sharp';
 
 const escapeHtml = (str) => {
@@ -19,7 +19,6 @@ const escapeHtml = (str) => {
     .trim();
 };
 
-// Register Handlebars 'math' helper
 handlebars.registerHelper('math', function (value, operator, operand) {
   const numValue = parseFloat(value);
   const numOperand = parseFloat(operand);
@@ -47,6 +46,8 @@ export async function POST(req) {
 
     console.log('Raw form-data details:', detailsRaw);
     console.log('Raw form-data sessionId:', sessionId);
+    console.log('PUPPETEER_EXECUTABLE_PATH:', process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser');
+    console.log('PUPPETEER_CACHE_DIR:', process.env.PUPPETEER_CACHE_DIR || '/app/.puppeteer_cache');
 
     let details;
     try {
@@ -70,32 +71,13 @@ export async function POST(req) {
       hobby: escapeHtml(details.hobby || '未入力'),
       desiredIndustry: escapeHtml(details.desiredIndustry || '未入力'),
       desiredJobType: escapeHtml(details.desiredJobType || '未入力'),
-      targetRole: escapeHtml(details.targetRole || '未入力'),
-      workStyle: escapeHtml(details.workStyle || '未入力'),
-      languages: escapeHtml(details.languages),
-      devTools: escapeHtml(details.devTools),
-      projectRole: escapeHtml(details.projectRole),
-      projectDescription: escapeHtml(details.projectDescription),
-      projectChallenges: escapeHtml(details.projectChallenges),
-      leadership: escapeHtml(details.leadership),
-      careerPriorities: escapeHtml(details.WorkValues || '未入力'),
-      careerRoles: escapeHtml(details.careerRoles || '未入力'),
       education: Array.isArray(details.education)
-        ? details.education.slice(0, 4).map((edu) => {
-            let institution = escapeHtml(edu.institution || '未入力');
-            let major = '';
-            const match = institution.match(/^(.*)\s*\*\*\[(.*?)\]\*\*$/);
-            if (match) {
-              institution = match[1].trim();
-              major = match[2].trim();
-            }
-            return {
-              year: escapeHtml(edu.year || '未入力'),
-              institution,
-              major,
-              degree: escapeHtml(edu.degree || '未入力'),
-            };
-          })
+        ? details.education.map((edu) => ({
+            year: escapeHtml(edu.year || '未入力'),
+            institution: escapeHtml(edu.institution || '未入力'),
+            major: escapeHtml(edu.major || '未入力'),
+            degree: escapeHtml(edu.degree || '未入力'),
+          }))
         : [{ year: '未入力', institution: '未入力', degree: '未入力' }],
       internships: details.internships || [],
       projects: details.projects || [],
@@ -106,7 +88,13 @@ export async function POST(req) {
     pdfPath = path.join(tempDir, `resume-${sessionId}.pdf`);
 
     const templatePath = path.join(process.cwd(), 'src', 'app', 'helper', 'resume.hbs');
-    const templateContent = await fs.readFile(templatePath, 'utf-8');
+    let templateContent;
+    try {
+      templateContent = await fs.readFile(templatePath, 'utf-8');
+    } catch (error) {
+      console.error('Template read error:', error.message);
+      return NextResponse.json({ error: `Failed to read template: ${error.message}` }, { status: 500 });
+    }
     const template = handlebars.compile(templateContent);
 
     let photoBase64 = '';
@@ -126,26 +114,33 @@ export async function POST(req) {
     }
 
     const htmlContent = template({ ...escapedDetails, photo: photoBase64 });
-    console.log('Generated HTML:', htmlContent);
+    console.log('Generated HTML length:', htmlContent.length);
 
-    const browser = await puppeteer.launch({
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
-    const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: 'networkidle2' });
-    await page.emulateMediaType('print');
+    try {
+      const browser = await puppeteer.launch({
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+        dumpio: true, // Enable browser logs for debugging
+      });
+      console.log('Browser launched successfully');
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: 'networkidle2' });
+      await page.emulateMediaType('print');
 
-    await page.pdf({
-      path: pdfPath,
-      format: 'A4',
-      margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
-      printBackground: true,
-    });
+      await page.pdf({
+        path: pdfPath,
+        format: 'A4',
+        margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
+        printBackground: true,
+      });
 
-    console.log('PDF generated at:', pdfPath);
-    await browser.close();
+      console.log('PDF generated at:', pdfPath);
+      await browser.close();
+    } catch (browserError) {
+      console.error('Puppeteer launch error:', browserError.message, browserError.stack);
+      throw browserError;
+    }
 
     return NextResponse.json({
       message: 'Resume preview generated',
@@ -154,7 +149,7 @@ export async function POST(req) {
       sessionId,
     }, { status: 200 });
   } catch (error) {
-    console.error('Error generating resume:', error.message);
+    console.error('Error generating resume:', error.message, error.stack);
     return NextResponse.json({ error: `Failed to generate resume: ${error.message}` }, { status: 500 });
   }
 }
