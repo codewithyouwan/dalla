@@ -4,6 +4,7 @@ WORKDIR /app
 
 # Install system dependencies for Puppeteer
 RUN apk add --no-cache \
+  chromium \
   nss \
   freetype \
   harfbuzz \
@@ -37,8 +38,9 @@ RUN pnpm run build
 
 # Clear any existing Puppeteer cache
 RUN rm -rf /root/.cache/puppeteer /opt/render/.cache/puppeteer /app/.puppeteer_cache
-# Log Puppeteer Chrome binary path for debugging
-RUN find /app/node_modules/puppeteer -name "chrome" -type f || echo "No Chrome binary found"
+# Log Chrome binary paths for debugging
+RUN echo "System Chromium path:" && which chromium-browser || echo "No system Chromium found"
+RUN find /app/node_modules/puppeteer -name "chrome" -type f || echo "No Puppeteer Chrome binary found"
 
 # Runner stage
 FROM node:22-alpine AS runner
@@ -46,6 +48,7 @@ WORKDIR /app
 
 # Install system dependencies for Puppeteer
 RUN apk add --no-cache \
+  chromium \
   nss \
   freetype \
   harfbuzz \
@@ -77,8 +80,9 @@ COPY --from=builder /app/temp ./temp
 
 # Clear any existing Puppeteer cache
 RUN rm -rf /root/.cache/puppeteer /opt/render/.cache/puppeteer /app/.puppeteer_cache
-# Log Puppeteer Chrome binary path for debugging
-RUN find /app/node_modules/puppeteer -name "chrome" -type f || echo "No Chrome binary found"
+# Log Chrome binary paths for debugging
+RUN echo "System Chromium path:" && which chromium-browser || echo "No system Chromium found"
+RUN find /app/node_modules/puppeteer -name "chrome" -type f || echo "No Puppeteer Chrome binary found"
 
 ENV NODE_ENV production
 EXPOSE 3000

@@ -47,6 +47,7 @@ export async function POST(req) {
     console.log('Raw form-data details:', detailsRaw);
     console.log('Raw form-data sessionId:', sessionId);
     console.log('PUPPETEER_CACHE_DIR:', process.env.PUPPETEER_CACHE_DIR || '/app/.puppeteer_cache');
+    console.log('Attempting to launch Puppeteer with bundled Chrome');
 
     let details;
     try {
@@ -116,12 +117,28 @@ export async function POST(req) {
     console.log('Generated HTML length:', htmlContent.length);
 
     try {
-      const browser = await puppeteer.launch({
-        headless: 'new',
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
-        dumpio: true, // Enable browser logs for debugging
-      });
-      console.log('Browser launched successfully');
+      // First attempt: Use Puppeteer's bundled Chrome
+      let browser;
+      try {
+        browser = await puppeteer.launch({
+          headless: 'new',
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+          dumpio: true, // Enable browser logs for debugging
+        });
+        console.log('Browser launched successfully with bundled Chrome');
+      } catch (bundledError) {
+        console.error('Bundled Chrome failed:', bundledError.message);
+        console.log('Falling back to system Chromium at /usr/bin/chromium-browser');
+        // Fallback to system Chromium
+        browser = await puppeteer.launch({
+          executablePath: '/usr/bin/chromium-browser',
+          headless: 'new',
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+          dumpio: true,
+        });
+        console.log('Browser launched successfully with system Chromium');
+      }
+
       const page = await browser.newPage();
       await page.setContent(htmlContent, { waitUntil: 'networkidle2' });
       await page.emulateMediaType('print');
