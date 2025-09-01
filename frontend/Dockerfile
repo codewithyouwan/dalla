@@ -10,11 +10,14 @@ RUN apk add --no-cache \
   harfbuzz \
   ca-certificates \
   ttf-freefont \
+  libxss1 \
+  gcompat \
   nodejs \
   yarn
 
-# Set environment variable for Puppeteer
+# Set environment variables for Puppeteer
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 # Install pnpm and dependencies
 COPY package.json pnpm-lock.yaml ./
@@ -34,10 +37,13 @@ RUN apk add --no-cache \
   freetype \
   harfbuzz \
   ca-certificates \
-  ttf-freefont
+  ttf-freefont \
+  libxss1 \
+  gcompat
 
-# Set environment variable for Puppeteer
+# Set environment variables for Puppeteer
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 # Copy built assets and dependencies
 COPY --from=builder /app/.next ./.next
@@ -45,6 +51,9 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/src/app/helper ./src/app/helper
 COPY --from=builder /app/temp ./temp
+
+# Clear Puppeteer cache to avoid conflicts
+RUN rm -rf /root/.cache/puppeteer /opt/render/.cache/puppeteer
 
 ENV NODE_ENV production
 EXPOSE 3000
