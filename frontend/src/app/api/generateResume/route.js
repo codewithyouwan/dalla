@@ -1,11 +1,11 @@
+import { NextResponse } from 'next/server';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 import handlebars from 'handlebars';
 import fs from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { NextResponse } from 'next/server';
 import sharp from 'sharp';
-import chromium from "@sparticuz/chromium";
-import puppeteer from "puppeteer-core";
 
 const escapeHtml = (str) => {
   if (!str || typeof str !== 'string') return '未入力';
@@ -20,7 +20,6 @@ const escapeHtml = (str) => {
     .trim();
 };
 
-// Register Handlebars 'math' helper
 handlebars.registerHelper('math', function (value, operator, operand) {
   const numValue = parseFloat(value);
   const numOperand = parseFloat(operand);
@@ -48,6 +47,8 @@ export async function POST(req) {
 
     console.log('Raw form-data details:', detailsRaw);
     console.log('Raw form-data sessionId:', sessionId);
+    console.log('PUPPETEER_CACHE_DIR:', process.env.PUPPETEER_CACHE_DIR || '/tmp/.puppeteer_cache');
+    console.log('Attempting to launch Puppeteer with Chromium');
 
     let details;
     try {
@@ -102,10 +103,9 @@ export async function POST(req) {
       projects: details.projects || [],
     };
 
-    // const tempDir = path.join(process.cwd(), 'temp');
-    // await fs.mkdir(tempDir, { recursive: true });
-    // pdfPath = path.join(tempDir, `resume-${sessionId}.pdf`);
-    pdfPath = path.join("/tmp", `resume-${sessionId}.pdf`);
+    const tempDir = '/tmp/resume_temp';
+    await fs.mkdir(tempDir, { recursive: true });
+    pdfPath = path.join(tempDir, `resume-${sessionId}.pdf`);
 
     const templatePath = path.join(process.cwd(), 'src', 'app', 'helper', 'resume.hbs');
     const templateContent = await fs.readFile(templatePath, 'utf-8');
@@ -128,43 +128,41 @@ export async function POST(req) {
     }
 
     const htmlContent = template({ ...escapedDetails, photo: photoBase64 });
-    console.log('Generated HTML:', htmlContent);
+    console.log('Generated HTML length:', htmlContent.length);
 
-    const browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-    });
-    // const browser = await puppeteer.launch({
-    //   executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-    //   headless: true,
-    //   args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    // });
-    const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-    await page.emulateMediaType('print');
+    try {
+      const browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+      });
+      console.log('Browser launched successfully with Chromium');
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+      await page.emulateMediaType('print');
 
-    await page.pdf({
-      path: pdfPath,
-      format: 'A4',
-      margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
-      printBackground: true,
-    });
+      await page.pdf({
+        path: pdfPath,
+        format: 'A4',
+        margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
+        printBackground: true,
+      });
 
-    console.log('PDF generated at:', pdfPath);
-    await browser.close();
-    // const pdfBuffer = await fs.readFile(pdfPath);
-
+      console.log('PDF generated at:', pdfPath);
+      await browser.close();
+    } catch (browserError) {
+      console.error('Puppeteer launch error:', browserError.message, browserError.stack);
+      throw browserError;
+    }
 
     return NextResponse.json({
-      message: 'Resume preview generated',
-      previewUrl: `resume-${sessionId}.pdf`,
-      tempPdfPath: pdfPath,
+      message: 'Resume generated',
+      downloadUrl: `/api/serveResume/${sessionId}`,
       sessionId,
     }, { status: 200 });
   } catch (error) {
-    console.error('Error generating resume:', error.message);
+    console.error('Error generating resume:', error.message, error.stack);
     return NextResponse.json({ error: `Failed to generate resume: ${error.message}` }, { status: 500 });
   }
 }

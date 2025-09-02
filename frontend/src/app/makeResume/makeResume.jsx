@@ -399,30 +399,46 @@ export default function MakeResume() {
     });
   };
 
-  const compileResume = async () => {
-    return fetchWithToast('Resume Compilation', async () => {
-      const formData = new FormData();
-      formData.append('details', JSON.stringify(details));
-      if (details.photo) {
-        formData.append('photo', details.photo);
-      }
-      formData.append('sessionId', sessionId);
+    const compileResume = async () => {
+    try {
+      const data = new FormData();
+      data.append('details', JSON.stringify(formData));
+      if (sessionId) data.append('sessionId', sessionId);
+
       const response = await fetch('/api/generateResume', {
         method: 'POST',
-        body: formData,
+        body: data,
       });
+
       if (!response.ok) {
         const errorData = await response.json();
-        setError(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
+        throw new Error(errorData.error || 'Failed to generate resume');
       }
-      const data = await response.json();
-      if (!data.previewUrl || !data.previewUrl.startsWith('resume-') || !data.previewUrl.endsWith('.pdf')) {
-        setError(`Invalid preview URL: ${data.previewUrl}`);
+
+      const { downloadUrl, sessionId: newSessionId } = await response.json();
+      setSessionId(newSessionId);
+
+      const pdfResponse = await fetch(downloadUrl);
+      if (!pdfResponse.ok) {
+        const errorData = await pdfResponse.json();
+        throw new Error(errorData.error || 'Failed to download resume');
       }
-      setPreviewLink(data.previewUrl);
-      setTempPdfPath(data.tempPdfPath);
-      setSessionId(data.sessionId);
-    });
+
+      const pdfBlob = await pdfResponse.blob();
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = `resume-${newSessionId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(pdfUrl);
+
+      toast.success('Resume downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading resume:', error.message);
+      toast.error(`Error: ${error.message}`);
+    }
   };
 
   const saveResume = async () => {

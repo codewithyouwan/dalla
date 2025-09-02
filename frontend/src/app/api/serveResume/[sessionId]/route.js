@@ -12,7 +12,7 @@ export async function GET(req) {
       return NextResponse.json({ error: 'Invalid file path' }, { status: 400 });
     }
 
-    const fullPath = path.join('tmp', filePath);
+    const fullPath = path.join('/tmp', filePath);
     console.log('Attempting to serve file:', fullPath);
 
     await fs.access(fullPath); // Check if file exists
@@ -21,7 +21,7 @@ export async function GET(req) {
     return new NextResponse(fileBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="${filePath}"`,
+        'Content-Disposition': `attachment; filename=resume-${sessionId}.pdf`,
       },
     });
   } catch (error) {
