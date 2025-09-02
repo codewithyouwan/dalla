@@ -402,7 +402,7 @@ export default function MakeResume() {
     const compileResume = async () => {
     try {
       const formData = new FormData();
-      formData.append('details', JSON.stringify(formData));
+      formData.append('details', JSON.stringify(details));
       if (sessionId) formData.append('sessionId', sessionId);
       if (details.photo) formData.append('photo', details.photo);
       const response = await fetch('/api/generateResume', {
