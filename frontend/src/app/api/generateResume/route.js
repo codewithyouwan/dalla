@@ -103,7 +103,8 @@ export async function POST(req) {
 
     const tempDir = path.join(process.cwd(), 'temp');
     await fs.mkdir(tempDir, { recursive: true });
-    pdfPath = path.join(tempDir, `resume-${sessionId}.pdf`);
+    // pdfPath = path.join(tempDir, `resume-${sessionId}.pdf`);
+    pdfPath = path.join("/tmp", `resume-${sessionId}.pdf`);
 
     const templatePath = path.join(process.cwd(), 'src', 'app', 'helper', 'resume.hbs');
     const templateContent = await fs.readFile(templatePath, 'utf-8');
