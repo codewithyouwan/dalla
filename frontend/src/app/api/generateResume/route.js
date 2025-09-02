@@ -1,10 +1,11 @@
-import puppeteer from 'puppeteer';
 import handlebars from 'handlebars';
 import fs from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { NextResponse } from 'next/server';
 import sharp from 'sharp';
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 
 const escapeHtml = (str) => {
   if (!str || typeof str !== 'string') return '未入力';
@@ -130,12 +131,18 @@ export async function POST(req) {
     console.log('Generated HTML:', htmlContent);
 
     const browser = await puppeteer.launch({
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     });
+    // const browser = await puppeteer.launch({
+    //   executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+    //   headless: true,
+    //   args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    // });
     const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: 'networkidle2' });
+    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
     await page.emulateMediaType('print');
 
     await page.pdf({
