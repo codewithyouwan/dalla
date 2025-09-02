@@ -12,7 +12,7 @@ export async function GET(req) {
       return NextResponse.json({ error: 'Invalid file path' }, { status: 400 });
     }
 
-    const fullPath = path.join(process.cwd(), 'temp', filePath);
+    const fullPath = path.join(process.cwd(), 'tmp', filePath);
     console.log('Attempting to serve file:', fullPath);
 
     await fs.access(fullPath); // Check if file exists

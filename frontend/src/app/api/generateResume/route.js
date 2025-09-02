@@ -154,6 +154,8 @@ export async function POST(req) {
 
     console.log('PDF generated at:', pdfPath);
     await browser.close();
+    // const pdfBuffer = await fs.readFile(pdfPath);
+
 
     return NextResponse.json({
       message: 'Resume preview generated',
