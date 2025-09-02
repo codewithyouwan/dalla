@@ -401,13 +401,13 @@ export default function MakeResume() {
 
     const compileResume = async () => {
     try {
-      const data = new FormData();
-      data.append('details', JSON.stringify(formData));
-      if (sessionId) data.append('sessionId', sessionId);
-
+      const formData = new FormData();
+      formData.append('details', JSON.stringify(formData));
+      if (sessionId) formData.append('sessionId', sessionId);
+      if (details.photo) formData.append('photo', details.photo);
       const response = await fetch('/api/generateResume', {
         method: 'POST',
-        body: data,
+        body: formData,
       });
 
       if (!response.ok) {
