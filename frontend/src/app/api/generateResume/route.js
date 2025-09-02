@@ -101,8 +101,8 @@ export async function POST(req) {
       projects: details.projects || [],
     };
 
-    const tempDir = path.join(process.cwd(), 'temp');
-    await fs.mkdir(tempDir, { recursive: true });
+    // const tempDir = path.join(process.cwd(), 'temp');
+    // await fs.mkdir(tempDir, { recursive: true });
     // pdfPath = path.join(tempDir, `resume-${sessionId}.pdf`);
     pdfPath = path.join("/tmp", `resume-${sessionId}.pdf`);
 
