@@ -536,7 +536,7 @@ export default function Prompt(data, whatFor) {
 
     <Rules>
     - Write as the person is writing the sentences himself.
-    - Use the da/deru form for the Japanese sentences.
+    - Use the da/deru form for the Japanese sentences and end them with japanse FullStop always.
     - Output **exactly** two phrases between ===FORM2-START=== and ===FORM2-END===.
     - Each phrase starts with "番興味がある点: " or "習得したいこと: ", followed by 1 phrase (2-3 lines).
     - Do **not** include other markers, text, or blank lines.

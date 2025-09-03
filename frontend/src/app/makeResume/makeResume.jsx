@@ -607,6 +607,7 @@ export default function MakeResume() {
           userPrompt={userPrompt}
           setUserPrompt={setUserPrompt}
           details={details}
+          setDetails={setDetails}
           newDetails={newDetails}
           setNewDetails={setNewDetails}
           fetchWithToast={fetchWithToast}

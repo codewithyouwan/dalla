@@ -5,7 +5,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 export default function JapaneseCompanies({
-  details,setDetails, handleInputChange, fetchJapaneseCompanies, isLoading, setIsLoading,fetchWithToast,setError, newDetails, setNewDetails, userPrompt, setUserPrompt
+  details, setDetails, handleInputChange, fetchJapaneseCompanies, isLoading, setIsLoading,fetchWithToast,setError, newDetails, setNewDetails, userPrompt, setUserPrompt
   }) {
 const fetchRethinkJapaneseCompanies = async () => {
   setIsLoading(true);
@@ -93,8 +93,8 @@ const fetchRethinkJapaneseCompanies = async () => {
             {isLoading ? 'Loading' : 'Rethink'}
         </button>
         {newDetails.japanCompanyInterest!==''&&
-        <div>
-          <label className="block text-sm font-medium text-black">New Generation</label>
+        <div className="mt-4 border rounded-lg p-2">
+          <label className="block text-sm font-medium text-black">New Generation for Japanese Companies.</label>
           <ol className="mt-2 space-y-2 text-black">
             <span>Interest</span>
             <li
