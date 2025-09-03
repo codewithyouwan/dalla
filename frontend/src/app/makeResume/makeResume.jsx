@@ -115,6 +115,7 @@ export default function MakeResume() {
           ...prev,
           employeeNumber: data.employee_number?.toString() || '',
           name: data.name || prev.name,
+          selectedName : data.name || prev.name,
           katakana: data.katakana || '',
           initials: data.initials || '',
           hometown: data.hometown || '',
@@ -632,6 +633,7 @@ export default function MakeResume() {
         previewLink={previewLink}
         error={error}
         handleRefresh={compileResume}
+        details={details}
       />
     </div>
   );
