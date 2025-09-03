@@ -5,30 +5,11 @@ export default function CareerAspirations({
 }) {
     const [error,setError] = useState(null);
     const [copy,setCopy] = useState(null);
-    const errorTimerRef = useRef(null);
-    const copyTimerRef = useRef(null);
+    const [color,setColor] = useState(['bg-blue-100','bg-blue-100','bg-blue-100','bg-blue-100']);
+    // const errorTimerRef = useRef(null);
+    // const copyTimerRef = useRef(null);
     // ❌✅
-    // const showError = (msg) => {
-    //   // Clear previous error timer if exists
-    //   if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
 
-    //   // Start new timer
-    //   errorTimerRef.current = setTimeout(() => {
-    //     setError(null);
-    //     errorTimerRef.current = null;
-    //   }, 3000);
-    // };
-    // const showSuccess = (msg) => {
-
-    //   // Clear previous copy timer if exists
-    //   if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
-
-    //   // Start new timer
-    //   copyTimerRef.current = setTimeout(() => {
-    //     setCopy(null);
-    //     copyTimerRef.current = null;
-    //   }, 3000);
-    // };
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center whitespace-pre-line">
@@ -90,58 +71,70 @@ export default function CareerAspirations({
         </div>
         {(newDetails.desiredIndustry!==''||newDetails.desiredJobType!==''||newDetails.targetRole!==''||newDetails.workStyle!=='')&&(
           <div className="justify-between p-4 border rounded-md bg-gray-50 relative">
-            {error&&<span className="block text-red-600 font-medium bg-white">{`❌${error}`}</span>}
-            {copy&&<span className="block text-green-600 font-medium bg-white">{`✅${copy}`}</span>}
-            <label className="block text-sm font-medium text-black">AI提案 / AI Suggestions</label>
+            {error&&<span className="block text-red-600 font-medium">{`❌${error}`}</span>}
+            {copy&&<span className="block text-green-600 font-medium">{`✅${copy}`}</span>}
+            <label className={`block text-sm font-medium text-black`}>AI提案 / AI Suggestions</label>
             <ol className="mt-2 space-y-2 text-black">
             <li
-              className = 'p-2 cursor-pointer border rounded-lg bg-blue-100 hover:bg-gray-100'
+              className = {`p-2 cursor-pointer border rounded-lg ${color[0]} hover:bg-gray-100`}
               onClick ={()=>{
-                if(newDetails.desiredIndustry===''){setError("希望業界が空です / Desired Industry is empty"); return;}
+                if(newDetails.desiredIndustry===''){setError("希望業界が空です / Desired Industry is empty");
+                  setColor(prev=>prev.map((item,index)=>(index===0?'bg-red-100':item)));
+                  return;}
                 setDetails((prev)=>({...prev,desiredIndustry:newDetails.desiredIndustry}));
                 setNewDetails((prev)=>({...prev,desiredIndustry:''}));
-                setError(null);
+                // setError(null);
                 setCopy("希望業界が更新されました / Desired Industry updated");
+                setColor(prev=>prev.map((item,index)=>(index===0?'bg-green-100':item)));
                 // toast.success('希望業界が更新されました / Desired Industry updated');
               }} 
               >
               <span className="text-black font-medium test-sm whitespace-pre-line">{`希望業界 / Desired Industry\n${newDetails.desiredIndustry}`}</span>
             </li>
             <li
-              className = 'p-2 cursor-pointer border rounded-lg bg-blue-100 hover:bg-gray-100'
+              className = {`p-2 cursor-pointer border rounded-lg ${color[1]} hover:bg-gray-100`}
               onClick ={()=>{
-                if(newDetails.desiredJobType===''){setError("希望職種が空です / Desired Job Type is empty"); return;}
+                if(newDetails.desiredJobType===''){setError("希望職種が空です / Desired Job Type is empty");
+                  setColor(prev=>prev.map((item,index)=>(index===1?'bg-red-100':item)));
+                  return;}
                 setDetails((prev)=>({...prev,desiredJobType:newDetails.desiredJobType}));
                 setNewDetails((prev)=>({...prev,desiredJobType:''}));
                 // toast.success('希望職種が更新されました / Desired Job Type updated');
-                setError(null);
+                // setError(null);
                 setCopy("希望職種が更新されました / Desired Job Type updated");
+                setColor(prev=>prev.map((item,index)=>(index===1?'bg-green-100':item)));
               }} 
               >
               <span className="text-black font-medium test-sm whitespace-pre-line">{`希望職種 / Desired Job Type\n${newDetails.desiredJobType}`}</span>
 
             </li>
             <li
-              className = 'p-2 cursor-pointer border rounded-lg bg-blue-100 hover:bg-gray-100'
+              className = {`p-2 cursor-pointer border rounded-lg ${color[2]} hover:bg-gray-100`}
               onClick ={()=>{
-                if(newDetails.targetRole===''){setError("目指す役割が空です / Target Role is empty"); return;}
+                if(newDetails.targetRole===''){setError("目指す役割が空です / Target Role is empty");
+                  setColor(prev=>prev.map((item,index)=>(index===2?'bg-red-100':item)));
+                  return;}
                 setDetails((prev)=>({...prev,targetRole:newDetails.targetRole}));
                 setNewDetails((prev)=>({...prev,targetRole:''}));
-                setError(null);
+                // setError(null);
                 setCopy("目指す役割が更新されました / Target Role updated");
+                setColor(prev=>prev.map((item,index)=>(index===2?'bg-green-100':item)));
                 // toast.success('目指す役割が更新されました / Target Role updated');
               }} 
               >
               <span className="text-black font-medium test-sm whitespace-pre-line">{`目指す役割 / Target Role\n${newDetails.targetRole}`}</span>
             </li>
             <li
-              className = 'p-2 cursor-pointer border rounded-lg bg-blue-100 hover:bg-gray-100'
+              className = {`p-2 cursor-pointer border rounded-lg ${color[3]} hover:bg-gray-100`}
               onClick ={()=>{
-                if(newDetails.workStyle===''){setError("ワークスタイルが空です / Work Style is empty"); return;}
+                if(newDetails.workStyle===''){setError("ワークスタイルが空です / Work Style is empty");
+                  setColor(prev=>prev.map((item,index)=>index===3?'bg-red-100':item));
+                  return;}
                 setDetails((prev)=>({...prev,workStyle:newDetails.workStyle}));
                 setNewDetails((prev)=>({...prev,workStyle:''}));
-                setError(null);
+                // setError(null);
                 setCopy("ワークスタイルが更新されました / Work Style updated");
+                setColor(prev=>prev.map((item,index)=>(index===3?'bg-green-100':item)));
                 // toast.success('ワークスタイルが更新されました / Work Style updated');
               }} 
               >
