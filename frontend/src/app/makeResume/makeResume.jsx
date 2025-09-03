@@ -59,8 +59,16 @@ const defaultDetails = {
   selectedSuggestion: '',
   photo: null,
 };
-
+const nextDetails={
+  japanCompanyInterest: 'Technology',
+  japanCompanySkills: 'Work Culture',
+};
+const defaultPrompt={
+  japaneseCompany:'',
+};
 export default function MakeResume() {
+  const [userPrompt,setUserPrompt] = useState(defaultPrompt);//User prompts for rethinking.
+  const [newDetails, setNewDetails] = useState(nextDetails);
   const [details, setDetails] = useState(defaultDetails);
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -594,7 +602,14 @@ export default function MakeResume() {
           fetchFieldsOfInterest={fetchFieldsOfInterest}
         />
         <JapaneseCompanies
+          setError={setError}
+          setIsLoading={setIsLoading}
+          userPrompt={userPrompt}
+          setUserPrompt={setUserPrompt}
           details={details}
+          newDetails={newDetails}
+          setNewDetails={setNewDetails}
+          fetchWithToast={fetchWithToast}
           handleInputChange={handleInputChange}
           fetchJapaneseCompanies={fetchJapaneseCompanies}
           isLoading={isLoading}
