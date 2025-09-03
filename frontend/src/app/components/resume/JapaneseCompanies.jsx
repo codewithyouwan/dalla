@@ -94,19 +94,20 @@ const fetchRethinkJapaneseCompanies = async () => {
         </button>
         {newDetails.japanCompanyInterest!==''&&
         <div>
-          <label className="block text-sm font-medium text-gray-700">New Generation</label>
-          <ol>
+          <label className="block text-sm font-medium text-black">New Generation</label>
+          <ol className="mt-2 space-y-2 text-black">
             <span>Interest</span>
             <li
-              className='block text-sm font-medium text-gray-700'
+              className={`p-2 cursor-pointer border rounded-lg bg-blue-100 hover:bg-gray-100`}
               onClick={()=>{
                 setDetails((prev)=>({...prev,japanCompanyInterest:newDetails.japanCompanyInterest}))
               }}
               >
                 {newDetails.japanCompanyInterest}
             </li>
+            <span>Skills</span>
             <li
-            className='block text-sm font-medium text-gray-700'
+            className={`p-2 cursor-pointer border rounded-lg bg-blue-100 hover:bg-gray-100`}
             onClick={()=>{
                 setDetails((prev)=>({...prev,japanCompanySkills:newDetails.japanCompanySkills}))
               }}

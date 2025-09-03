@@ -534,12 +534,6 @@ export default function Prompt(data, whatFor) {
     習得したいこと: [Japanese phrase for why the person wants to learn about Japanese companies in da/deru form only.]
     ===FORM2-END===
 
-    <Example>
-    ===FORM2-START===
-    番興味がある点: 日本企業の品質や継続的改善（カイゼン）へのこだわり、チームワークを重んじる文化に強く共感し、そういった環境でエンジニアとして成長したいと思っている。
-    習得したいこと: ものづくり現場の課題を発見し改善する提案力と技術力
-    ===FORM2-END===
-
     <Rules>
     - Write as the person is writing the sentences himself.
     - Use the da/deru form for the Japanese sentences.
