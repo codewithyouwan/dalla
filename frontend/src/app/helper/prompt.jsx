@@ -36,10 +36,11 @@ export default function Prompt(data, whatFor) {
 
       【Rules for each pattern】
 
-      - Each paragraph must start with “${currentYear}年${examMonth}月${validatedJapaneseLevel}にJLPTのN4を受験し、合格。” and then describe reading, vocabulary, and listening skills naturally in first-person Japanese, within a single paragraph.  
+      - Each paragraph must start with “${currentYear}年${examMonth}${validatedJapaneseLevel}にJLPTのN4を受験し、合格。” and then describe reading, vocabulary, and listening skills naturally in first-person Japanese, within a single paragraph. 
       - Connect the three abilities smoothly, using professional expressions suitable for a CV.  
-      - Do not include scores, numbers, or exam names (other than JLPT).  
-      - Sentences must end with 「だ」 or 「である」 style (plain form).  
+      - Do not include scores of the candidate.  
+      - Sentences must end with 「だ」 or 「である」 style (plain form) only.  
+      - Double check the sentence structure and ensure its error free and in the required format. 
       - Emphasize strengths based on ${validatedJapaneseLevel}.  
       - If ${validatedJapaneseLevel} is “Not certified”, instead write: 「私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。」 and describe abilities modestly.
 
