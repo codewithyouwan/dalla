@@ -1,9 +1,3 @@
-import {useState,useEffect,useRef} from 'react';
-import Prompt from '../../helper/prompt';
-import { createClient } from '@supabase/supabase-js';
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
 export default function JapaneseCompanies({
   details, setDetails, handleInputChange, fetchJapaneseCompanies, isLoading, setIsLoading,fetchWithToast,setError, newDetails, setNewDetails, userPrompt, setUserPrompt
   }) {
@@ -93,7 +87,7 @@ const fetchRethinkJapaneseCompanies = async () => {
             {isLoading ? 'Loading' : 'Rethink'}
         </button>
         {newDetails.japanCompanyInterest!==''&&
-        <div className="mt-4 border rounded-lg p-2">
+        <div className="mt-4 border rounded-lg p-2 justify-center align-center relative">
           <label className="block text-sm font-medium text-black">New Generation for Japanese Companies.</label>
           <ol className="mt-2 space-y-2 text-black">
             <span>Interest</span>
@@ -115,6 +109,24 @@ const fetchRethinkJapaneseCompanies = async () => {
                 {newDetails.japanCompanySkills}
             </li>
           </ol>
+          <button
+                onClick={() => setNewDetails((prev)=>({...prev,japanCompanyInterest:'',japanCompanySkills:''}))}
+                className="absolute top-0 right-0 text-red-600 hover:text-red-800 p-1"
+                title="Delete this internship entry"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+          </button>
         </div>
           }
         </div>
