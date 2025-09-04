@@ -63,8 +63,8 @@ const defaultDetails = {
   photo: null,
 };
 const nextDetails={
-  japanCompanyInterest: 'Technology',
-  japanCompanySkills: 'Work Culture',
+  japanCompanyInterest: '',
+  japanCompanySkills: '',
   WorkValues:'',
   hobby: '',
   desiredIndustry: '',
