@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import Prompt from '../../helper/prompt'; // Adjust path based on your project structure
+import Prompt from '../../helper/prompt';
 import OpenAI from 'openai';
 
 export const runtime = 'nodejs';
@@ -15,6 +15,8 @@ export async function POST(request) {
   try {
     const body = await request.json();
     id_number = body.id_number;
+    const previous_work_value = body.previous_work_value;
+    const user_prompt = body.user_prompt;
 
     if (!id_number) {
       return NextResponse.json({ error: 'id_number is required' }, { status: 400 });
@@ -34,11 +36,13 @@ export async function POST(request) {
 
     // Preprocess data
     const careerData = {
-      work_values: data.work_values || [],
+      work_value: data.work_values || ['none'],
+      previous_work_value: previous_work_value || 'none',
+      user_prompt: user_prompt || 'none',
     };
 
     // Generate prompt using Prompt function
-    const prompt = Prompt(careerData, 'workValues');
+    const prompt = Prompt(careerData, 'rethinkWorkValues');
 
     const token = process.env.NVIDIA_DEEPSEEK_R1_KEY;
     const endpoint = "https://integrate.api.nvidia.com/v1";
@@ -54,7 +58,7 @@ export async function POST(request) {
 
     // Call NVIDIA API without streaming
     const completion = await openai.chat.completions.create({
-      model: "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+      model: "qwen/qwen3-coder-480b-a35b-instruct",
       messages: [
         {
           role: 'system',
@@ -62,11 +66,10 @@ export async function POST(request) {
         },
         { role: 'user', content: prompt },
       ],
-      temperature: 0.2,
-      top_p: 0.7,
-      max_tokens: 8192,
-      chat_template_kwargs: {"thinking": false},
-      stream: false
+      temperature: 0.7,
+      top_p: 0.8,
+      max_tokens: 4096,
+      stream: false,
     });
 
     // Extract response content
@@ -101,7 +104,7 @@ export async function POST(request) {
 
     return NextResponse.json({ suggestions: { careerPriorities } }, { status: 200 });
   } catch (error) {
-    console.error('Error processing career development:', {
+    console.error('Error processing rethink career development:', {
       message: error.message,
       stack: error.stack,
       id_number: id_number || 'undefined',
