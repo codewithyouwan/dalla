@@ -37,7 +37,7 @@ export async function GET(request) {
     if(!hobby) hobby = '読書';
       try {
         const hobbyPrompt = Prompt({ hobbies_Interests: hobby }, 'hobbyConversion');
-        const completion = await fetch('http://localhost:3000/api/aiRequests', {
+        const completion = await fetch(`${NEXT_PRODUCTION_URL}/api/aiRequests`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -67,7 +67,7 @@ export async function GET(request) {
     // Process place of belonging
       try {
         const placePrompt = Prompt({ place_of_belonging: hometown }, 'placeConversion');
-        const completion = await fetch('http://localhost:3000/api/aiRequests', {
+        const completion = await fetch(`${NEXT_PRODUCTION_URL}/api/aiRequests`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

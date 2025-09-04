@@ -98,7 +98,7 @@ export async function POST(request) {
       }
       const prompt = Prompt({ institution_name: name, date_string: dateString, major: major || 'なし' }, 'katakanaConversion');
       try {
-        const completion = await fetch('http://localhost:3000/api/aiRequests', {
+        const completion = await fetch(`${NEXT_PRODUCTION_URL}/api/aiRequests`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
