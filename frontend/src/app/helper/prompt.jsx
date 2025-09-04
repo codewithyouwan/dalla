@@ -541,9 +541,9 @@ export default function Prompt(data, whatFor) {
     - Each phrase starts with "番興味がある点: " or "習得したいこと: ", followed by 1 phrase (2-3 lines).
     - Do **not** include other markers, text, or blank lines.
     - **Strictly** follow the format; any deviation will break the system.
+    `
     return prompt;
-}
-  else if(whatFor === whatForTypes[12]){
+}else if(whatFor === whatForTypes[12]){
     const {previous_work_value,work_value,user_prompt}=data;
     const prompt=
     `
