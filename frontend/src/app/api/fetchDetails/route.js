@@ -104,9 +104,9 @@ export async function GET(request) {
     return NextResponse.json({
       name: fullNameEnglish,
       katakana: fullNameKatakana,
-      hobby,
-      hometown,
-      initials
+      hobby:hobby,
+      hometown:hometown,
+      initials:initials
     }, { status: 200 });
   } catch (error) {
     console.error('Error fetching employee data:', {
