@@ -39,7 +39,7 @@ export async function GET(request) {
     if(!hobby) hobby = '読書';
       try {
         const hobbyPrompt = Prompt({ hobbies_Interests: hobby }, 'hobbyConversion');
-        const completion = await fetch(`${baseUrl}/api/aiRequests`, {
+        const completion = await fetch(`https://dalla-mauve.vercel.app/api/aiRequests`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ export async function GET(request) {
     // Process place of belonging
       try {
         const placePrompt = Prompt({ place_of_belonging: hometown }, 'placeConversion');
-        const completion = await fetch(`${baseUrl}/api/aiRequests`, {
+        const completion = await fetch(`https://dalla-mauve.vercel.app/api/aiRequests`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
