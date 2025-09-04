@@ -60,14 +60,17 @@ const defaultDetails = {
   photo: null,
 };
 const nextDetails={
+  japanCompanyInterest: 'Technology',
+  japanCompanySkills: 'Work Culture',
   WorkValues:'',
 };
-const rethinkingDetails={ //Here the userPrompt will be there.
+const defaultPrompt={ //Here the userPrompt will be there.
+  japaneseCompany:'',
   CareerDevelopment:'',
 };
 export default function MakeResume() {
-  const [userPrompt,setUserPrompt] = useState(rethinkingDetails);
-  const [newDetails,setNewDetails] = useState(nextDetails);
+  const [userPrompt,setUserPrompt] = useState(defaultPrompt);//User prompts for rethinking.
+  const [newDetails, setNewDetails] = useState(nextDetails);
   const [details, setDetails] = useState(defaultDetails);
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -618,12 +621,20 @@ export default function MakeResume() {
           isLoading={isLoading}
           fetchFieldsOfInterest={fetchFieldsOfInterest}
         />
-         //#endregion
+            //#endregion
         }
         {
-          // #region JapaneseCompanies
-          <JapaneseCompanies
+          //#region JapaneseCompanies
+        <JapaneseCompanies
+          setError={setError}
+          setIsLoading={setIsLoading}
+          userPrompt={userPrompt}
+          setUserPrompt={setUserPrompt}
           details={details}
+          setDetails={setDetails}
+          newDetails={newDetails}
+          setNewDetails={setNewDetails}
+          fetchWithToast={fetchWithToast}
           handleInputChange={handleInputChange}
           fetchJapaneseCompanies={fetchJapaneseCompanies}
           isLoading={isLoading}
