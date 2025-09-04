@@ -4,7 +4,7 @@
 */
 const whatForTypes = ['jlptExperience', 'careerAspirations', 'languagesAndTools',
 'internshipExperience', 'japaneseCompanies', 'workValues', 'fieldsOfInterest',
-'productDevelopment', 'katakanaConversion', 'hobbyConversion','placeConversion'];
+'productDevelopment', 'katakanaConversion', 'hobbyConversion','placeConversion','rethinkWorkValue'];
 
 export default function Prompt(data, whatFor) {
   if (whatFor === whatForTypes[0]) {
@@ -500,6 +500,42 @@ export default function Prompt(data, whatFor) {
       - **Strictly** follow the format; any deviation will break the system.
       - Suggested max_tokens: 50 for concise output.
       - I would like all sentence endings to follow the “da/de aru” (plain) style.
+    `;
+    return prompt;
+  }
+  else if(whatFor === whatForTypes[11]){
+    const {previous_work_value,work_value,user_prompt}=data;
+    const prompt=
+    `
+      <System Instructions>
+      Generate a concise, professional response for the "Career Development" section of a CV based on the provided work values. The output must strictly follow the specified format, containing only one line of Japanese text (Only in da/deru form) within the designated markers, without any additional explanations or text. Use natural, professional Japanese suitable for a CV.
+
+      <Career Information>
+      Work Values: ${work_value.join(', ') || 'none'}
+      Previous Work Value: ${previous_work_value || 'none'}
+      User Prompt: ${user_prompt || 'none'}
+
+      <Prompt>
+      Generate a single paragraph for the "3大優先要素" (Three Priority Elements) row, integrating the provided work values into a cohesive, professional statement. The paragraph should be 1-2 sentences, emphasizing professionalism and enthusiasm, and reflect the candidate's priorities based solely on the work values. If a previous output exists (${previous_work_value || 'none'}), modify it based on the user special prompt: "${user_prompt || 'none'}" to refine the statement while maintaining the da/de aru form and CV-appropriate tone.
+
+      [Output Format]
+      The output must strictly follow this format, containing only one line of Japanese text between ===FORM1-START=== and ===FORM1-END===, with no additional text or markers.
+
+      ===FORM1-START===
+      3大優先要素: [Concise paragraph integrating work values in professional Japanese in "da, de aru" style]
+      ===FORM1-END===
+
+      [Output Example]
+      ===FORM1-START===
+      3大優先要素: チームワークを大切にし、安定した環境の中で自らの技術力と人間的成長の両面を追求したいと思っている。多様な文化の中で学び続ける姿勢を持ち、周囲と協調しながら成長することを重視している。
+      ===FORM1-END===
+
+      [Construction Rules]
+      - Do not use other career information (e.g., job roles, career goals).
+      - Avoid directly quoting the input; rephrase into a polished CV-appropriate expression.
+      - Output only the single line within ===FORM1-START=== and ===FORM1-END===, with no additional text.
+      - All sentence endings must follow the “da/de aru” (plain) style and should always end with japanese full stop.
+      - Apart from these strictly follow the User Prompt but don't ever change the output format.
     `;
     return prompt;
   }

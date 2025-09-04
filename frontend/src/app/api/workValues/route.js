@@ -54,11 +54,11 @@ export async function POST(request) {
 
     // Call NVIDIA API without streaming
     const completion = await openai.chat.completions.create({
-      model: "qwen/qwen3-235b-a22b",
+      model: "nvidia/llama-3.1-nemotron-ultra-253b-v1",
       messages: [
         {
           role: 'system',
-          content: ""
+          content: "Follow the userPrompt to generate the required result."
         },
         { role: 'user', content: prompt },
       ],
