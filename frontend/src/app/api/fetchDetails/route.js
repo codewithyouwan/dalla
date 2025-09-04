@@ -34,10 +34,12 @@ export async function GET(request) {
     let hometown = data.place_of_belonging ? data.place_of_belonging.trim() : '';
 
     // Process hobby
+    const baseUrl = `${request.headers.get("x-forwarded-proto") || "https"}://${request.headers.get("host")}`;
+    console.log('This is the baseUrl', baseUrl);
     if(!hobby) hobby = '読書';
       try {
         const hobbyPrompt = Prompt({ hobbies_Interests: hobby }, 'hobbyConversion');
-        const completion = await fetch(`/api/aiRequests`, {
+        const completion = await fetch(`${baseUrl}/api/aiRequests`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -67,7 +69,7 @@ export async function GET(request) {
     // Process place of belonging
       try {
         const placePrompt = Prompt({ place_of_belonging: hometown }, 'placeConversion');
-        const completion = await fetch(`/api/aiRequests`, {
+        const completion = await fetch(`${baseUrl}/api/aiRequests`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -97,8 +97,9 @@ export async function POST(request) {
         return { institution: '', year: '' };
       }
       const prompt = Prompt({ institution_name: name, date_string: dateString, major: major || 'なし' }, 'katakanaConversion');
+      const baseUrl = `${request.headers.get("x-forwarded-proto") || "https"}://${request.headers.get("host")}`;
       try {
-        const completion = await fetch(`${NEXT_PRODUCTION_URL}/api/aiRequests`, {
+        const completion = await fetch(`${baseUrl}/api/aiRequests`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
