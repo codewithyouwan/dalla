@@ -4,10 +4,9 @@
 */
 const whatForTypes = ['jlptExperience', 'careerAspirations', 'languagesAndTools',
 'internshipExperience', 'japaneseCompanies', 'workValues', 'fieldsOfInterest',
-'productDevelopment', 'katakanaConversion', 'hobbyConversion','placeConversion'];
-
+'productDevelopment', 'katakanaConversion', 'hobbyConversion','placeConversion','rethinkJapaneseCompany','rethinkWorkValues'];
 export default function Prompt(data, whatFor) {
-  if (whatFor === whatForTypes[0]) {
+  if (whatFor === whatForTypes[0]) {// For jlpt
   const { marks, japaneseLevel, examMonth } = data;
   console.log(marks, "In prompt");
   const {total, vocabulary, reading, listening,language_and_reading} = marks;
@@ -65,7 +64,7 @@ export default function Prompt(data, whatFor) {
       ===FORM1-END===
       `;
     return prompt;
-  } else if (whatFor === whatForTypes[1]) {
+  } else if (whatFor === whatForTypes[1]) { // For careerAspiration
     const { preferred_industry, jobs_to_try_in_japan, job_role_priorities, work_style_preference } = data;
     const prompt = `
     <System Instructions>
@@ -102,7 +101,7 @@ export default function Prompt(data, whatFor) {
       - If input is 'なし', empty, or contains only English terms, use defaults: 技術 (希望業界), エンジニア (希望職種), データ分析 (目指す役割), チームワークを重視する姿勢である (ワークスタイル).
       - Do **not** include other markers (e.g., FORM1, FORM3), text, or blank lines.`
     return prompt;
-  } else if (whatFor === whatForTypes[2]) {
+  } else if (whatFor === whatForTypes[2]) { // language and Tools
     const { programming_languages, databases_querying, version_control, code_editors_ides, ml_frameworks } = data;
     const prompt = `
     <System Instructions>
@@ -141,7 +140,7 @@ export default function Prompt(data, whatFor) {
     - Do **not** include other markers, text, or blank lines.
         `;
     return prompt;
-  } else if (whatFor === whatForTypes[3]) {
+  } else if (whatFor === whatForTypes[3]) { // internship
     const { title, company, period, team_size, technologies, summary, purpose, role, challenges, outcome, isInternship } = data;
     const experienceType = isInternship ? 'Internship' : 'Project';
     // #region internshipExperience
@@ -199,7 +198,7 @@ export default function Prompt(data, whatFor) {
     `;
     // #endregion
     return prompt;
-  } else if (whatFor === whatForTypes[4]) {
+  } else if (whatFor === whatForTypes[4]) { //JapaneseCompanies
     const {interest_in_japanese_companies, aspects_to_learn} = data;
     const prompt = `
         <System Instructions>
@@ -235,7 +234,7 @@ export default function Prompt(data, whatFor) {
         - **Strictly** follow the format; any deviation will break the system.
       `;
     return prompt;
-  } else if (whatFor === whatForTypes[5]) {
+  } else if (whatFor === whatForTypes[5]) { //workValues
     const { work_values } = data;
     const prompt = `
       <System Instructions>
@@ -268,7 +267,7 @@ export default function Prompt(data, whatFor) {
       - I would like all sentence endings to follow the “da/de aru” (plain) style.
       `;
     return prompt;
-  } else if (whatFor === whatForTypes[6]) {
+  } else if (whatFor === whatForTypes[6]) { //fieldofInteres
     const { job_role_priority_1, job_role_priority_2, job_role_priority_3} = data;
     return `
         Based on the following user data:
@@ -294,7 +293,7 @@ export default function Prompt(data, whatFor) {
         - Everything before the '/' is the Japanese name so don't exclude anything if it's not incorrect of misspelled (Even things in brackets).
         - I would like all sentence endings to follow the “da/de aru” (plain) style.
       `;
-  } else if (whatFor === whatForTypes[7]) {
+  } else if (whatFor === whatForTypes[7]) { //product Dev
     const { job_role_priority_1, job_role_priority_2, job_role_priority_3, jobs_to_try_in_japan } = data;
     return `
         <System Instructions>
@@ -333,7 +332,7 @@ export default function Prompt(data, whatFor) {
         - Suggested max_tokens: 100 to ensure concise output.
         - I would like all sentence endings to follow the “da/de aru” (plain) style.
       `;
-  } else if (whatFor === whatForTypes[8]) {
+  } else if (whatFor === whatForTypes[8]) { //Name conversion into katakana
     const { institution_name, date_string, major } = data;
     const prompt = `
     <System Instructions>
@@ -412,7 +411,7 @@ export default function Prompt(data, whatFor) {
     - I would like all sentence endings to follow the “da/de aru” (plain) style.
     `;
     return prompt;
-  } else if (whatFor === whatForTypes[9]) {
+  } else if (whatFor === whatForTypes[9]) { //hobbies
     const { hobbies_Interests } = data;
     const prompt = `
      <System Instructions>
@@ -452,7 +451,7 @@ export default function Prompt(data, whatFor) {
     `;
     return prompt;
   } 
-  else if(whatFor === whatForTypes[10]){
+  else if(whatFor === whatForTypes[10]){ //place conversion from english to katakana.
     const { place_of_belonging } = data;
     const prompt = `
       <System Instructions>
@@ -500,6 +499,83 @@ export default function Prompt(data, whatFor) {
       - **Strictly** follow the format; any deviation will break the system.
       - Suggested max_tokens: 50 for concise output.
       - I would like all sentence endings to follow the “da/de aru” (plain) style.
+    `;
+    return prompt;
+  }
+  else if(whatFor === whatForTypes[11]){ //For rethinking japanese companies.
+    const{
+      interest_in_japanese_companies,
+      aspects_to_learn,
+      previous_skills_to_acquire,
+      previous_interest_in_japanese_companies,
+      user_prompt,}=data;
+    const prompt=
+    `
+    <System Instructions>
+    Respond **only** with the exact format specified below, containing two Japanese phrases (Each one a concise sentence 2-3 lines.) within ===FORM2-START=== and ===FORM2-END===. Do **not** include any other text, headers, blank lines, or markers (e.g., FORM1, FORM3). Use professional Japanese suitable for a CV, reflecting Japanese corporate culture (e.g., teamwork, continuous improvement, technical innovation). For the sentences always follow the da/deru form only.
+
+    <Employee Information>
+        Interest in Japanese Companies: ${interest_in_japanese_companies || 'なし'}
+        Aspects to Learn: ${aspects_to_learn || 'なし'}
+    Previous Output from the employee Information:
+      番興味がある点: ${previous_interest_in_japanese_companies || 'なし'}
+      習得したいこと: ${previous_skills_to_acquire || 'なし'}
+
+    <User Prompt>
+        ${user_prompt}
+    <Prompt>
+    Generate these two items again tailoring to the user's need:
+    - Most Interesting Aspect: Based on Interest in Japanese Companies (${interest_in_japanese_companies}), describe what excites the person about working at Japanese companies in a single phrase preferable have 2-3 lines. If a previous output exists modify it based on the user special prompt: "${user_prompt || 'なし'}".
+    - Skills to Acquire: (${aspects_to_learn}) From this just remove the english names (after the '/') and just check the japanese names if there is any error then correct it and return it (Separated by commas). If a previous output exists, modify it based on the user special prompt: "${user_prompt || 'なし'}".
+
+    <Output Format>
+    ===FORM2-START===
+    番興味がある点: [Japanese phrase for why the person is interested in Japanese companies in da/deru form only.]
+    習得したいこと: [Japanese phrase for why the person wants to learn about Japanese companies in da/deru form only.]
+    ===FORM2-END===
+
+    <Rules>
+    - Write as the person is writing the sentences himself.
+    - Use the da/deru form for the Japanese sentences and end them with japanse FullStop always.
+    - Output **exactly** two phrases between ===FORM2-START=== and ===FORM2-END===.
+    - Each phrase starts with "番興味がある点: " or "習得したいこと: ", followed by 1 phrase (2-3 lines).
+    - Do **not** include other markers, text, or blank lines.
+    - **Strictly** follow the format; any deviation will break the system.
+    return prompt;
+}
+  else if(whatFor === whatForTypes[12]){
+    const {previous_work_value,work_value,user_prompt}=data;
+    const prompt=
+    `
+      <System Instructions>
+      Generate a concise, professional response for the "Career Development" section of a CV based on the provided work values. The output must strictly follow the specified format, containing only one line of Japanese text (Only in da/deru form) within the designated markers, without any additional explanations or text. Use natural, professional Japanese suitable for a CV.
+
+      <Career Information>
+      Work Values: ${work_value.join(', ') || 'none'}
+      Previous Work Value: ${previous_work_value || 'none'}
+      User Prompt: ${user_prompt || 'none'}
+
+      <Prompt>
+      Generate a single paragraph for the "3大優先要素" (Three Priority Elements) row, integrating the provided work values into a cohesive, professional statement, strictly following the user's instructions specified in the user prompt: "${user_prompt || 'none'}". If a previous output exists (${previous_work_value || 'none'}), modify it according to the user prompt while maintaining a polished, CV-appropriate expression. The paragraph should emphasize professionalism and enthusiasm, reflecting the candidate's priorities based on the work values.
+
+      [Output Format]
+      The output must strictly follow this format, containing a paragraph of Japanese text between ===FORM1-START=== and ===FORM1-END===, with no additional text or markers outside.
+
+      ===FORM1-START===
+      3大優先要素: [Concise paragraph according to the user's need specified in the userPrompt integrating work values in professional Japanese in "da, de aru" style only and always ending with japanese full-stop]
+      ===FORM1-END===
+
+      [Output Example]
+      ===FORM1-START===
+      3大優先要素: チームワークを大切にし、安定した環境の中で自らの技術力と人間的成長の両面を追求したいと思っている。多様な文化の中で学び続ける姿勢を持ち、周囲と協調しながら成長することを重視している。
+      ===FORM1-END===
+
+      [Construction Rules]
+      - Avoid directly quoting the input; rephrase into a polished CV-appropriate expression.
+      - The output should always be within ===FORM1-START=== and ===FORM1-END===, with no additional text outside it.
+      - All sentence endings must follow the “da/de aru” (plain) style and should always end with japanese full stop.
+      - Strictly follow the User Prompt strict requirement.
+      - There's no strict limit on the size of the paragraph.
     `;
     return prompt;
   }

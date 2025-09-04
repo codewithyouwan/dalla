@@ -62,15 +62,23 @@ const defaultDetails = {
   selectedSuggestion: '',
   photo: null,
 };
-//This object will hold the new details after fetching before assigning to the state by the user.
-const nextDetails = {
+const nextDetails={
+  japanCompanyInterest: 'Technology',
+  japanCompanySkills: 'Work Culture',
+  WorkValues:'',
   hobby: '',
   desiredIndustry: '',
   desiredJobType: '',
   targetRole: '',
   workStyle: '',
 };
+const defaultPrompt={ //Here the userPrompt will be there.
+  japaneseCompany:'',
+  CareerDevelopment:'',
+};
+//This object will hold the new details after fetching before assigning to the state by the user.
 export default function MakeResume() {
+  const [userPrompt,setUserPrompt] = useState(defaultPrompt);
   const [newDetails, setNewDetails] = useState(nextDetails);
   const [details, setDetails] = useState(defaultDetails);
   const [suggestions, setSuggestions] = useState([]);
@@ -587,7 +595,9 @@ export default function MakeResume() {
           })}
           isLoading={isLoading}
         />
-        <CareerAspirations
+        {
+          //#region CareerAspirations
+          <CareerAspirations
           details={details}
           setDetails={setDetails}
           newDetails={newDetails}
@@ -596,7 +606,11 @@ export default function MakeResume() {
           fetchCareerAspirations={fetchCareerAspirations}
           isLoading={isLoading}
         />
-        <Education
+        //#endregion
+        }
+        {
+          //#region Education
+          <Education
           education={details.education}
           handleArrayInputChange={handleArrayInputChange}
           addEducation={addEducation}
@@ -604,13 +618,21 @@ export default function MakeResume() {
           fetchEducation={handlefetchEducation}
           isLoading={isLoading}
         />
-        <LanguagesAndTools
+        //#endregion
+        }
+        {
+          //#region LanguageAndTools
+          <LanguagesAndTools
           details={details}
           handleInputChange={handleInputChange}
           fetchLanguagesAndTools={fetchLanguagesAndTools}
           isLoading={isLoading}
         />
-        <Projects
+        //#endregion
+        }
+        {
+          //#region Projects and Internships
+          <Projects
           internships={details.internships}
           projects={details.projects}
           handleArrayInputChange={handleArrayInputChange}
@@ -619,24 +641,54 @@ export default function MakeResume() {
           fetchInternshipExperience={fetchInternshipExperience}
           isLoading={isLoading}
         />
-        <FieldsOfInterest
+        //#endregion
+        }
+        {
+          //#region FieldOfInterest
+          <FieldsOfInterest
           details={details}
           handleArrayInputChange={handleArrayInputChange}
           isLoading={isLoading}
           fetchFieldsOfInterest={fetchFieldsOfInterest}
         />
+            //#endregion
+        }
+        {
+          //#region JapaneseCompanies
         <JapaneseCompanies
+          setError={setError}
+          setIsLoading={setIsLoading}
+          userPrompt={userPrompt}
+          setUserPrompt={setUserPrompt}
           details={details}
+          setDetails={setDetails}
+          newDetails={newDetails}
+          setNewDetails={setNewDetails}
+          fetchWithToast={fetchWithToast}
           handleInputChange={handleInputChange}
           fetchJapaneseCompanies={fetchJapaneseCompanies}
           isLoading={isLoading}
         />
+        // #endregion
+        }
+        { 
+          // #region careerDev
         <CareerDevelopment
-          WorkValues={details.WorkValues}
+          details={details}
           setDetails={setDetails}
+          newDetails={newDetails}
+          setNewDetails={setNewDetails}
+          userPrompt={userPrompt}
+          setUserPrompt={setUserPrompt}
           fetchWorkValues={fetchWorkValues}
           isLoading={isLoading}
+          setIsLoading={setIsLoading}
+          setError={setError}
         />
+         // #endregion
+        }
+       { 
+          // #region JLPTExperience
         <JLPTExperience
           details={details}
           handleInputChange={handleInputChange}
@@ -644,12 +696,18 @@ export default function MakeResume() {
           isLoading={isLoading}
           fetchJLPTSuggestions={fetchJLPTSuggestions}
         />
-        <Suggestions
+        // #endregion
+        }
+        {
+          //#region Sugestions
+          <Suggestions
           suggestions={suggestions}
           selectedIndex={selectedIndex}
           setSelectedSuggestion={setSelectedSuggestion}
           setSelectedIndex={setSelectedIndex}
         />
+        // #endregion
+        }
         <div className="mb-8">
           <button
             onClick={saveResume}
