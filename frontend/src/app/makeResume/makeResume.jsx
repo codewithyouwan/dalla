@@ -33,6 +33,8 @@ const defaultDetails = {
   domain: '',
   desiredIndustry: '',
   desiredJobType: '',
+  targetRole: '',
+  workStyle: '',
   hobby: '',
   hometown: '',
   type: '',
@@ -63,6 +65,10 @@ const defaultDetails = {
 //This object will hold the new details after fetching before assigning to the state by the user.
 const nextDetails = {
   hobby: '',
+  desiredIndustry: '',
+  desiredJobType: '',
+  targetRole: '',
+  workStyle: '',
 };
 export default function MakeResume() {
   const [newDetails, setNewDetails] = useState(nextDetails);
@@ -190,13 +196,23 @@ export default function MakeResume() {
       if (!res.ok) throw new Error(`Career aspirations API error: ${res.statusText}`);
       const gptData = await res.json();
       if (gptData.suggestions) {
-        setDetails((prev) => ({
-          ...prev,
-          desiredIndustry: gptData.suggestions.desiredIndustry || prev.desiredIndustry,
-          desiredJobType: gptData.suggestions.desiredJobType || prev.desiredJobType,
-          targetRole: gptData.suggestions.targetRole || prev.targetRole,
-          workStyle: gptData.suggestions.workStyle || prev.workStyle,
-        }));
+        if(details.desiredIndustry===''&&details.desiredJobType===''&&details.targetRole===''&&details.workStyle===''){
+          setDetails((prev) => ({ 
+            ...prev,
+            desiredIndustry: gptData.suggestions.desiredIndustry || prev.desiredIndustry,
+            desiredJobType: gptData.suggestions.desiredJobType || prev.desiredJobType,
+            targetRole: gptData.suggestions.targetRole || prev.targetRole,
+            workStyle: gptData.suggestions.workStyle || prev.workStyle,
+          }));
+        }else{
+          setNewDetails((prev) => ({
+            ...prev,
+            desiredIndustry: gptData.suggestions.desiredIndustry || prev.desiredIndustry,
+            desiredJobType: gptData.suggestions.desiredJobType || prev.desiredJobType,
+            targetRole: gptData.suggestions.targetRole || prev.targetRole,
+            workStyle: gptData.suggestions.workStyle || prev.workStyle,
+          }));
+        }
       } else {
         setError('No career aspirations suggestions');
       }
@@ -573,6 +589,9 @@ export default function MakeResume() {
         />
         <CareerAspirations
           details={details}
+          setDetails={setDetails}
+          newDetails={newDetails}
+          setNewDetails={setNewDetails}
           handleInputChange={handleInputChange}
           fetchCareerAspirations={fetchCareerAspirations}
           isLoading={isLoading}
