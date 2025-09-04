@@ -19,6 +19,7 @@ import ResumePreview from '../components/resume/ResumePreview';
 import CustomToaster from '../components/Toast';
 import toast from 'react-hot-toast';
 import Split from '../helper/split';
+import { set } from 'date-fns';
 
 const defaultDetails = {
   id_number: '',
@@ -61,7 +62,9 @@ const defaultDetails = {
   selectedSuggestion: '',
   photo: null,
 };
+//This object will hold the new details after fetching before assigning to the state by the user.
 const nextDetails = {
+  hobby: '',
   desiredIndustry: '',
   desiredJobType: '',
   targetRole: '',
@@ -88,6 +91,7 @@ export default function MakeResume() {
     }
   }, [error]);
 
+  //Fetching the saved data here.
   useEffect(() => {
     const fetchData = async () => {
       if (hasFetchedResume.current) return;
@@ -554,6 +558,9 @@ export default function MakeResume() {
         <h1 className="text-2xl text-black font-bold mb-6">履歴書ビルダー / Resume Builder</h1>
         <PersonalInfo
           details={details}
+          setDetails={setDetails}
+          newDetails={newDetails}
+          setNewDetails={setNewDetails}
           handleInputChange={handleInputChange}
           fetchPersonalDetails={() => fetchWithToast('Personal Details', async () => {
             const id = details.id_number;
@@ -569,10 +576,14 @@ export default function MakeResume() {
               name: data.name || prev.name,
               katakana: data.katakana || '',
               initials: data.initials || '',
-              hobby: data.hobby || '',
               hometown: data.hometown || '',
               selectedName: data.name || prev.selectedName,
             }));
+            if(details.hobby===''){
+              setDetails((prev) => ({...prev, hobby: data.hobby || '',}));
+            }else{
+              setNewDetails((prev) => ({...prev, hobby: data.hobby || '',}));
+            }
           })}
           isLoading={isLoading}
         />
