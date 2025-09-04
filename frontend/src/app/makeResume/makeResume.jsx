@@ -72,12 +72,24 @@ const nextDetails={
   targetRole: '',
   workStyle: '',
 };
+const pDetails={
+  japanCompanyInterest: '',
+  japanCompanySkills: '',
+  WorkValues:'',
+  hobby: '',
+  desiredIndustry: '',
+  desiredJobType: '',
+  targetRole: '',
+  workStyle: '',
+};
+
 const defaultPrompt={ //Here the userPrompt will be there.
   japaneseCompany:'',
   CareerDevelopment:'',
 };
 //This object will hold the new details after fetching before assigning to the state by the user.
 export default function MakeResume() {
+  const [prevDetails,setPrevDetails]=useState(pDetails);
   const [userPrompt,setUserPrompt] = useState(defaultPrompt);
   const [newDetails, setNewDetails] = useState(nextDetails);
   const [details, setDetails] = useState(defaultDetails);

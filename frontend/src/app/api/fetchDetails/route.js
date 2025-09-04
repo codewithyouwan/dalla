@@ -39,6 +39,7 @@ export async function GET(request) {
     if(!hobby) hobby = '読書';
       try {
         const hobbyPrompt = Prompt({ hobbies_Interests: hobby }, 'hobbyConversion');
+        // https://dalla-mauve.vercel.app/api/aiRequests
         const completion = await fetch(`${baseUrl}/api/aiRequests`, {
           method: 'POST',
           headers: {
@@ -46,6 +47,7 @@ export async function GET(request) {
           },
           body: JSON.stringify({PromptData: hobbyPrompt })
         });
+        console.log(JSON.stringify({PromptData: hobbyPrompt}));
         const suggestions=await completion.json();
         // const suggestions = completion.choices[0]?.message?.content || '';
         if (!suggestions) {
@@ -69,6 +71,7 @@ export async function GET(request) {
     // Process place of belonging
       try {
         const placePrompt = Prompt({ place_of_belonging: hometown }, 'placeConversion');
+        // https://dalla-mauve.vercel.app/api/aiRequests
         const completion = await fetch(`${baseUrl}/api/aiRequests`, {
           method: 'POST',
           headers: {
