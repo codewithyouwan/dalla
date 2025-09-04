@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import Prompt from '../../helper/prompt';
+import Prompt from '../../../helper/prompt';
 import OpenAI from 'openai';
 
 export const runtime = 'nodejs';
@@ -66,7 +66,7 @@ export async function POST(request) {
         },
         { role: 'user', content: prompt },
       ],
-      temperature: 0.7,
+      temperature: 0.2,
       top_p: 0.8,
       max_tokens: 4096,
       stream: false,

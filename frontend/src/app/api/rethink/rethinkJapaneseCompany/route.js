@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { OpenAI } from 'openai';
-import Prompt from '../../helper/prompt';
+import Prompt from '../../../helper/prompt';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -52,7 +52,7 @@ export async function POST(req) {
 
     // Call DeepSeek API
     const completion = await openai.chat.completions.create({
-      model: "qwen/qwen3-235b-a22b",
+      model: "qwen/qwen3-coder-480b-a35b-instruct",
       messages: [
         {
           role: 'system',
@@ -62,8 +62,7 @@ export async function POST(req) {
       ],
       temperature: 0.2,
       top_p: 0.7,
-      max_tokens: 8192,
-      chat_template_kwargs: { "thinking": false },
+      max_tokens: 4906,
       stream: false,
     });
 

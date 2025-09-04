@@ -6,7 +6,7 @@ export default function CareerDevelopment({
   setError(null);
   console.log(userPrompt.CareerDevelopment);
   try {
-    const response = await fetch('/api/rethinkWorkValues', {
+    const response = await fetch('/api/rethink/rethinkWorkValues', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
