@@ -4,7 +4,7 @@
 */
 const whatForTypes = ['jlptExperience', 'careerAspirations', 'languagesAndTools',
 'internshipExperience', 'japaneseCompanies', 'workValues', 'fieldsOfInterest',
-'productDevelopment', 'katakanaConversion', 'hobbyConversion','placeConversion','rethinkWorkValue'];
+'productDevelopment', 'katakanaConversion', 'hobbyConversion','placeConversion','rethinkWorkValues'];
 
 export default function Prompt(data, whatFor) {
   if (whatFor === whatForTypes[0]) {
@@ -516,13 +516,13 @@ export default function Prompt(data, whatFor) {
       User Prompt: ${user_prompt || 'none'}
 
       <Prompt>
-      Generate a single paragraph for the "3大優先要素" (Three Priority Elements) row, integrating the provided work values into a cohesive, professional statement. The paragraph should be 1-2 sentences, emphasizing professionalism and enthusiasm, and reflect the candidate's priorities based solely on the work values. If a previous output exists (${previous_work_value || 'none'}), modify it based on the user special prompt: "${user_prompt || 'none'}" to refine the statement while maintaining the da/de aru form and CV-appropriate tone.
+      Generate a single paragraph for the "3大優先要素" (Three Priority Elements) row, integrating the provided work values into a cohesive, professional statement, strictly following the user's instructions specified in the user prompt: "${user_prompt || 'none'}". If a previous output exists (${previous_work_value || 'none'}), modify it according to the user prompt while maintaining a polished, CV-appropriate expression. The paragraph should emphasize professionalism and enthusiasm, reflecting the candidate's priorities based on the work values.
 
       [Output Format]
-      The output must strictly follow this format, containing only one line of Japanese text between ===FORM1-START=== and ===FORM1-END===, with no additional text or markers.
+      The output must strictly follow this format, containing a paragraph of Japanese text between ===FORM1-START=== and ===FORM1-END===, with no additional text or markers outside.
 
       ===FORM1-START===
-      3大優先要素: [Concise paragraph integrating work values in professional Japanese in "da, de aru" style]
+      3大優先要素: [Concise paragraph according to the user's need specified in the userPrompt integrating work values in professional Japanese in "da, de aru" style only and always ending with japanese full-stop]
       ===FORM1-END===
 
       [Output Example]
@@ -531,11 +531,11 @@ export default function Prompt(data, whatFor) {
       ===FORM1-END===
 
       [Construction Rules]
-      - Do not use other career information (e.g., job roles, career goals).
       - Avoid directly quoting the input; rephrase into a polished CV-appropriate expression.
-      - Output only the single line within ===FORM1-START=== and ===FORM1-END===, with no additional text.
+      - The output should always be within ===FORM1-START=== and ===FORM1-END===, with no additional text outside it.
       - All sentence endings must follow the “da/de aru” (plain) style and should always end with japanese full stop.
-      - Apart from these strictly follow the User Prompt but don't ever change the output format.
+      - Strictly follow the User Prompt strict requirement.
+      - There's no strict limit on the size of the paragraph.
     `;
     return prompt;
   }

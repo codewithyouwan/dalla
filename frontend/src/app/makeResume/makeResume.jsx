@@ -62,12 +62,12 @@ const defaultDetails = {
 const nextDetails={
   WorkValues:'',
 };
-const rethinkingDetails={
-  CareerDevlopment:'',
+const rethinkingDetails={ //Here the userPrompt will be there.
+  CareerDevelopment:'',
 };
 export default function MakeResume() {
   const [userPrompt,setUserPrompt] = useState(rethinkingDetails);
-  const [newDetaila,setNewDetails] = useState(nextDetails);
+  const [newDetails,setNewDetails] = useState(nextDetails);
   const [details, setDetails] = useState(defaultDetails);
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -633,7 +633,6 @@ export default function MakeResume() {
         { 
           // #region careerDev
         <CareerDevelopment
-          WorkValues={details.WorkValues}
           details={details}
           setDetails={setDetails}
           newDetails={newDetails}
@@ -642,6 +641,8 @@ export default function MakeResume() {
           setUserPrompt={setUserPrompt}
           fetchWorkValues={fetchWorkValues}
           isLoading={isLoading}
+          setIsLoading={setIsLoading}
+          setError={setError}
         />
          // #endregion
         }
