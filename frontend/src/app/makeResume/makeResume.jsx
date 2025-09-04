@@ -19,6 +19,7 @@ import ResumePreview from '../components/resume/ResumePreview';
 import CustomToaster from '../components/Toast';
 import toast from 'react-hot-toast';
 import Split from '../helper/split';
+import { set } from 'date-fns';
 
 const defaultDetails = {
   id_number: '',
@@ -32,6 +33,8 @@ const defaultDetails = {
   domain: '',
   desiredIndustry: '',
   desiredJobType: '',
+  targetRole: '',
+  workStyle: '',
   hobby: '',
   hometown: '',
   type: '',
@@ -63,13 +66,19 @@ const nextDetails={
   japanCompanyInterest: 'Technology',
   japanCompanySkills: 'Work Culture',
   WorkValues:'',
+  hobby: '',
+  desiredIndustry: '',
+  desiredJobType: '',
+  targetRole: '',
+  workStyle: '',
 };
 const defaultPrompt={ //Here the userPrompt will be there.
   japaneseCompany:'',
   CareerDevelopment:'',
 };
+//This object will hold the new details after fetching before assigning to the state by the user.
 export default function MakeResume() {
-  const [userPrompt,setUserPrompt] = useState(defaultPrompt);//User prompts for rethinking.
+  const [userPrompt,setUserPrompt] = useState(defaultPrompt);
   const [newDetails, setNewDetails] = useState(nextDetails);
   const [details, setDetails] = useState(defaultDetails);
   const [suggestions, setSuggestions] = useState([]);
@@ -90,6 +99,7 @@ export default function MakeResume() {
     }
   }, [error]);
 
+  //Fetching the saved data here.
   useEffect(() => {
     const fetchData = async () => {
       if (hasFetchedResume.current) return;
@@ -194,13 +204,23 @@ export default function MakeResume() {
       if (!res.ok) throw new Error(`Career aspirations API error: ${res.statusText}`);
       const gptData = await res.json();
       if (gptData.suggestions) {
-        setDetails((prev) => ({
-          ...prev,
-          desiredIndustry: gptData.suggestions.desiredIndustry || prev.desiredIndustry,
-          desiredJobType: gptData.suggestions.desiredJobType || prev.desiredJobType,
-          targetRole: gptData.suggestions.targetRole || prev.targetRole,
-          workStyle: gptData.suggestions.workStyle || prev.workStyle,
-        }));
+        if(details.desiredIndustry===''&&details.desiredJobType===''&&details.targetRole===''&&details.workStyle===''){
+          setDetails((prev) => ({ 
+            ...prev,
+            desiredIndustry: gptData.suggestions.desiredIndustry || prev.desiredIndustry,
+            desiredJobType: gptData.suggestions.desiredJobType || prev.desiredJobType,
+            targetRole: gptData.suggestions.targetRole || prev.targetRole,
+            workStyle: gptData.suggestions.workStyle || prev.workStyle,
+          }));
+        }else{
+          setNewDetails((prev) => ({
+            ...prev,
+            desiredIndustry: gptData.suggestions.desiredIndustry || prev.desiredIndustry,
+            desiredJobType: gptData.suggestions.desiredJobType || prev.desiredJobType,
+            targetRole: gptData.suggestions.targetRole || prev.targetRole,
+            workStyle: gptData.suggestions.workStyle || prev.workStyle,
+          }));
+        }
       } else {
         setError('No career aspirations suggestions');
       }
@@ -546,6 +566,9 @@ export default function MakeResume() {
         <h1 className="text-2xl text-black font-bold mb-6">履歴書ビルダー / Resume Builder</h1>
         <PersonalInfo
           details={details}
+          setDetails={setDetails}
+          newDetails={newDetails}
+          setNewDetails={setNewDetails}
           handleInputChange={handleInputChange}
           fetchPersonalDetails={() => fetchWithToast('Personal Details', async () => {
             const id = details.id_number;
@@ -561,10 +584,14 @@ export default function MakeResume() {
               name: data.name || prev.name,
               katakana: data.katakana || '',
               initials: data.initials || '',
-              hobby: data.hobby || '',
               hometown: data.hometown || '',
               selectedName: data.name || prev.selectedName,
             }));
+            if(details.hobby===''){
+              setDetails((prev) => ({...prev, hobby: data.hobby || '',}));
+            }else{
+              setNewDetails((prev) => ({...prev, hobby: data.hobby || '',}));
+            }
           })}
           isLoading={isLoading}
         />
@@ -572,6 +599,9 @@ export default function MakeResume() {
           //#region CareerAspirations
           <CareerAspirations
           details={details}
+          setDetails={setDetails}
+          newDetails={newDetails}
+          setNewDetails={setNewDetails}
           handleInputChange={handleInputChange}
           fetchCareerAspirations={fetchCareerAspirations}
           isLoading={isLoading}
