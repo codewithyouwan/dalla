@@ -1,6 +1,9 @@
-export default function Suggestions({ suggestions, selectedIndex, setSelectedSuggestion, setSelectedIndex }) {
+export default function Suggestions({ 
+  setDetails, suggestions, selectedIndex, setSelectedSuggestion, setSelectedIndex 
+}) {
   const selectSuggestion = (suggestion, index) => {
-    setSelectedSuggestion(suggestion);
+    setDetails((prev)=>({...prev,selectedSuggestion:suggestion}));
+    // setSelectedSuggestion(suggestion);
     setSelectedIndex(index);
   };
 

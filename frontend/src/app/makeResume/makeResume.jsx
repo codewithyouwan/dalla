@@ -60,9 +60,14 @@ const defaultDetails = {
   examMonth: 'Not Selected',
   personality: 'Diligent',
   selectedSuggestion: '',
+  suggestions:[],
+  selectedIndex:null,
   photo: null,
 };
+//selectedSuggestion, 
 const nextDetails={
+  selectedIndex:null,
+  selectedSuggestion:'',
   japanCompanyInterest: '',
   japanCompanySkills: '',
   WorkValues:'',
@@ -73,6 +78,8 @@ const nextDetails={
   workStyle: '',
 };
 const pDetails={
+  selectedIndex:null,
+  selectedSuggestion:'',
   japanCompanyInterest: '',
   japanCompanySkills: '',
   WorkValues:'',
@@ -96,8 +103,8 @@ export default function MakeResume() {
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedSuggestion, setSelectedSuggestion] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(null);
+  // const [selectedSuggestion, setSelectedSuggestion] = useState('');
+  // const [selectedIndex, setSelectedIndex] = useState(null);
   const [previewLink, setPreviewLink] = useState(null);
   const [tempPdfPath, setTempPdfPath] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
@@ -383,31 +390,6 @@ export default function MakeResume() {
         }));
       } else {
         setError('No fields of interest suggestions');
-      }
-    });
-  };
-
-  const fetchProductDevelopment = async () => {
-    return fetchWithToast('Product Development', async () => {
-      const res = await fetch('/api/productDevelopment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_number: details.id_number }),
-      });
-      if (!res.ok) throw new Error(`Product development API error: ${res.statusText}`);
-      const data = await res.json();
-      if (data.suggestions) {
-        const { productDevReason, productDevRole } = data.suggestions;
-        if (!productDevReason || !productDevRole) {
-          setError('Incomplete product development suggestions received');
-        }
-        setDetails((prev) => ({
-          ...prev,
-          productDevReason,
-          productDevRole,
-        }));
-      } else {
-        setError('No product development suggestions');
       }
     });
   };
@@ -712,6 +694,10 @@ export default function MakeResume() {
           details={details}
           handleInputChange={handleInputChange}
           setDetails={setDetails}
+          prevDetails={prevDetails}
+          setPrevDetails={setPrevDetails}
+          newDetails={newDetails}
+          setNewDetails={setNewDetails}
           isLoading={isLoading}
           fetchJLPTSuggestions={fetchJLPTSuggestions}
         />
@@ -719,12 +705,13 @@ export default function MakeResume() {
         }
         {
           //#region Sugestions
-          <Suggestions
-          suggestions={suggestions}
-          selectedIndex={selectedIndex}
-          setSelectedSuggestion={setSelectedSuggestion}
-          setSelectedIndex={setSelectedIndex}
-        />
+        //   <Suggestions
+        //   suggestions={details.suggestions}
+        //   setDetail={setDetails}
+        //   selectedIndex={selectedIndex}
+        //   setSelectedSuggestion={(index,suggestions)=>setDetails((prev)=>({...prev,selectedSuggestion:suggestions[index]}))}
+        //   setSelectedIndex={setSelectedIndex}
+        // />
         // #endregion
         }
         <div className="mb-8">
