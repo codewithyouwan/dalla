@@ -619,6 +619,8 @@ export default function MakeResume() {
           handleInputChange={handleInputChange}
           fetchCareerAspirations={fetchCareerAspirations}
           isLoading={isLoading}
+          prevDetails={prevDetails}
+          setPrevDetails={setPrevDetails}
         />
         //#endregion
         }
