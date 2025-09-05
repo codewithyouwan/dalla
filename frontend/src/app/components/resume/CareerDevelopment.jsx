@@ -1,5 +1,8 @@
+import UndoButton from "../buttons/UndoButton";
+import DeleteButton from "../buttons/DeleteButton";
 export default function CareerDevelopment({ 
-  details, setDetails,newDetails,setNewDetails,userPrompt,setUserPrompt,fetchWorkValues, isLoading, setIsLoading, setError
+  details, setDetails,newDetails,setNewDetails,userPrompt,setUserPrompt,
+  fetchWorkValues, isLoading, setIsLoading, setError, prevDetails, setPrevDetails
 }) {
   const fetchRethinkWorkValues = async () => {
   setIsLoading(true);
@@ -45,7 +48,8 @@ export default function CareerDevelopment({
         </button>
       </div>
       <div className="space-y-4">
-        <div>
+        <div className='block border rounded-lg p-2 relative justify-center align-center bg-gray-50'>
+          <div>
           <label className="block text-sm font-medium text-gray-700">働く上での価値観/ 3 WorkValues</label>
           <textarea
             value={details.WorkValues}
@@ -53,6 +57,18 @@ export default function CareerDevelopment({
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             rows="4"
           />
+        </div>
+        { prevDetails.WorkValues!==''&&prevDetails.WorkValues!==details.WorkValues&&
+          <div className='top-0 right-0 absolute'>
+          <UndoButton
+            clickFunction={
+              ()=>{
+                setDetails((prev)=>({...prev,WorkValues:prevDetails.WorkValues}));
+              }
+            }
+          />
+          </div>
+        }
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">User Prompt</label>
@@ -75,29 +91,25 @@ export default function CareerDevelopment({
             <ol className='block text-black'>
               <li
               className={`p-2 cursor-pointer border rounded-lg bg-blue-100 hover:bg-gray-100`}
-              onClick={()=>setDetails((prev)=>({...prev,WorkValues:newDetails.WorkValues}))}
+              onClick={
+                ()=>{
+                  setPrevDetails((prev)=>({...prev, WorkValues:details.WorkValues}));
+                  setDetails((prev)=>({...prev,WorkValues:newDetails.WorkValues}));
+                }
+              }
               >
                 {newDetails.WorkValues}
               </li>
             </ol>
-            <button
-                onClick={() => setNewDetails((prev)=>({...prev,WorkValues:''}))}
-                className="absolute top-0 right-0 text-red-600 hover:text-red-800 p-1"
-                title="Delete this suggestion"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-            </button>
+            <div className='absolute top-0 right-0'>
+              <DeleteButton
+                clickFunction={
+                  ()=>{
+                    setNewDetails((prev)=>({...prev,WorkValues:''}))
+                  }
+                }
+              />
+            </div>
           </div>
         }
       </div>

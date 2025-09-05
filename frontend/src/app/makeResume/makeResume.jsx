@@ -60,9 +60,14 @@ const defaultDetails = {
   examMonth: 'Not Selected',
   personality: 'Diligent',
   selectedSuggestion: '',
+  suggestions:[],
+  selectedIndex:null,
   photo: null,
 };
+//selectedSuggestion, 
 const nextDetails={
+  selectedIndex:null,
+  selectedSuggestion:'',
   japanCompanyInterest: '',
   japanCompanySkills: '',
   WorkValues:'',
@@ -72,20 +77,34 @@ const nextDetails={
   targetRole: '',
   workStyle: '',
 };
+const pDetails={
+  selectedIndex:null,
+  selectedSuggestion:'',
+  japanCompanyInterest: '',
+  japanCompanySkills: '',
+  WorkValues:'',
+  hobby: '',
+  desiredIndustry: '',
+  desiredJobType: '',
+  targetRole: '',
+  workStyle: '',
+};
+
 const defaultPrompt={ //Here the userPrompt will be there.
   japaneseCompany:'',
   CareerDevelopment:'',
 };
 //This object will hold the new details after fetching before assigning to the state by the user.
 export default function MakeResume() {
+  const [prevDetails,setPrevDetails]=useState(pDetails);
   const [userPrompt,setUserPrompt] = useState(defaultPrompt);
   const [newDetails, setNewDetails] = useState(nextDetails);
   const [details, setDetails] = useState(defaultDetails);
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedSuggestion, setSelectedSuggestion] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(null);
+  // const [selectedSuggestion, setSelectedSuggestion] = useState('');
+  // const [selectedIndex, setSelectedIndex] = useState(null);
   const [previewLink, setPreviewLink] = useState(null);
   const [tempPdfPath, setTempPdfPath] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
@@ -375,31 +394,6 @@ export default function MakeResume() {
     });
   };
 
-  const fetchProductDevelopment = async () => {
-    return fetchWithToast('Product Development', async () => {
-      const res = await fetch('/api/productDevelopment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_number: details.id_number }),
-      });
-      if (!res.ok) throw new Error(`Product development API error: ${res.statusText}`);
-      const data = await res.json();
-      if (data.suggestions) {
-        const { productDevReason, productDevRole } = data.suggestions;
-        if (!productDevReason || !productDevRole) {
-          setError('Incomplete product development suggestions received');
-        }
-        setDetails((prev) => ({
-          ...prev,
-          productDevReason,
-          productDevRole,
-        }));
-      } else {
-        setError('No product development suggestions');
-      }
-    });
-  };
-
   const fetchJLPTSuggestions = async () => {
     return fetchWithToast('JLPT Suggestions', async () => {
       // console.log(details.marks, 'Before fetching in the function');
@@ -568,6 +562,8 @@ export default function MakeResume() {
           details={details}
           setDetails={setDetails}
           newDetails={newDetails}
+          prevDetails={prevDetails}
+          setPrevDetails={setPrevDetails}
           setNewDetails={setNewDetails}
           handleInputChange={handleInputChange}
           fetchPersonalDetails={() => fetchWithToast('Personal Details', async () => {
@@ -605,6 +601,8 @@ export default function MakeResume() {
           handleInputChange={handleInputChange}
           fetchCareerAspirations={fetchCareerAspirations}
           isLoading={isLoading}
+          prevDetails={prevDetails}
+          setPrevDetails={setPrevDetails}
         />
         //#endregion
         }
@@ -664,7 +662,8 @@ export default function MakeResume() {
           setDetails={setDetails}
           newDetails={newDetails}
           setNewDetails={setNewDetails}
-          fetchWithToast={fetchWithToast}
+          prevDetails={prevDetails}
+          setPrevDetails={setPrevDetails}
           handleInputChange={handleInputChange}
           fetchJapaneseCompanies={fetchJapaneseCompanies}
           isLoading={isLoading}
@@ -684,6 +683,8 @@ export default function MakeResume() {
           isLoading={isLoading}
           setIsLoading={setIsLoading}
           setError={setError}
+          prevDetails={prevDetails}
+          setPrevDetails={setPrevDetails}
         />
          // #endregion
         }
@@ -693,6 +694,10 @@ export default function MakeResume() {
           details={details}
           handleInputChange={handleInputChange}
           setDetails={setDetails}
+          prevDetails={prevDetails}
+          setPrevDetails={setPrevDetails}
+          newDetails={newDetails}
+          setNewDetails={setNewDetails}
           isLoading={isLoading}
           fetchJLPTSuggestions={fetchJLPTSuggestions}
         />
@@ -700,12 +705,13 @@ export default function MakeResume() {
         }
         {
           //#region Sugestions
-          <Suggestions
-          suggestions={suggestions}
-          selectedIndex={selectedIndex}
-          setSelectedSuggestion={setSelectedSuggestion}
-          setSelectedIndex={setSelectedIndex}
-        />
+        //   <Suggestions
+        //   suggestions={details.suggestions}
+        //   setDetail={setDetails}
+        //   selectedIndex={selectedIndex}
+        //   setSelectedSuggestion={(index,suggestions)=>setDetails((prev)=>({...prev,selectedSuggestion:suggestions[index]}))}
+        //   setSelectedIndex={setSelectedIndex}
+        // />
         // #endregion
         }
         <div className="mb-8">

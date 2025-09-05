@@ -1,16 +1,21 @@
-export default function JLPTExperience({ details, handleInputChange, setDetails, isLoading, fetchJLPTSuggestions }) {
+import UndoButton from '../buttons/UndoButton';
+import DeleteButton from '../buttons/DeleteButton';
+export default function JLPTExperience({ 
+details, setDetails, isLoading, fetchJLPTSuggestions, newDetails, setNewDetails,
+prevDetails, setPrevDetails
+}) {
   const isN5orN4 = details.japaneseLevel==='N5' || details.japaneseLevel==='N4';
   console.log("IS N5 or N4:", isN5orN4);
 
-  const handleSuggestionSelect = (suggestion, index) => {
-    setDetails((prev) => ({
-      ...prev,
-      selectedSuggestion: suggestion,
-      // jlpt_description: suggestion, // Store in jlpt_description for resume
-      selectedIndex: index,
-    }));
-    console.log('Selected JLPT suggestion:', suggestion, 'Index:', index);
-  };
+  // const handleSuggestionSelect = (suggestion, index) => {
+  //   setDetails((prev) => ({
+  //     ...prev,
+  //     selectedSuggestion: suggestion,
+  //     // jlpt_description: suggestion, // Store in jlpt_description for resume
+  //     selectedIndex: index,
+  //   }));
+  //   console.log('Selected JLPT suggestion:', suggestion, 'Index:', index);
+  // };
 
   // marks: 
   // {
@@ -146,7 +151,7 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
         )}
         {
           details.selectedSuggestion!==''&&(
-            <div>
+            <div className='justify-center align-center p-2 block relative border rounded-lg bg-gray-50'>
               <label className="block text-sm font-medium text-gray-700">選択された提案 / Selected Suggestion</label>
               <textarea
                 value={details.selectedSuggestion}
@@ -154,6 +159,19 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
                 className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-gray-100"
                 rows="4"
               />
+              {prevDetails.selectedSuggestion!==''&&prevDetails.selectedSuggestion!==details.selectedSuggestion&&
+                <div className='top-0 right-0 absolute'>
+                  <UndoButton
+                  clickFunction={()=>{
+                    setDetails((prev)=>({
+                      ...prev,
+                      selectedSuggestion:prevDetails.selectedSuggestion,
+                      selectedIndex:prevDetails.selectedIndex,
+                    }));
+                  }}
+                />
+              </div>
+              }
             </div>
           )
         }
@@ -165,7 +183,21 @@ export default function JLPTExperience({ details, handleInputChange, setDetails,
                 <li
                   key={index}
                   className={`p-2 cursor-pointer border rounded-lg ${details.selectedIndex === index ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
-                  onClick={() => handleSuggestionSelect(suggestion, index)}
+                  onClick={() => {
+                    //selected suggestion and index.
+                    if(details.selectedIndex!==null&&details.selectedSuggestion!==''){
+                        setPrevDetails((prev)=>({
+                        ...prev,
+                        selectedSuggestion:details.selectedSuggestion,
+                        selectedIndex:details.selectedIndex,
+                      }));
+                    }
+                    setDetails((prev)=>({
+                      ...prev,
+                      selectedSuggestion:suggestion,
+                      selectedIndex:index
+                    }));
+                  }}
                 >
                   {suggestion}
                 </li>

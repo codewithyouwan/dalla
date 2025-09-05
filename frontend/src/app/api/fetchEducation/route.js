@@ -98,6 +98,7 @@ export async function POST(request) {
       }
       const prompt = Prompt({ institution_name: name, date_string: dateString, major: major || 'なし' }, 'katakanaConversion');
       const baseUrl = `${request.headers.get("x-forwarded-proto") || "https"}://${request.headers.get("host")}`;
+      // https://dalla-mauve.vercel.app/api/aiRequests
       try {
         const completion = await fetch(`https://dalla-mauve.vercel.app/api/aiRequests`, {
           method: 'POST',
