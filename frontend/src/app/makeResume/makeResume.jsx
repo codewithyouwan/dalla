@@ -680,7 +680,8 @@ export default function MakeResume() {
           setDetails={setDetails}
           newDetails={newDetails}
           setNewDetails={setNewDetails}
-          fetchWithToast={fetchWithToast}
+          prevDetails={prevDetails}
+          setPrevDetails={setPrevDetails}
           handleInputChange={handleInputChange}
           fetchJapaneseCompanies={fetchJapaneseCompanies}
           isLoading={isLoading}

@@ -1,5 +1,6 @@
+import UndoButton from "../buttons/UndoButton";
 export default function JapaneseCompanies({
-  details, setDetails, handleInputChange, fetchJapaneseCompanies, isLoading, setIsLoading,fetchWithToast,setError, newDetails, setNewDetails, userPrompt, setUserPrompt
+  details, setDetails, handleInputChange, fetchJapaneseCompanies, isLoading, setIsLoading,setError, newDetails, setNewDetails, userPrompt, setUserPrompt, prevDetails, setPrevDetails
   }) {
 const fetchRethinkJapaneseCompanies = async () => {
   setIsLoading(true);
@@ -49,18 +50,29 @@ const fetchRethinkJapaneseCompanies = async () => {
         </button>
       </div>
       <div className="space-y-4">
-        <div>
+        <div className='relative border p-2 rounded-md bg-gray-50 justify-between items-center'>
           <label className="block text-sm font-medium text-gray-700">番興味がある点 / Most Interesting Aspect</label>
           <textarea
             type="text"
             rows={3}
             name="japanCompanyInterest"
             value={details.japanCompanyInterest}
-            onChange={handleInputChange}
+            onChange={(e)=>setDetails((prev)=>({...prev, japanCompanyInterest:e.target.value}))}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
+          {prevDetails.japanCompanyInterest!==''&&prevDetails.japanCompanyInterest!==details.japanCompanyInterest&&
+            <div className='absolute top-0 right-0 flex'>
+              <UndoButton
+              clickFunction={
+                ()=>{
+                  setDetails((prev)=>({...prev, japanCompanyInterest:prevDetails.japanCompanyInterest}))
+                }
+              }
+            />
+            </div>
+          }
         </div>
-        <div>
+        <div className = 'relative border p-2 rounded-md bg-gray-50 justify-between items-center'>
           <label className="block text-sm font-medium text-gray-700">習得したいこと / Skills to Acquire</label>
           <textarea
             type="text"
@@ -70,6 +82,19 @@ const fetchRethinkJapaneseCompanies = async () => {
             onChange={handleInputChange}
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
+          {prevDetails.japanCompanySkills!==''&&prevDetails.japanCompanySkills!==details.japanCompanySkills&&
+            <div className='absolute top-0 right-0 flex'>
+              <UndoButton
+                clickFunction={
+                  ()=>{
+                    setDetails((prev)=>({...prev, japanCompanySkills:prevDetails.japanCompanySkills}))
+                  }
+                }
+              />
+            </div>
+          }
+        </div>
+        <div>
           <label className="block text-sm font-medium text-gray-700">User Prompt</label>
           <textarea
             type="text"
@@ -94,7 +119,8 @@ const fetchRethinkJapaneseCompanies = async () => {
             <li
               className={`p-2 cursor-pointer border rounded-lg bg-blue-100 hover:bg-gray-100`}
               onClick={()=>{
-                setDetails((prev)=>({...prev,japanCompanyInterest:newDetails.japanCompanyInterest}))
+                setPrevDetails((prev)=>({...prev, japanCompanyInterest:details.japanCompanyInterest}));
+                setDetails((prev)=>({...prev,japanCompanyInterest:newDetails.japanCompanyInterest}));
               }}
               >
                 {newDetails.japanCompanyInterest}
@@ -103,7 +129,8 @@ const fetchRethinkJapaneseCompanies = async () => {
             <li
             className={`p-2 cursor-pointer border rounded-lg bg-blue-100 hover:bg-gray-100`}
             onClick={()=>{
-                setDetails((prev)=>({...prev,japanCompanySkills:newDetails.japanCompanySkills}))
+                setPrevDetails((prev)=>({...prev,japanCompanySkills:details.japanCompanySkills}));
+                setDetails((prev)=>({...prev,japanCompanySkills:newDetails.japanCompanySkills}));
               }}
               >
                 {newDetails.japanCompanySkills}
