@@ -701,6 +701,8 @@ export default function MakeResume() {
           isLoading={isLoading}
           setIsLoading={setIsLoading}
           setError={setError}
+          prevDetails={prevDetails}
+          setPrevDetails={setPrevDetails}
         />
          // #endregion
         }
