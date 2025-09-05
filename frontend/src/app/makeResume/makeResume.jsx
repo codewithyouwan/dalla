@@ -580,6 +580,8 @@ export default function MakeResume() {
           details={details}
           setDetails={setDetails}
           newDetails={newDetails}
+          prevDetails={prevDetails}
+          setPrevDetails={setPrevDetails}
           setNewDetails={setNewDetails}
           handleInputChange={handleInputChange}
           fetchPersonalDetails={() => fetchWithToast('Personal Details', async () => {
