@@ -7,25 +7,6 @@ prevDetails, setPrevDetails
   const isN5orN4 = details.japaneseLevel==='N5' || details.japaneseLevel==='N4';
   console.log("IS N5 or N4:", isN5orN4);
 
-  // const handleSuggestionSelect = (suggestion, index) => {
-  //   setDetails((prev) => ({
-  //     ...prev,
-  //     selectedSuggestion: suggestion,
-  //     // jlpt_description: suggestion, // Store in jlpt_description for resume
-  //     selectedIndex: index,
-  //   }));
-  //   console.log('Selected JLPT suggestion:', suggestion, 'Index:', index);
-  // };
-
-  // marks: 
-  // {
-  //   total:'0',
-  //   vocabulary:'0', 
-  //   reading:'0',
-  //   listening:'0',
-  //   language_and_reading:'0'
-  // },
-
   return (
     <div className="mb-8 whitespace-pre-line">
       <div className="flex items-center justify-between mb-4 whitespace-pre-line">
@@ -38,7 +19,7 @@ prevDetails, setPrevDetails
           {isLoading ? '生成中... \n Generating...' : '提案を生成 \n Generate Suggestions'}
         </button>
       </div>
-      <div className="space-y-4">
+      <div className="block border rounded-lg border-black p-2 space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">日本語レベル / Japanese Level</label>
           <select
