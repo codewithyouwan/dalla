@@ -11,7 +11,7 @@ export default function FieldsOfInterest({ details, handleArrayInputChange, isLo
           {isLoading ? '生成中... \n Generating...' : '提案を生成 \n Generate Suggestions'}
         </button>
       </div>
-      <div className="space-y-4">
+      <div className="block border rounded-lg border-black p-2 space-y-4">
         {details.interestFields.map((field, index) => (
           <div key={index}>
             <label className="block text-sm font-medium text-gray-700">分野 {index + 1} / Field {index + 1}</label>

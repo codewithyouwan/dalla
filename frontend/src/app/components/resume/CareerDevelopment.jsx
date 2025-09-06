@@ -47,8 +47,8 @@ export default function CareerDevelopment({
           {isLoading ? '取得中...\nFetching...' : 'キャリア情報を取得\nFetch Career Data'}
         </button>
       </div>
-      <div className="space-y-4">
-        <div className='block border rounded-lg p-2 relative justify-center align-center bg-gray-50'>
+      <div className="block border rounded-lg border-black p-2 space-y-4">
+        <div className='block border rounded-lg p-2 relative justify-center align-center'>
           <div>
           <label className="block text-sm font-medium text-gray-700">働く上での価値観/ 3 WorkValues</label>
           <textarea
@@ -71,18 +71,18 @@ export default function CareerDevelopment({
         }
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">User Prompt</label>
+          <label className="block text-sm font-semibold text-green-700">User Prompt</label>
           <textarea
             value={userPrompt.CareerDevelopment}
             onChange={(e)=>{setUserPrompt((prev)=>({...prev, CareerDevelopment: e.target.value}))}}
-            className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="block text-black w-full bg-green-100 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             rows="2"
           />
         </div>
          <button
           onClick={fetchRethinkWorkValues}
           disabled={isLoading || userPrompt.CareerDevelopment.trim()===''}
-          className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 whitespace-pre-line ${isLoading||userPrompt.CareerDevelopment==='' ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`px-4 py-2 bg-green-600 text-white rounded-md hover:bg-red-700 whitespace-pre-line ${isLoading||userPrompt.CareerDevelopment==='' ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {isLoading ? 'Thinking...' : 'Rethink'}
         </button>

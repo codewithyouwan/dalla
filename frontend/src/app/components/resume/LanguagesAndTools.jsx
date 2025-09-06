@@ -11,7 +11,7 @@ export default function LanguagesAndTools({ details, handleInputChange, fetchLan
           {isLoading ? '取得中... \n/ Fetching...' : 'スキルを取得 \n Fetch Skills'}
         </button>
       </div>
-      <div className="space-y-4">
+      <div className="block border rounded-lg border-black p-2 space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">言語 / Languages</label>
           <input

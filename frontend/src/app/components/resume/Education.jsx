@@ -28,8 +28,9 @@ export default function Education({ education, handleArrayInputChange, addEducat
           {isLoading ? '取得中... \n Fetching...' : '学歴を取得 \n Fetch Education'}
         </button>
       </div>
-      {sortedEducation.map((edu, index) => (
-        <div key={index} className="space-y-4 mb-4 border-b pb-4 relative">
+      <div className='block border rounded-lg border-black p-2'>
+        {sortedEducation.map((edu, index) => (
+        <div key={index} className="space-y-4 mb-4  pb-4 relative">
           <div>
             <label className="block text-sm font-medium text-gray-700">年 / Year</label>
             <input
@@ -73,6 +74,7 @@ export default function Education({ education, handleArrayInputChange, addEducat
           )}
         </div>
       ))}
+      </div>
       <div className="flex space-x-4">
         <button
           onClick={addEducation}

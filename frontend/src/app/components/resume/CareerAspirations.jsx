@@ -23,8 +23,8 @@ export default function CareerAspirations({
           {isLoading ? '取得中... \n Fetching...' : '志向を取得 \n Generate'}
         </button>
       </div>
-      <div className="space-y-4">
-        <div className='relative border p-2 rounded-md bg-gray-50 justify-between items-center'>
+      <div className="block border rounded-lg border-black bg-gray-50 p-2 space-y-4">
+        <div className='relative border p-2 rounded-md justify-between items-center'>
           <label className="block text-sm font-medium text-gray-700">希望業界 / Desired Industry</label>
           <textarea
             type="text"
@@ -47,7 +47,7 @@ export default function CareerAspirations({
             </div>
           }
         </div>
-        <div className='relative border p-2 rounded-md bg-gray-50 justify-between items-center'>
+        <div className='relative border p-2 rounded-md justify-between items-center'>
           <label className="block text-sm font-medium text-gray-700">希望職種 / Desired Job Type</label>
           <textarea
             type="text"
@@ -72,7 +72,7 @@ export default function CareerAspirations({
             </div>
           }
         </div>
-        <div className='relative border p-2 rounded-md bg-gray-50 justify-between items-center'>
+        <div className='relative border p-2 rounded-md justify-between items-center'>
           <label className="block text-sm font-medium text-gray-700">目指す役割 / Target Role</label>
           <textarea
             rows={2}
@@ -96,7 +96,7 @@ export default function CareerAspirations({
             </div>
           }
         </div>
-        <div className='relative border p-2 rounded-md bg-gray-50 justify-between items-center'>
+        <div className='relative border p-2 rounded-md justify-between items-center'>
           <label className="block text-sm font-medium text-gray-700">ワークスタイル / Work Style</label>
           <textarea
             rows={2}
@@ -121,13 +121,13 @@ export default function CareerAspirations({
           }
         </div>
         {(newDetails.desiredIndustry!==''||newDetails.desiredJobType!==''||newDetails.targetRole!==''||newDetails.workStyle!=='')&&(
-          <div className="justify-between p-4 border rounded-md bg-gray-50 relative">
+          <div className="justify-between p-4 border rounded-md bg-gray-200 relative font-semibold">
             {error&&<span className="block text-red-600 font-medium">{`❌${error}`}</span>}
             {copy&&<span className="block text-green-600 font-medium">{`✅${copy}`}</span>}
-            <label className={`block text-sm font-medium text-black`}>AI提案 / AI Suggestions</label>
+            <label className={`block text-sm text-black`}>AI提案 / AI Suggestions</label>
             <ol className="mt-2 space-y-2 text-black">
             <li
-              className = {`p-2 cursor-pointer border rounded-lg ${color[0]} hover:bg-gray-100`}
+              className = {`p-2 cursor-pointer border rounded-lg border-black ${color[0]} hover:bg-gray-100`}
               onClick ={()=>{
                 if(newDetails.desiredIndustry===''){
                   setError("希望業界が空です / Desired Industry is empty");
@@ -146,7 +146,7 @@ export default function CareerAspirations({
               <span className="text-black font-medium test-sm whitespace-pre-line">{`希望業界 / Desired Industry\n${newDetails.desiredIndustry}`}</span>
             </li>
             <li
-              className = {`p-2 cursor-pointer border rounded-lg ${color[1]} hover:bg-gray-100`}
+              className = {`p-2 cursor-pointer border rounded-lg border-black ${color[1]} hover:bg-gray-100`}
               onClick ={()=>{
                 if(newDetails.desiredJobType===''){
                   setError("希望職種が空です / Desired Job Type is empty");
@@ -166,7 +166,7 @@ export default function CareerAspirations({
 
             </li>
             <li
-              className = {`p-2 cursor-pointer border rounded-lg ${color[2]} hover:bg-gray-100`}
+              className = {`p-2 cursor-pointer border rounded-lg border-black ${color[2]} hover:bg-gray-100`}
               onClick ={()=>{
                 if(newDetails.targetRole===''){
                   setError("目指す役割が空です / Target Role is empty");
@@ -185,7 +185,7 @@ export default function CareerAspirations({
               <span className="text-black font-medium test-sm whitespace-pre-line">{`目指す役割 / Target Role\n${newDetails.targetRole}`}</span>
             </li>
             <li
-              className = {`p-2 cursor-pointer border rounded-lg ${color[3]} hover:bg-gray-100`}
+              className = {`p-2 cursor-pointer border rounded-lg border-black ${color[3]} hover:bg-gray-100`}
               onClick ={()=>{
                 if(newDetails.workStyle===''){
                   setError("ワークスタイルが空です / Work Style is empty");

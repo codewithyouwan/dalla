@@ -49,8 +49,8 @@ const fetchRethinkJapaneseCompanies = async () => {
             {isLoading ? '生成中... \n Generating...' : '提案を生成 \n Generate Suggestions'}
         </button>
       </div>
-      <div className="space-y-4">
-        <div className='relative border p-2 rounded-md bg-gray-50 justify-between items-center'>
+      <div className="block border rounded-lg border-black p-2 space-y-4">
+        <div className='relative border p-2 rounded-md justify-between items-center'>
           <label className="block text-sm font-medium text-gray-700">番興味がある点 / Most Interesting Aspect</label>
           <textarea
             type="text"
@@ -72,7 +72,7 @@ const fetchRethinkJapaneseCompanies = async () => {
             </div>
           }
         </div>
-        <div className = 'relative border p-2 rounded-md bg-gray-50 justify-between items-center'>
+        <div className = 'relative border p-2 rounded-md justify-between items-center'>
           <label className="block text-sm font-medium text-gray-700">習得したいこと / Skills to Acquire</label>
           <textarea
             type="text"
@@ -95,19 +95,19 @@ const fetchRethinkJapaneseCompanies = async () => {
           }
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">User Prompt</label>
+          <label className="block text-sm font-semibold text-green-700">User Prompt</label>
           <textarea
             type="text"
             rows={2}
             name="UserPrompt"
             value={userPrompt.japaneseCompany}
             onChange={(e)=>(setUserPrompt((prev)=>({...prev, japaneseCompany:e.target.value})))}
-            className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block text-black w-full rounded-md border-gray-300 bg-green-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
           <button
             onClick={fetchRethinkJapaneseCompanies}
-            disabled={isLoading}
-            className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={isLoading || userPrompt.japaneseCompany.trim()===''}
+            className={`px-4 py-2 my-2 bg-green-600 text-white rounded-md hover:bg-red-700 ${isLoading || userPrompt.japaneseCompany.trim()==='' ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {isLoading ? 'Loading' : 'Rethink'}
         </button>

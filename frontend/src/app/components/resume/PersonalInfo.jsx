@@ -103,7 +103,7 @@ export default function PersonalInfo({
           {isLoading ? '取得中...\nFetching...' : '個人情報を取得\nFetch Personal Data'}
         </button>
       </div>
-      <div className="space-y-4">
+      <div className="block border rounded-lg border-black p-2 space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">社員番号 / Employee Number</label>
           <input
@@ -141,7 +141,7 @@ export default function PersonalInfo({
             placeholder="例: 東京"
           />
         </div>
-        <div className='relative border p-2 rounded-md bg-gray-50 justify-between items-center'>
+        <div className='relative border p-2 rounded-md justify-between items-center'>
           <label className="block text-sm font-medium text-gray-700">趣味 / Hobby</label>
           <input
             type="text"
@@ -165,8 +165,8 @@ export default function PersonalInfo({
         </div>
         {newDetails.hobby!==''&&
           (
-            <div className="relative border p-2 rounded-md bg-gray-50 justify-between items-center">
-              <ul className="text-sm font-medium text-gray-700">AI提案された趣味 / AI Suggested Hobby
+            <div className="relative border p-2 rounded-md bg-gray-200 justify-between items-center">
+              <ul className="text-sm font-medium text-gray-700 font-semibold">AI提案された趣味 / AI Suggested Hobby
                 <li 
                   className='p-2 cursor-pointer border rounded-lg bg-blue-100 hover:bg-gray-100'
                   onClick={

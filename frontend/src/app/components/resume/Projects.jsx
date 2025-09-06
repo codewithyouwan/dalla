@@ -22,7 +22,7 @@ export default function Projects({
         </button>
       </div>
       {/* Internships Section */}
-      <div className="space-y-4 mb-4">
+      <div className="block border rounded-lg border-black p-2 space-y-4 mb-4">
         <h3 className="text-lg font-bold text-gray-700">{`インターンシップ / Internships`}</h3>
         {internships.slice(0, 2).map((internship, index) => (
           <div key={`internship-${index}`} className="space-y-4 border-b pb-4 relative">
@@ -124,7 +124,7 @@ export default function Projects({
         )}
       </div>
       {/* Projects Section */}
-      <div className="space-y-4">
+      <div className="block border rounded-lg border-black p-2 space-y-4">
         <h3 className="text-lg font-semibold text-gray-700">{`プロジェクト / Projects`}</h3>
         {projects.slice(0, 2).map((project, index) => (
           <div key={`project-${index}`} className="space-y-4 border-b pb-4 relative">
