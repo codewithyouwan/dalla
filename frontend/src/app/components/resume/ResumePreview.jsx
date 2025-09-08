@@ -1,4 +1,6 @@
-export default function ResumePreview({ isLoading, previewLink, error, handleRefresh,details}) {
+export default function ResumePreview({ 
+isLoading, previewLink, error, handleRefresh,details,handleDownload
+}) {
   return (
     <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full">
       <div className="flex justify-between items-center mb-4 whitespace-pre-line">
@@ -9,6 +11,11 @@ export default function ResumePreview({ isLoading, previewLink, error, handleRef
           className={`px-4 py-2 rounded-md text-white ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
         >
           {isLoading ? 'Generating...' : 'Refresh'}
+        </button>
+        <button
+          onClick={handleDownload}
+        >
+
         </button>
       </div>
       <div className="border border-gray-300 rounded-md h-[calc(100%-4rem)]">

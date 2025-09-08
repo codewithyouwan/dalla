@@ -424,7 +424,7 @@ export default function MakeResume() {
     });
   };
 
-    const compileResume = async () => {
+      const compileResume = async () => {
     try {
       const data = new FormData();
       data.append('details', JSON.stringify(formData));
@@ -440,11 +440,30 @@ export default function MakeResume() {
         throw new Error(errorData.error || 'Failed to generate resume');
       }
 
-      const pdfBlob = await response.blob();
+      const { downloadUrl, sessionId: newSessionId } = await response.json();
+      setSessionId(newSessionId);
+      setDownloadUrl(downloadUrl);
+
+      toast.success('Resume generated successfully! Click the link or button to download.');
+    } catch (error) {
+      console.error('Error generating resume:', error.message);
+      toast.error(`Error: ${error.message}`);
+    }
+  };
+
+  const handleDownload = async () => {
+    try {
+      const pdfResponse = await fetch(downloadUrl);
+      if (!pdfResponse.ok) {
+        const errorData = await pdfResponse.json();
+        throw new Error(errorData.error || 'Failed to download resume');
+      }
+
+      const pdfBlob = await pdfResponse.blob();
       const pdfUrl = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = pdfUrl;
-      link.download = `resume-${sessionId || 'download'}.pdf`;
+      link.download = `resume-${sessionId}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -737,6 +756,7 @@ export default function MakeResume() {
         error={error}
         handleRefresh={compileResume}
         details={details}
+        handleDownload={handleDownload}
       />
     </div>
   );

@@ -1,23 +1,27 @@
-import { handler as serveTempHandler } from '../src/app/api/serveTemp/[sessionId]/route';
+const fs = require('fs/promises');
+const path = require('path');
 
-export const handler = async (event, context) => {
+exports.handler = async (event, context) => {
   const sessionId = event.pathParameters?.sessionId;
-  const request = { params: { sessionId } };
-  const response = await serveTempHandler(request, { params: { sessionId } });
-  if (response.status === 200) {
+  const pdfPath = path.join('/tmp/resume_temp', `resume-${sessionId}.pdf`);
+
+  try {
+    const pdfBuffer = await fs.readFile(pdfPath);
     return {
       statusCode: 200,
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename=resume-${sessionId}.pdf`,
       },
-      body: Buffer.from(await response.arrayBuffer()).toString('base64'),
+      body: pdfBuffer.toString('base64'),
       isBase64Encoded: true,
     };
+  } catch (error) {
+    console.error('Error serving resume:', error.message, error.stack);
+    return {
+      statusCode: 404,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: `Failed to serve resume: ${error.message}` }),
+    };
   }
-  return {
-    statusCode: response.status,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(await response.json()),
-  };
 };
