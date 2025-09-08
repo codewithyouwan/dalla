@@ -424,12 +424,13 @@ export default function MakeResume() {
     });
   };
 
-      const compileResume = async () => {
+  const compileResume = async () => {
     try {
       const data = new FormData();
-      data.append('details', JSON.stringify(formData));
+      data.append('details', JSON.stringify(details));
       if (sessionId) data.append('sessionId', sessionId);
-
+      if (details.photo) data.append('photo', details.photo);
+      
       const response = await fetch('/api/generateResume', {
         method: 'POST',
         body: data,
