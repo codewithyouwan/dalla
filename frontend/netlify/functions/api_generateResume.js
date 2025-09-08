@@ -1,4 +1,4 @@
-import { handler as serveResumeHandler } from '../src/app/api/serveResume/[sessionId]/route';
+import { handler as serveResumeHandler } from '../src/app/api/serveTemp/[sessionId]/route';
 
 export const handler = async (event, context) => {
   const sessionId = event.pathParameters?.sessionId;

@@ -4,17 +4,16 @@
   environment = { NODE_VERSION = "18.17.0" }
 
 [functions]
-  directory = "netlify/functions"
   node_bundler = "esbuild"
 
-[[functions]]
-  function = "api_generateResume"
-  path = "/api/generateResume"
-  memory = 2048
-  maxDuration = 60
+[[redirects]]
+  from = "/api/generateResume"
+  to = "/.netlify/functions/api_generateResume"
+  status = 200
+  force = true
 
-[[functions]]
-  function = "api_serveTemp"
-  path = "/api/serveTemp/:sessionId"
-  memory = 512
-  maxDuration = 10
+[[redirects]]
+  from = "/api/serveTemp/:sessionId"
+  to = "/.netlify/functions/api_serveTemp/:sessionId"
+  status = 200
+  force = true
