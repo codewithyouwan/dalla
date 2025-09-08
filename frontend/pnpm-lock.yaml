@@ -14,9 +14,6 @@ importers:
       '@azure/core-auth':
         specifier: ^1.10.0
         version: 1.10.0
-      '@huggingface/inference':
-        specifier: ^3.15.0
-        version: 3.15.0
       '@microsoft/fetch-event-source':
         specifier: ^2.0.1
         version: 2.0.1
@@ -62,9 +59,6 @@ importers:
       path:
         specifier: ^0.12.7
         version: 0.12.7
-      pdf-parse:
-        specifier: ^1.1.1
-        version: 1.1.1
       puppeteer-core:
         specifier: ^24.19.0
         version: 24.19.0
@@ -203,17 +197,6 @@ packages:
   '@eslint/plugin-kit@0.3.5':
     resolution: {integrity: sha512-Z5kJ+wU3oA7MMIqVR9tyZRtjYPr4OC004Q4Rw7pgOKUOKkJfZ3O24nz3WYfGRpMDNmcOi3TwQOmgm7B7Tpii0w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@huggingface/inference@3.15.0':
-    resolution: {integrity: sha512-C+Adt4fu4ztlq0Al9EOgEdK5Hl8ebV1eoDEWegJPdAJ97U8A1aqBbl1Sp4S4+wIy3nLApTrtcLuoizGZmLtDMA==}
-    engines: {node: '>=18'}
-
-  '@huggingface/jinja@0.5.1':
-    resolution: {integrity: sha512-yUZLld4lrM9iFxHCwFQ7D1HW2MWMwSbeB7WzWqFYDWK+rEb+WldkLdAJxUPOmgICMHZLzZGVcVjFh3w/YGubng==}
-    engines: {node: '>=18'}
-
-  '@huggingface/tasks@0.19.43':
-    resolution: {integrity: sha512-ANO23K3ugclBl6VLwdt+7MxBkRkKEE17USUSqprHb29UB5ISigH+0AJcEuDA064uzn0hqYrG/nOcv1yARRt8bw==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -1951,9 +1934,6 @@ packages:
       sass:
         optional: true
 
-  node-ensure@0.0.0:
-    resolution: {integrity: sha512-DRI60hzo2oKN1ma0ckc6nQWlHU69RH6xN0sjQTjMpChPfTYvKZdcQFfdYK2RWbJcKyUizSIy/l8OTGxMAM1QDw==}
-
   node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
     engines: {node: 4.x || >=6.0.0}
@@ -2068,10 +2048,6 @@ packages:
 
   path@0.12.7:
     resolution: {integrity: sha512-aXXC6s+1w7otVF9UletFkFcDsJeO7lSZBPUQhtb5O0xJe8LtYhj/GxldoL09bBj9+ZmE2hNoHqQSFMN5fikh4Q==}
-
-  pdf-parse@1.1.1:
-    resolution: {integrity: sha512-v6ZJ/efsBpGrGGknjtq9J/oC8tZWq0KWL5vQrk2GlzLEQPUDB1ex+13Rmidl1neNN358Jn9EHZw5y07FFtaC7A==}
-    engines: {node: '>=6.8.1'}
 
   pend@1.2.0:
     resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
@@ -2769,15 +2745,6 @@ snapshots:
     dependencies:
       '@eslint/core': 0.15.2
       levn: 0.4.1
-
-  '@huggingface/inference@3.15.0':
-    dependencies:
-      '@huggingface/jinja': 0.5.1
-      '@huggingface/tasks': 0.19.43
-
-  '@huggingface/jinja@0.5.1': {}
-
-  '@huggingface/tasks@0.19.43': {}
 
   '@humanfs/core@0.19.1': {}
 
@@ -4645,8 +4612,6 @@ snapshots:
       - '@babel/core'
       - babel-plugin-macros
 
-  node-ensure@0.0.0: {}
-
   node-fetch@2.7.0:
     dependencies:
       whatwg-url: 5.0.0
@@ -4776,13 +4741,6 @@ snapshots:
     dependencies:
       process: 0.11.10
       util: 0.10.4
-
-  pdf-parse@1.1.1:
-    dependencies:
-      debug: 3.2.7
-      node-ensure: 0.0.0
-    transitivePeerDependencies:
-      - supports-color
 
   pend@1.2.0: {}
 
