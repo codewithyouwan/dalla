@@ -3,8 +3,8 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/tmp/:path*',
-        destination: '/api/serveTemp?path=:path*',
+        source: '/resume/:sessionId',
+        destination: '/api/serveTemp/:sessionId',
       },
     ];
   },

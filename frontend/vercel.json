@@ -1,8 +1,6 @@
 {
   "functions": {
-    "api/generateResume/*.js": {
-      "memory": 3008,
-      "maxDuration": 60
-    }
+    "api/generateResume/*.js": { "memory": 3008, "maxDuration": 60 },
+    "api/serveResume/**/*.js": { "memory": 512, "maxDuration": 10 }
   }
 }
