@@ -14,7 +14,7 @@
   maxDuration = 60
 
 [[functions]]
-  function = "api_serveResume"
+  function = "api_serveTemp"
   path = "/api/serveTemp/:sessionId"
   memory = 512
   maxDuration = 10
