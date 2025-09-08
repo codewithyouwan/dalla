@@ -7,6 +7,9 @@
 [functions]
   node_bundler = "esbuild"
 
+[[plugins]]
+package = "@netlify/plugin-nextjs"
+
 [[redirects]]
   from = "/api/generateResume"
   to = "/.netlify/functions/api_generateResume"
