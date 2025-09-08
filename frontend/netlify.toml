@@ -1,7 +1,7 @@
 [build]
   command = "pnpm build"
   publish = ".next"
-  environment = { NODE_VERSION = "18.18.0" }
+  environment = { NODE_VERSION = "20.17.0" }
 
 [functions]
   node_bundler = "esbuild"
@@ -17,3 +17,8 @@
   to = "/.netlify/functions/api_serveTemp/:sessionId"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
