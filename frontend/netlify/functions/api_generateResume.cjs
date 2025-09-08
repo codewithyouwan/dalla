@@ -4,7 +4,6 @@ const handlebars = require('handlebars');
 const fs = require('fs/promises');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const sharp = require('sharp');
 
 const escapeHtml = (str) => {
   if (!str || typeof str !== 'string') return '未入力';
@@ -90,16 +89,6 @@ exports.handler = async (event, context) => {
     let photoBase64 = '';
     if (photo && photo.size > 0) {
       const photoBuffer = Buffer.from(await photo.arrayBuffer());
-      const metadata = await sharp(photoBuffer).metadata();
-      if (metadata.format !== 'jpeg') {
-        throw new Error('Only JPEG supported.');
-      }
-      if (metadata.width !== 280 || metadata.height !== 360) {
-        throw new Error('Image must be 280x360 pixels.');
-      }
-      if (photoBuffer.length > 5 * 1024 * 1024) {
-        throw new Error('Photo exceeds 5MB.');
-      }
       photoBase64 = `data:image/jpeg;base64,${photoBuffer.toString('base64')}`;
     }
 
