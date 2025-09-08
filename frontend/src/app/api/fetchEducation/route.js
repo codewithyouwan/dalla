@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import Prompt from '../../helper/prompt'; // Adjust path to prompt.jsx
+import Prompt from '../../helper/Prompt'; // Adjust path to prompt.jsx
 import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
 import { AzureKeyCredential } from "@azure/core-auth";
 

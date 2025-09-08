@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import Prompt from '../../helper/prompt'; // Adjust path based on your project structure
+import Prompt from '../../helper/Prompt'; // Adjust path based on your project structure
 import OpenAI from 'openai';
 
 export const runtime = 'nodejs';

@@ -1,6 +1,6 @@
 import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
 import { AzureKeyCredential } from "@azure/core-auth";
-import Prompt from "../../helper/prompt";
+import Prompt from "../../helper/Prompt";
 
 export const runtime = 'nodejs';
 function checkValidityOfScores(total, vocabulary, reading, listening, language_and_reading) {

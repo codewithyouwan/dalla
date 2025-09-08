@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import Prompt from '../../../helper/prompt';
+import Prompt from '../../../helper/Prompt';
 import OpenAI from 'openai';
 
 export const runtime = 'nodejs';

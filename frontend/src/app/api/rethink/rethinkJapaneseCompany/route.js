@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { OpenAI } from 'openai';
-import Prompt from '../../../helper/prompt';
+import Prompt from '../../../helper/Prompt';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

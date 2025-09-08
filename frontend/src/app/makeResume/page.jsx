@@ -1,6 +1,6 @@
 'use client';
 import React, { Suspense } from 'react';
-import MakeResume from './makeResume';
+import MakeResume from './MakeResume';
 
 export default function Page() {
   return (
