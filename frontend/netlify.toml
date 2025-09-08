@@ -1,6 +1,7 @@
 [build]
+  base = "frontend"
   command = "pnpm build"
-  publish = ".next"
+  publish = "frontend/.next"
   environment = { NODE_VERSION = "20.17.0" }
 
 [functions]
