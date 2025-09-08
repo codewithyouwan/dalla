@@ -4,6 +4,7 @@ const handlebars = require('handlebars');
 const fs = require('fs/promises');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+// const sharp = require('sharp');
 
 const escapeHtml = (str) => {
   if (!str || typeof str !== 'string') return '未入力';
