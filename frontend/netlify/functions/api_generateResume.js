@@ -1,23 +1,20 @@
-import { handler as serveResumeHandler } from '../src/app/api/serveTemp/[sessionId]/route';
+import { handler as generateResumeHandler } from '../src/app/api/generateResume/route';
 
 export const handler = async (event, context) => {
-  const sessionId = event.pathParameters?.sessionId;
-  const request = { params: { sessionId } };
-  const response = await serveResumeHandler(request, { params: { sessionId } });
-  if (response.status === 200) {
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename=resume-${sessionId}.pdf`,
-      },
-      body: Buffer.from(await response.arrayBuffer()).toString('base64'),
-      isBase64Encoded: true,
-    };
-  }
+  const request = {
+    formData: async () => {
+      const formData = new FormData();
+      const body = JSON.parse(event.body || '{}');
+      Object.entries(body).forEach(([key, value]) => formData.append(key, value));
+      return formData;
+    },
+  };
+  const response = await generateResumeHandler(request);
   return {
     statusCode: response.status,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(await response.json()),
   };
 };
