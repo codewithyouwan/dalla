@@ -164,6 +164,8 @@ app.get('/temp/:filename', (req, res) => {
   res.sendFile(filePath, (err) => {
     if (err) {
       res.status(404).json({ error: 'File not found' });
+    }else{
+      fs.unlink(filePath).catch(console.error);//delete after serving.
     }
   });
 });
