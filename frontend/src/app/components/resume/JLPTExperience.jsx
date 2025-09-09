@@ -132,12 +132,12 @@ prevDetails, setPrevDetails
         )}
         {
           details.selectedSuggestion!==''&&(
-            <div className='justify-center align-center p-2 block relative border rounded-lg bg-gray-50'>
+            <div className='justify-center align-center p-2 block relative border rounded-lg'>
               <label className="block text-sm font-medium text-gray-700">選択された提案 / Selected Suggestion</label>
               <textarea
                 value={details.selectedSuggestion}
                 onChange={(e)=>{setDetails((prev)=>({...prev, selectedSuggestion: e.target.value}));}}
-                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-gray-100"
+                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 rows="4"
               />
               {prevDetails.selectedSuggestion!==''&&prevDetails.selectedSuggestion!==details.selectedSuggestion&&
