@@ -720,7 +720,7 @@ export default function MakeResume() {
             disabled={isLoading}
             className={`px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            {isLoading ? '保存中... / Saving...' : '履歴書を保存 / Save Resume'}
+            {isLoading ? '保存中... / Saving Data...' : 'データを保存 / Save Data'}
           </button>
         </div>
       </div>
