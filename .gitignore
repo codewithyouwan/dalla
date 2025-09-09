@@ -1,3 +1,5 @@
 backend/src/embeddings/model/0_StaticEmbedding
 **/node_modules/
 node_modules/.bin/
+resume-api/temp/
+chrome

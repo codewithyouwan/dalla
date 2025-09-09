@@ -441,7 +441,7 @@ export default function MakeResume() {
         setError(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
       }
       const data = await response.json();
-      if (!data.previewUrl || !data.previewUrl.startsWith('/temp/resume-') || !data.previewUrl.endsWith('.pdf')) {
+      if (!data.previewUrl || !data.previewUrl.includes('/temp/resume-') || !data.previewUrl.endsWith('.pdf')) {
         setError(`Invalid preview URL: ${data.previewUrl}`);
       }
       setPreviewLink(data.previewUrl);

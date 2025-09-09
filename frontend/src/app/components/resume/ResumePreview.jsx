@@ -16,9 +16,9 @@ export default function ResumePreview({ isLoading, previewLink, error, handleRef
           <div className="flex justify-center items-center h-full">
             <p className="text-gray-600">Generating resume preview...</p>
           </div>
-        ) : previewLink && previewLink.startsWith('resume-') && previewLink.endsWith('.pdf') ? (
+        ) : previewLink && previewLink.includes('resume-') && previewLink.endsWith('.pdf') ? (
           <iframe
-            src={`/api/serveTemp?path=${encodeURIComponent(previewLink)}`}
+            src={previewLink}
             className="w-full h-full border-none"
             title="Resume Preview"
           />

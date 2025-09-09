@@ -10,7 +10,8 @@ const multer = require('multer');
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
-
+const tempPath = path.join(process.cwd(), 'temp');
+app.use('/temp', express.static(tempPath));
 // Escape HTML function
 const escapeHtml = (str) => {
   if (!str || typeof str !== 'string') return '未入力';
@@ -38,9 +39,15 @@ handlebars.registerHelper('math', function (value, operator, operand) {
   }
 });
 
-app.use(cors()); // Allow requests from your Next.js app
+app.use(cors({origin:'http://localhost:3000'})); // Allow requests from your Next.js app
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*"); 
+  res.setHeader("X-Frame-Options", "ALLOWALL"); 
+  res.setHeader("Content-Security-Policy", "frame-ancestors *"); 
+  next();
+});
 
 // Resume generation endpoint
 app.post('/api/resume', upload.fields([{ name: 'details' }, { name: 'photo' }, { name: 'sessionId' }]), async (req, res) => {
@@ -122,7 +129,7 @@ app.post('/api/resume', upload.fields([{ name: 'details' }, { name: 'photo' }, {
     const htmlContent = template({ ...escapedDetails, photo: photoBase64 });
 
     const browser = await puppeteer.launch({
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
+      executablePath: `chrome/mac_arm-140.0.7339.80/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing`,
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
@@ -141,7 +148,7 @@ app.post('/api/resume', upload.fields([{ name: 'details' }, { name: 'photo' }, {
 
     res.status(200).json({
       message: 'Resume preview generated',
-      previewUrl: `/temp/resume-${sessionId}.pdf`,
+      previewUrl: `http://localhost:3001/temp/resume-${sessionId}.pdf`,
       tempPdfPath: pdfPath,
       sessionId,
     });
