@@ -432,7 +432,8 @@ export default function MakeResume() {
         formData.append('photo', details.photo);
       }
       formData.append('sessionId', sessionId);
-      const response = await fetch('http://localhost:3001/api/resume', {
+      // https://dalla-production.up.railway.app/api/resume
+      const response = await fetch('https://dalla-production.up.railway.app/api/resume', {
         method: 'POST',
         body: formData,
       });

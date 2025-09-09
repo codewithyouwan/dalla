@@ -39,7 +39,7 @@ handlebars.registerHelper('math', function (value, operator, operand) {
   }
 });
 
-app.use(cors({origin:'http://localhost:3000'})); // Allow requests from your Next.js app
+app.use(cors()); // Allow requests from your Next.js app
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use((req, res, next) => {
@@ -128,8 +128,8 @@ app.post('/api/resume', upload.fields([{ name: 'details' }, { name: 'photo' }, {
 
     const htmlContent = template({ ...escapedDetails, photo: photoBase64 });
 
+    // executablePath: `chrome/mac_arm-140.0.7339.80/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing`,
     const browser = await puppeteer.launch({
-      executablePath: `chrome/mac_arm-140.0.7339.80/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing`,
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
