@@ -14,7 +14,7 @@ import FieldsOfInterest from '../components/resume/FieldsOfInterest';
 import JapaneseCompanies from '../components/resume/JapaneseCompanies';
 import CareerDevelopment from '../components/resume/CareerDevelopment';
 import JLPTExperience from '../components/resume/JLPTExperience';
-import Suggestions from '../components/resume/Suggestions';
+// import Suggestions from '../components/resume/Suggestions';
 import ResumePreview from '../components/resume/ResumePreview';
 import CustomToaster from '../components/Toast';
 import toast from 'react-hot-toast';
@@ -424,7 +424,7 @@ export default function MakeResume() {
     });
   };
 
-  const compileResume = async () => {
+    const compileResume = async () => {
     return fetchWithToast('Resume Compilation', async () => {
       const formData = new FormData();
       formData.append('details', JSON.stringify(details));
@@ -432,7 +432,7 @@ export default function MakeResume() {
         formData.append('photo', details.photo);
       }
       formData.append('sessionId', sessionId);
-      const response = await fetch('/api/generateResume', {
+      const response = await fetch('http://localhost:3001/api/resume', {
         method: 'POST',
         body: formData,
       });
@@ -441,7 +441,7 @@ export default function MakeResume() {
         setError(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
       }
       const data = await response.json();
-      if (!data.previewUrl || !data.previewUrl.startsWith('resume-') || !data.previewUrl.endsWith('.pdf')) {
+      if (!data.previewUrl || !data.previewUrl.startsWith('/temp/resume-') || !data.previewUrl.endsWith('.pdf')) {
         setError(`Invalid preview URL: ${data.previewUrl}`);
       }
       setPreviewLink(data.previewUrl);
@@ -449,7 +449,6 @@ export default function MakeResume() {
       setSessionId(data.sessionId);
     });
   };
-
   const saveResume = async () => {
     return fetchWithToast('Resume Save', async () => {
       const formData = new FormData();
