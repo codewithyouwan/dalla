@@ -6,7 +6,8 @@ import UndoButton from '../buttons/UndoButton';
 import { set } from 'date-fns';
 
 export default function PersonalInfo({ 
-  details, handleInputChange, fetchPersonalDetails, isLoading, setDetails, newDetails, setNewDetails, prevDetails, setPrevDetails
+  details, handleInputChange, fetchPersonalDetails, isLoading, 
+  setDetails, newDetails, setNewDetails, prevDetails, setPrevDetails
 }) {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
@@ -14,6 +15,8 @@ export default function PersonalInfo({
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef(null);
   const previewCanvasRef = useRef(null);
 
   useEffect(() => {
@@ -30,10 +33,15 @@ export default function PersonalInfo({
 
   const handleRemovePhoto = () => {
     console.log('Remove photo clicked');
-    handleInputChange({ target: { name: 'photo', type: 'file', files: [] } });
+    setDetails(prev => ({ ...prev, photo: null })); // Directly clear photo in state
     setPhotoPreview(null);
     setImageToCrop(null);
+    setDragActive(false);
     setShowCropper(false);
+    // Do not set dragActive to true to avoid interfering with new uploads
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // Reset file input
+    }
   };
 
   const onCropComplete = (croppedArea, croppedAreaPixels) => {
@@ -67,10 +75,13 @@ export default function PersonalInfo({
     setShowCropper(false);
     setImageToCrop(null);
     setZoom(1);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // Reset file input
+    }
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files[0] || e.dataTransfer.files[0];
     if (file && file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -78,11 +89,33 @@ export default function PersonalInfo({
         setImageToCrop(e.target.result);
         setShowCropper(true);
         setZoom(1);
+        setDragActive(true);
       };
       reader.readAsDataURL(file);
-    } else {
+    } else if (file) {
       alert('Please upload a JPEG image under 5MB');
     }
+  };
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    handleFileChange(e);
+  };
+
+  const handleClick = () => {
+    fileInputRef.current.click();
   };
 
   const nameOptions = [
@@ -151,54 +184,60 @@ export default function PersonalInfo({
             className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             placeholder="例: 読書"
           />
-          {prevDetails.hobby!==''&&prevDetails.hobby!==details.hobby&&
+          {prevDetails.hobby !== '' && prevDetails.hobby !== details.hobby && (
             <div className='absolute top-0 right-0 flex'>
               <UndoButton
-                clickFunction={() =>{
-                    setDetails(prev => ({...prev, hobby: prevDetails.hobby}));
-                    setPrevDetails(prev=>({...prev,hobby:''}));
-                  }
-                }
+                clickFunction={() => {
+                  setDetails(prev => ({ ...prev, hobby: prevDetails.hobby }));
+                  setPrevDetails(prev => ({ ...prev, hobby: '' }));
+                }}
               />
             </div>
-          }
+          )}
         </div>
-        {newDetails.hobby!==''&&
-          (
-            <div className="relative border p-2 rounded-md bg-gray-200 justify-between items-center">
-              <ul className="text-sm font-medium text-gray-700 font-semibold">AI提案された趣味 / AI Suggested Hobby
-                <li 
-                  className='p-2 cursor-pointer border rounded-lg bg-blue-100 hover:bg-gray-100'
-                  onClick={
-                    ()=>{
-                    setPrevDetails((prev)=>({...prev,hobby:details.hobby}));
-                    setDetails((prev)=>({...prev,hobby:newDetails.hobby}));
-                  }
-                }
-                > 
-                  {newDetails.hobby} 
-                </li>
-              </ul>
-              <div className="absolute top-0 right-0 flex">
-                <DeleteButton
-                  clickFunction = {
-                    ()=> setNewDetails((prev)=>({...prev,hobby:''}))
-                  }
-                />
-              </div>
+        {newDetails.hobby !== '' && (
+          <div className="relative border p-2 rounded-md bg-gray-200 justify-between items-center">
+            <ul className="text-sm font-medium text-gray-700 font-semibold">AI提案された趣味 / AI Suggested Hobby
+              <li 
+                className='p-2 cursor-pointer border rounded-lg bg-blue-100 hover:bg-gray-100'
+                onClick={() => {
+                  setPrevDetails((prev) => ({ ...prev, hobby: details.hobby }));
+                  setDetails((prev) => ({ ...prev, hobby: newDetails.hobby }));
+                }}
+              > 
+                {newDetails.hobby} 
+              </li>
+            </ul>
+            <div className="absolute top-0 right-0 flex">
+              <DeleteButton
+                clickFunction={() => setNewDetails((prev) => ({ ...prev, hobby: '' }))}
+              />
             </div>
-          )
-        }
+          </div>
+        )}
         <div>
           <label className="text-sm font-medium text-gray-700">プロフィール写真 / Profile Photo</label>
-          <span className="text-sm font-semibold text-red-700"> (Only jpeg format supported.)</span>
-          <input
-            type="file"
-            name="photo"
-            accept="image/jpeg"
-            onChange={handleFileChange}
-            className="mt-1 block w-full text-black"
-          />
+          <span className="text-sm font-semibold text-red-700"> (Only JPEG format supported.)</span>
+          <div
+            className={`mt-1 border-2 border-dashed rounded-md p-4 text-center cursor-pointer ${dragActive ? 'border-gray-300':'border-blue-500 bg-blue-50'}`}
+            onDragEnter={handleDrag}
+            onDragOver={handleDrag}
+            onDragLeave={handleDrag}
+            onDrop={handleDrop}
+            onClick={handleClick}
+          >
+            <input
+              type="file"
+              name="photo"
+              accept="image/jpeg"
+              onChange={handleFileChange}
+              className="hidden"
+              ref={fileInputRef}
+            />
+            <p className="text-gray-600">
+              Drag and drop a JPEG image here, or click to select
+            </p>
+          </div>
           {photoPreview && !showCropper && (
             <div className="mt-2 flex items-center gap-2">
               <img src={photoPreview} alt="Photo Preview" className="max-w-[140px] h-auto border" />
