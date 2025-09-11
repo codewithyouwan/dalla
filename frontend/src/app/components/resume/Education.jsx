@@ -1,4 +1,4 @@
-export default function Education({ education, handleArrayInputChange, addEducation, removeEducation, fetchEducation, isLoading }) {
+export default function Education({ education, handleArrayInputChange, addEducation, removeEducation, isLoading, fetchWtithToast }) {
   // Sort education by year (latest first)
   const sortedEducation = [...education].sort((a, b) => {
     const endYearA = parseInt(a.year.match(/– (\d{4})年/)?.[1] || a.year.replace(/年.*$/, '')) || 0;
@@ -14,6 +14,25 @@ export default function Education({ education, handleArrayInputChange, addEducat
       return `${name} (<strong>${major}</strong>)`;
     }
     return institution;
+  };
+    const fetchEducation = async () => {
+    return fetchWithToast('Education', async () => {
+      const res = await fetch('/api/fetchEducation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_number: details.id_number }),
+      });
+      if (!res.ok) throw new Error(`Education fetch error: ${res.statusText}`);
+      const data = await res.json();
+      if (data.education && Array.isArray(data.education)) {
+        setDetails((prev) => ({
+          ...prev,
+          education: data.education.length > 0 ? data.education : prev.education,
+        }));
+      } else {
+        setError('No education data found');
+      }
+    });
   };
 
   return (

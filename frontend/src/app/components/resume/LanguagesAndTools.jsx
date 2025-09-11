@@ -1,4 +1,34 @@
-export default function LanguagesAndTools({ details, handleInputChange, fetchLanguagesAndTools, isLoading }) {
+export default function LanguagesAndTools({ details, handleInputChange, isLoading, fetchWithToast }) {
+    const fetchLanguagesAndTools = async () => {
+    return fetchWithToast('Languages and Tools', async () => {
+      const res = await fetch('/api/languagesAndTools', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_number: details.id_number }),
+      });
+      if (!res.ok) throw new Error(`Languages and tools API error: ${res.statusText}`);
+      const gptData = await res.json();
+      if (gptData.suggestions) {
+        const formMatch = gptData.suggestions.match(/===FORM-START===[\s\S]*?\n([\s\S]*?)\n===FORM-END===/);
+        if (formMatch) {
+          const lines = formMatch[1].trim().split('\n').map(line => line.trim());
+          if (lines.length >= 2) {
+            setDetails((prev) => ({
+              ...prev,
+              languages: lines[0].replace('プログラミング言語: ', '') || '',
+              devTools: lines[1].replace('開発ツール: ', '') || '',
+            }));
+          } else {
+            setError('Invalid languages and tools response format');
+          }
+        } else {
+          setError('Failed to parse languages and tools response');
+        }
+      } else {
+        setError('No languages and tools suggestions');
+      }
+    });
+  };
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center whitespace-pre-line">

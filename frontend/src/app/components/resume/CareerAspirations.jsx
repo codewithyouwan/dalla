@@ -2,7 +2,7 @@ import { set } from 'date-fns';
 import {useState,useEffect, useRef} from 'react';
 import UndoButton from "../buttons/UndoButton";
 export default function CareerAspirations({ 
-    details, handleInputChange, fetchCareerAspirations, isLoading, setDetails, newDetails, setNewDetails, prevDetails, setPrevDetails
+    details, isLoading, setDetails, newDetails, setNewDetails, prevDetails, setPrevDetails, fetchWithToast
 }) {
     const [error,setError] = useState(null);
     const [copy,setCopy] = useState(null);
@@ -10,7 +10,39 @@ export default function CareerAspirations({
     // const errorTimerRef = useRef(null);
     // const copyTimerRef = useRef(null);
     // ❌✅
-
+  const fetchCareerAspirations = async () => {
+    return fetchWithToast('Career Aspirations', async () => {
+      if (!details.id_number) throw new Error('id_number is required');
+      const res = await fetch('/api/careerAspirations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_number: details.id_number }),
+      });
+      if (!res.ok) throw new Error(`Career aspirations API error: ${res.statusText}`);
+      const gptData = await res.json();
+      if (gptData.suggestions) {
+        if(details.desiredIndustry===''&&details.desiredJobType===''&&details.targetRole===''&&details.workStyle===''){
+          setDetails((prev) => ({ 
+            ...prev,
+            desiredIndustry: gptData.suggestions.desiredIndustry || prev.desiredIndustry,
+            desiredJobType: gptData.suggestions.desiredJobType || prev.desiredJobType,
+            targetRole: gptData.suggestions.targetRole || prev.targetRole,
+            workStyle: gptData.suggestions.workStyle || prev.workStyle,
+          }));
+        }else{
+          setNewDetails((prev) => ({
+            ...prev,
+            desiredIndustry: gptData.suggestions.desiredIndustry || prev.desiredIndustry,
+            desiredJobType: gptData.suggestions.desiredJobType || prev.desiredJobType,
+            targetRole: gptData.suggestions.targetRole || prev.targetRole,
+            workStyle: gptData.suggestions.workStyle || prev.workStyle,
+          }));
+        }
+      } else {
+        setError('No career aspirations suggestions');
+      }
+    });
+  };
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center whitespace-pre-line">

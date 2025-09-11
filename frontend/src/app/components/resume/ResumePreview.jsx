@@ -1,6 +1,6 @@
 export default function ResumePreview({ isLoading, previewLink, error, handleRefresh,details}) {
   return (
-    <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full">
+    <div className="bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full flex-none basis-1/2">
       <div className="flex justify-between items-center mb-4 whitespace-pre-line">
         <h1 className="text-2xl text-black font-bold">{`履歴書プレビュー / Resume Preview of \n${details.name}\n${details.katakana}\n${details.id_number}`}</h1>
         <button

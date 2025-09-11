@@ -4,22 +4,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
-import PersonalInfo from '../components/resume/PersonalInfo';
-import Education from '../components/resume/Education';
-import CareerAspirations from '../components/resume/CareerAspirations';
-import LanguagesAndTools from '../components/resume/LanguagesAndTools';
-import Projects from '../components/resume/Projects';
-import ProductDevelopment from '../components/resume/ProductDevelopment';
-import FieldsOfInterest from '../components/resume/FieldsOfInterest';
-import JapaneseCompanies from '../components/resume/JapaneseCompanies';
-import CareerDevelopment from '../components/resume/CareerDevelopment';
-import JLPTExperience from '../components/resume/JLPTExperience';
-// import Suggestions from '../components/resume/Suggestions';
 import ResumePreview from '../components/resume/ResumePreview';
-import CustomToaster from '../components/Toast';
+import LeftPage from '../components/LeftPage'
 import toast from 'react-hot-toast';
 import Split from '../helper/split';
-import { set } from 'date-fns';
 
 const defaultDetails = {
   id_number: '',
@@ -103,8 +91,6 @@ export default function MakeResume() {
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  // const [selectedSuggestion, setSelectedSuggestion] = useState('');
-  // const [selectedIndex, setSelectedIndex] = useState(null);
   const [previewLink, setPreviewLink] = useState(null);
   const [tempPdfPath, setTempPdfPath] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
@@ -210,39 +196,6 @@ export default function MakeResume() {
     ).finally(() => {
       setLoadingComponent(null);
       setIsLoading(false);
-    });
-  };
-  const fetchCareerAspirations = async () => {
-    return fetchWithToast('Career Aspirations', async () => {
-      if (!details.id_number) throw new Error('id_number is required');
-      const res = await fetch('/api/careerAspirations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_number: details.id_number }),
-      });
-      if (!res.ok) throw new Error(`Career aspirations API error: ${res.statusText}`);
-      const gptData = await res.json();
-      if (gptData.suggestions) {
-        if(details.desiredIndustry===''&&details.desiredJobType===''&&details.targetRole===''&&details.workStyle===''){
-          setDetails((prev) => ({ 
-            ...prev,
-            desiredIndustry: gptData.suggestions.desiredIndustry || prev.desiredIndustry,
-            desiredJobType: gptData.suggestions.desiredJobType || prev.desiredJobType,
-            targetRole: gptData.suggestions.targetRole || prev.targetRole,
-            workStyle: gptData.suggestions.workStyle || prev.workStyle,
-          }));
-        }else{
-          setNewDetails((prev) => ({
-            ...prev,
-            desiredIndustry: gptData.suggestions.desiredIndustry || prev.desiredIndustry,
-            desiredJobType: gptData.suggestions.desiredJobType || prev.desiredJobType,
-            targetRole: gptData.suggestions.targetRole || prev.targetRole,
-            workStyle: gptData.suggestions.workStyle || prev.workStyle,
-          }));
-        }
-      } else {
-        setError('No career aspirations suggestions');
-      }
     });
   };
 
@@ -554,176 +507,47 @@ export default function MakeResume() {
   };
 
   return (
-    <div className="relative flex flex-col md:flex-row h-screen p-4 gap-6 overflow-hidden">
-      <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md overflow-y-auto h-full">
-        <CustomToaster />
-        <h1 className="text-2xl text-black font-bold mb-6">履歴書ビルダー / Resume Builder</h1>
-        <PersonalInfo
-          details={details}
-          setDetails={setDetails}
-          newDetails={newDetails}
-          prevDetails={prevDetails}
-          setPrevDetails={setPrevDetails}
-          setNewDetails={setNewDetails}
-          handleInputChange={handleInputChange}
-          fetchPersonalDetails={() => fetchWithToast('Personal Details', async () => {
-            const id = details.id_number;
-            console.log("Personal Info ID:", id);
-            const res = await fetch(`/api/fetchDetails?id_number=${id}`);
-            if (!res.ok) {
-              const errorData = await res.json();
-              throw new Error(`HTTP ${res.status}: ${errorData.error || 'Unknown error'}`);
-            }
-            const data = await res.json();
-            setDetails((prev) => ({
-              ...prev,
-              name: data.name || prev.name,
-              katakana: data.katakana || '',
-              initials: data.initials || '',
-              hometown: data.hometown || '',
-              selectedName: data.name || prev.selectedName,
-            }));
-            if(details.hobby===''){
-              setDetails((prev) => ({...prev, hobby: data.hobby || '',}));
-            }else{
-              setNewDetails((prev) => ({...prev, hobby: data.hobby || '',}));
-            }
-          })}
-          isLoading={isLoading}
-        />
-        {
-          //#region CareerAspirations
-          <CareerAspirations
-          details={details}
-          setDetails={setDetails}
-          newDetails={newDetails}
-          setNewDetails={setNewDetails}
-          handleInputChange={handleInputChange}
-          fetchCareerAspirations={fetchCareerAspirations}
-          isLoading={isLoading}
-          prevDetails={prevDetails}
-          setPrevDetails={setPrevDetails}
-        />
-        //#endregion
-        }
-        {
-          //#region Education
-          <Education
-          education={details.education}
-          handleArrayInputChange={handleArrayInputChange}
-          addEducation={addEducation}
-          removeEducation={removeEducation}
-          fetchEducation={handlefetchEducation}
-          isLoading={isLoading}
-        />
-        //#endregion
-        }
-        {
-          //#region LanguageAndTools
-          <LanguagesAndTools
-          details={details}
-          handleInputChange={handleInputChange}
-          fetchLanguagesAndTools={fetchLanguagesAndTools}
-          isLoading={isLoading}
-        />
-        //#endregion
-        }
-        {
-          //#region Projects and Internships
-          <Projects
-          internships={details.internships}
-          projects={details.projects}
-          handleArrayInputChange={handleArrayInputChange}
-          addExperience={addExperience}
-          removeExperience={removeExperience}
-          fetchInternshipExperience={fetchInternshipExperience}
-          isLoading={isLoading}
-        />
-        //#endregion
-        }
-        {
-          //#region FieldOfInterest
-          <FieldsOfInterest
-          details={details}
-          handleArrayInputChange={handleArrayInputChange}
-          isLoading={isLoading}
-          fetchFieldsOfInterest={fetchFieldsOfInterest}
-        />
-            //#endregion
-        }
-        {
-          //#region JapaneseCompanies
-        <JapaneseCompanies
-          setError={setError}
-          setIsLoading={setIsLoading}
-          userPrompt={userPrompt}
-          setUserPrompt={setUserPrompt}
-          details={details}
-          setDetails={setDetails}
-          newDetails={newDetails}
-          setNewDetails={setNewDetails}
-          prevDetails={prevDetails}
-          setPrevDetails={setPrevDetails}
-          handleInputChange={handleInputChange}
-          fetchJapaneseCompanies={fetchJapaneseCompanies}
-          isLoading={isLoading}
-        />
-        // #endregion
-        }
-        { 
-          // #region careerDev
-        <CareerDevelopment
-          details={details}
-          setDetails={setDetails}
-          newDetails={newDetails}
-          setNewDetails={setNewDetails}
-          userPrompt={userPrompt}
-          setUserPrompt={setUserPrompt}
-          fetchWorkValues={fetchWorkValues}
-          isLoading={isLoading}
-          setIsLoading={setIsLoading}
-          setError={setError}
-          prevDetails={prevDetails}
-          setPrevDetails={setPrevDetails}
-        />
-         // #endregion
-        }
-       { 
-          // #region JLPTExperience
-        <JLPTExperience
-          details={details}
-          handleInputChange={handleInputChange}
-          setDetails={setDetails}
-          prevDetails={prevDetails}
-          setPrevDetails={setPrevDetails}
-          newDetails={newDetails}
-          setNewDetails={setNewDetails}
-          isLoading={isLoading}
-          fetchJLPTSuggestions={fetchJLPTSuggestions}
-        />
-        // #endregion
-        }
-        {
-          //#region Sugestions
-        //   <Suggestions
-        //   suggestions={details.suggestions}
-        //   setDetail={setDetails}
-        //   selectedIndex={selectedIndex}
-        //   setSelectedSuggestion={(index,suggestions)=>setDetails((prev)=>({...prev,selectedSuggestion:suggestions[index]}))}
-        //   setSelectedIndex={setSelectedIndex}
-        // />
-        // #endregion
-        }
-        <div className="mb-8">
-          <button
-            onClick={saveResume}
-            disabled={isLoading}
-            className={`px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            {isLoading ? '保存中... / Saving Data...' : 'データを保存 / Save Data'}
-          </button>
-        </div>
-      </div>
+    <div className="relative flex flex-col md:flex-row h-screen p-4 gap-0 overflow-hidden">
+      <LeftPage
+        /* Componets first.*/
+        details={details}
+        setDetails={setDetails}
+        prevDetails={prevDetails}
+        setPrevDetails={setPrevDetails}
+        newDetails={newDetails}
+        setNewDetails={setNewDetails}
+        isLoading={isLoading}
+        loadingComponent={loadingComponent}
+        setLoadingComponent={setLoadingComponent}
+        suggestions={suggestions}
+        setSuggestions={setSuggestions}
+        /* States */
+        error={error}
+        setError={setError}
+        /* Functions */
+        handleInputChange={handleInputChange}
+        handleArrayInputChange={handleArrayInputChange}
+        addEducation={addEducation}
+        removeEducation={removeEducation}
+        addExperience={addExperience}
+        removeExperience={removeExperience}
+        compileResume={compileResume}
+        saveResume={saveResume}
+        fetchEducation={handlefetchEducation}
+        fetchLanguagesAndTools={fetchLanguagesAndTools}
+        fetchInternshipExperience={fetchInternshipExperience}
+        fetchJapaneseCompanies={fetchJapaneseCompanies}
+        fetchWorkValues={fetchWorkValues}
+        fetchFieldsOfInterest={fetchFieldsOfInterest}
+        fetchJLPTSuggestions={fetchJLPTSuggestions}
+        previewLink={previewLink}
+        tempPdfPath={tempPdfPath}
+        sessionId={sessionId}
+        userPrompt={userPrompt}
+        fetchWithToast={fetchWithToast}
+        setUserPrompt={setUserPrompt}
+      />
+      <div id="divider" class="w-1 bg-gray-300 cursor-col-resize"></div>
       <ResumePreview
         isLoading={isLoading}
         previewLink={previewLink}
