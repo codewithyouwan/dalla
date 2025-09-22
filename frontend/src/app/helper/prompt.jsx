@@ -347,6 +347,7 @@ export default function Prompt(data, whatFor) {
     Perform the following tasks:
     - **Institution Name**: Convert the institution name (${institution_name}) to Katakana, ensuring:
       - Output a single Katakana string representing the phonetic pronunciation in Japanese.
+      - If the institute name starts with IIT then don't convert IIT into its katakan form convert the rest part of the institute to katakan but not IIT.
       - If the input is empty, 'なし', or already in Katakana, return the input as-is (if Katakana) or an empty string (if empty or 'なし').
       - Remove non-institution details (e.g., "Science", "Higher Secondary", "Bachelor's").
       - Use standard Japanese Katakana conventions (e.g., "Tokyo University" → "トウキョウダイガク").
@@ -363,7 +364,7 @@ export default function Prompt(data, whatFor) {
 
     <Output Format>
     ===FORM1-START===
-    [Katakana institution name] **[Katakana major]** (if major is provided)
+    [Katakana institution name ] **[Katakana major]** (if major is provided)
     [Date range in format YYYY年MM月 – YYYY年MM月 or YYYY年]
     ===FORM1-END===
 
@@ -400,6 +401,7 @@ export default function Prompt(data, whatFor) {
     <Rules>
     - Output **exactly** two lines between ===FORM1-START=== and ===FORM1-END===.
     - First line: Katakana institution name, followed by Katakana major in bold brackets (e.g., **[土木工学]**) if major is provided and not empty or 'なし', or just the institution name otherwise.
+    - If the Institute name is IIT then no need to convert IIT to katakana just write IIT then after that convert to katakan BUT don't write katakan for IIT..
     - Second line: Date range as "YYYY年MM月 – YYYY年MM月" for ranges, "YYYY年" for single years, or empty string.
     - Exclude non-institution details from the institution name.
     - If the institution name is IIT then not need to convert it to katakana just return it as it is.
@@ -450,8 +452,7 @@ export default function Prompt(data, whatFor) {
       - Finish the sentence with a full stop (。) at the end of the line.
     `;
     return prompt;
-  } 
-  else if(whatFor === whatForTypes[10]){ //place conversion from english to katakana.
+  } else if(whatFor === whatForTypes[10]){ //place conversion from english to katakana.
     const { place_of_belonging } = data;
     const prompt = `
       <System Instructions>  
@@ -519,8 +520,7 @@ export default function Prompt(data, whatFor) {
 
     `;
     return prompt;
-  }
-  else if(whatFor === whatForTypes[11]){ //For rethinking japanese companies.
+  }else if(whatFor === whatForTypes[11]){ //For rethinking japanese companies.
     const{
       interest_in_japanese_companies,
       aspects_to_learn,
