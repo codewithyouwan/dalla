@@ -454,51 +454,69 @@ export default function Prompt(data, whatFor) {
   else if(whatFor === whatForTypes[10]){ //place conversion from english to katakana.
     const { place_of_belonging } = data;
     const prompt = `
-      <System Instructions>
-      Respond **only** with the exact format specified below, containing one Japanese line within ===FORM1-START=== and ===FORM1-END===. Do **not** include any other text, headers, blank lines, or markers. Use professional Japanese suitable for a CV.
+      <System Instructions>  
+      Respond **only** with the exact format specified below, containing one Japanese line within ===FORM1-START=== and ===FORM1-END===.  
+      Do **not** include any other text, headers, blank lines, or markers.  
+      Use professional Japanese suitable for a CV.  
 
-      <Employee Information>
-      Place of Belonging: ${place_of_belonging || 'なし'}
+      ---
 
-      <Prompt>
-      Convert the place of belonging (${place_of_belonging}) into a single Japanese phrase for a CV's "出身地" section.
-      - Assume the person is always from India.
-      - If the input is empty or 'なし', output "インド".
-      - If the input is a specific place (e.g., city or state), convert it to katakana and append the region (South India, North India, or North-East India) in katakana within parentheses.
-      - Regions: 
-        - South India (南インド): States like Tamil Nadu, Kerala, Karnataka, Andhra Pradesh, Telangana
-        - North India (北インド): States like Delhi, Uttar Pradesh, Punjab, Rajasthan, Haryana
-        - North-East India (北東インド): States like Assam, Meghalaya, Arunachal Pradesh
-      - Use standard katakana for the place (e.g., "Delhi" → "デリー", "Tamil Nadu" → "タミルナードゥ").
-      - Ensure the output is concise and professional, e.g., "デリー (北インド)".
-      - If the place is not a recognizable Indian city/state, default to "インド".
-      - Ignore any non-place text in the input.
+      <Employee Information>  
+      Place of Belonging: ${place_of_belonging || 'なし'}  
 
-      <Output Format>
-      ===FORM1-START===
-      [Single katakana phrase, optionally with region in full-width parentheses ]
-      ===FORM1-END===
+      ---
 
-      <Examples>
-      ===FORM1-START===
-      デリー (北インド)
-      ===FORM1-END===
-      ===FORM1-START===
-      チェンナイ (南インド)
-      ===FORM1-END===
-      ===FORM1-START===
-      インド
-      ===FORM1-END===
+      <Prompt>  
+      Convert the place of belonging (${place_of_belonging}) into a single Japanese phrase for a CV's "出身地" section.  
 
-      <Rules>
-      - Output **exactly** one line between ===FORM1-START=== and ===FORM1-END===.
-      - The line must be in katakana, with region in parentheses if applicable.
-      - Default to "インド" if input is empty, invalid, or not a recognizable Indian place.
-      - Use professional tone suitable for a Japanese CV.
-      - Do **not** include other markers, text, or blank lines.
-      - **Strictly** follow the format; any deviation will break the system.
-      - Suggested max_tokens: 50 for concise output.
-      - I would like all sentence endings to follow the “da/de aru” (plain) style.
+      **Rules for Conversion**  
+      1. Assume the person is always from India.  
+      2. If the input is empty or 'なし', output: **インド**.  
+      3. If the input is a **city**, do the following:  
+        - Convert the city name to katakana.  
+        - Also append the **state name** in katakana after the city, separated by a middle dot (・).  
+        - Add the suffix **州** right after the state name.  
+        - Example: "デリー・デリー州".  
+      4. If the input is a **state only**, convert the state name to katakana and append **州**.  
+        - Example: "タミルナードゥ州".  
+      5. Always append the **region** in full-width parentheses.  
+
+      **Regions**  
+      - 南インド (South India): Tamil Nadu, Kerala, Karnataka, Andhra Pradesh, Telangana  
+      - 北インド (North India): Delhi, Uttar Pradesh, Punjab, Rajasthan, Haryana  
+      - 北東インド (North-East India): Assam, Meghalaya, Arunachal Pradesh  
+
+      **Format Examples**  
+      - Input: Delhi → Output: デリー・デリー州 (北インド)  
+      - Input: Chennai → Output: チェンナイ・タミルナードゥ州 (南インド)  
+      - Input: Tamil Nadu → Output: タミルナードゥ州 (南インド)  
+      - Input: なし → Output: インド  
+
+      **Fallback**  
+      - If the place is not a recognizable Indian city or state, default to: **インド**.  
+      - Ignore any non-place text in the input.  
+
+      ---
+
+      <Output Format>  
+      ===FORM1-START===  
+      [Single katakana phrase with city・state州  and region in full-width parentheses]  
+      ===FORM1-END===  
+
+      ---
+
+      <Rules>  
+      - Output **exactly one line** between ===FORM1-START=== and ===FORM1-END===.  
+      - Always include both city and state of the place of belonging and the part of India in which it is located(north, south, east or west). 
+      - Always add **州** after the state name.  
+      - The line must be in katakana, with the region in parentheses.  
+      - Default to "インド" when input is empty, invalid, or not an Indian place.  
+      - Use a professional tone suitable for a Japanese CV.  
+      - Do **not** include any other markers, text, or blank lines.  
+      - Strictly follow the format; any deviation will break the system.  
+      - Suggested max_tokens: 50 for concise output.  
+      - Sentence endings should follow the “da/de aru” (plain) style.  
+
     `;
     return prompt;
   }
