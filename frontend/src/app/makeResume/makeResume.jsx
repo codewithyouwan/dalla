@@ -510,6 +510,7 @@ export default function MakeResume() {
     <div className="relative flex flex-col md:flex-row h-screen p-4 gap-0 overflow-hidden">
       <LeftPage
         /* Componets first.*/
+        /* States */
         details={details}
         setDetails={setDetails}
         prevDetails={prevDetails}
@@ -517,13 +518,23 @@ export default function MakeResume() {
         newDetails={newDetails}
         setNewDetails={setNewDetails}
         isLoading={isLoading}
+        setIsLoading={setIsLoading}
         loadingComponent={loadingComponent}
         setLoadingComponent={setLoadingComponent}
         suggestions={suggestions}
         setSuggestions={setSuggestions}
-        /* States */
         error={error}
         setError={setError}
+        previewLink={previewLink}
+        setPreviewLink={setPreviewLink}
+        tempPdfPath={tempPdfPath}
+        setTempPdfPath={setTempPdfPath}
+        sessionId={sessionId}
+        setSessionId={setSessionId}
+        sesarchParams={searchParams}
+        hasFetchedResume={hasFetchedResume}
+        userPrompt={userPrompt}
+        setUserPrompt={setUserPrompt}
         /* Functions */
         handleInputChange={handleInputChange}
         handleArrayInputChange={handleArrayInputChange}
@@ -540,12 +551,7 @@ export default function MakeResume() {
         fetchWorkValues={fetchWorkValues}
         fetchFieldsOfInterest={fetchFieldsOfInterest}
         fetchJLPTSuggestions={fetchJLPTSuggestions}
-        previewLink={previewLink}
-        tempPdfPath={tempPdfPath}
-        sessionId={sessionId}
-        userPrompt={userPrompt}
         fetchWithToast={fetchWithToast}
-        setUserPrompt={setUserPrompt}
       />
       <div id="divider" class="w-1 bg-gray-300 cursor-col-resize"></div>
       <ResumePreview
