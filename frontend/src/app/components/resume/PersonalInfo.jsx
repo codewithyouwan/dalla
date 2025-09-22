@@ -119,9 +119,9 @@ export default function PersonalInfo({
   };
 
   const nameOptions = [
-    { value: details.name, label: `English: ${details.name}` },
-    details.katakana && { value: details.katakana, label: `カタカナ: ${details.katakana}` },
-    details.initials && { value: details.initials, label: `Initials(イニシャル): ${details.initials}` },
+    { value: `${details.name} / ${details.katakana}`, label: `English/Katkana: ` },
+    details.katakana && { value: `${details.katakana} / ${details.name}`, label: `カタカナ/英語: ` },
+    details.initials && { value: details.initials, label: `Initials(イニシャル): ` },
   ].filter(Boolean);
 
   return (
@@ -154,11 +154,12 @@ export default function PersonalInfo({
             name="selectedName"
             value={details.selectedName}
             onChange={handleInputChange}
-            className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
           >
             {nameOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
+              <option key={option.value} >
+                <div>{option.name}</div>
+                <div>{option.value}</div>
               </option>
             ))}
           </select>
