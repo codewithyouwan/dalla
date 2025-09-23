@@ -146,18 +146,18 @@ app.post('/api/resume', upload.fields([{ name: 'details' }, { name: 'photo' }, {
 
     await browser.close();
 
-    // res.status(200).json({
-    //   message: 'Resume preview generated',
-    //   previewUrl: `https://dalla-production.up.railway.app/temp/resume-${sessionId}.pdf`,
-    //   tempPdfPath: pdfPath,
-    //   sessionId,
-    // });
     res.status(200).json({
       message: 'Resume preview generated',
-      previewUrl: `http://localhost:3001/temp/resume-${sessionId}.pdf`,
+      previewUrl: `https://dalla-production.up.railway.app/temp/resume-${sessionId}.pdf`,
       tempPdfPath: pdfPath,
       sessionId,
     });
+    // res.status(200).json({
+    //   message: 'Resume preview generated',
+    //   previewUrl: `http://localhost:3001/temp/resume-${sessionId}.pdf`,
+    //   tempPdfPath: pdfPath,
+    //   sessionId,
+    // });
 
   } catch (error) {
     console.error('Error generating resume:', error.message);

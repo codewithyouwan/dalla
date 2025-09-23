@@ -41,7 +41,7 @@ export async function GET(request) {
         const hobbyPrompt = Prompt({ hobbies_Interests: hobby }, 'hobbyConversion');
         // https://dalla-mauve.vercel.app/api/aiRequests
         //Change top ${baseUrl} for localhost.
-        const completion = await fetch(`http://localhost:3000/api/aiRequests`, {
+        const completion = await fetch(`https://dalla-mauve.vercel.app/api/aiRequests`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ export async function GET(request) {
         const placePrompt = Prompt({ place_of_belonging: hometown }, 'placeConversion');
         // https://dalla-mauve.vercel.app/api/aiRequests
 //         const completion = await fetch(`${baseUrl}/api/aiRequests`, {
-        const completion = await fetch(`http://localhost:3000/api/aiRequests`, {
+        const completion = await fetch(`https://dalla-mauve.vercel.app/api/aiRequests`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

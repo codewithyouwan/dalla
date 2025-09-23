@@ -434,14 +434,14 @@ export default function MakeResume() {
       }
       formData.append('sessionId', sessionId);
       // https://dalla-production.up.railway.app/api/resume
-      // const response = await fetch('https://dalla-production.up.railway.app/api/resume', {
-      //   method: 'POST',
-      //   body: formData,
-      // });
-      const response = await fetch('http://localhost:3001/api/resume', {
+      const response = await fetch('https://dalla-production.up.railway.app/api/resume', {
         method: 'POST',
         body: formData,
       });
+      // const response = await fetch('http://localhost:3001/api/resume', {
+      //   method: 'POST',
+      //   body: formData,
+      // });
       if (!response.ok) {
         const errorData = await response.json();
         setError(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
