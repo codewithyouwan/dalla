@@ -605,42 +605,46 @@ export default function Prompt(data, whatFor) {
     const prompt = `
         <System Instructions>
         Respond **only** with the exact format specified below.  
-        Do **not** include any other text, headers, blank lines, or markers.  
+        Do **not** include any other text, headers, blank lines, or markers outside the specified FORM1, FORM2, FORM3 blocks.  
+        User feedback is the **highest priority** and must be followed as closely as possible, overriding other considerations (e.g., JLPT level, scores, or previous suggestion) unless it violates the output format.  
         The output format must remain exactly as defined (FORM1, FORM2, FORM3 blocks).  
-        Follow the User Feedback seriously until it violates the output format.
         ---
 
         <Reference Information>
         JLPT Level: ${validatedJapaneseLevel}
         Total Score: ${total || '未入力'}
         Vocabulary Score: ${vocabulary || '未入力'}
-        ${validatedJapaneseLevel=='N5'||validatedJapaneseLevel=='N4'
-          ?('Language and Reading Score: '+(language_and_reading || '未入力'))
-          :'Reading Score: '+ (reading || '未入力')+' Listening Score: '+(listening || '未入力')}
+        ${
+          validatedJapaneseLevel === 'N5' || validatedJapaneseLevel === 'N4'
+            ? 'Language and Reading Score: ' + (language_and_reading || '未入力')
+            : 'Reading Score: ' + (reading || '未入力') + ' Listening Score: ' + (listening || '未入力')
+        }
 
         <Previous Suggestion>
         ${previousSuggestion}
 
         <User Feedback>
-        - Follow the user's feedback until unless it violates the output format.
+        - User feedback is the **most important** factor and must be prioritized above all else.
+        - Follow the user's feedback to modify any aspect (e.g., tone, language, content) unless it violates the output format.
+        - If feedback requests changes that break the FORM1, FORM2, FORM3 structure, ignore those specific requests but apply all other feedback.
         ${userFeedback}
 
         ---
 
         <Prompt>
-        Based on the JLPT information, the previous suggestion, and the user’s feedback, please refine the content so it better matches the feedback while keeping the professional CV tone.  
+        Based on the user’s feedback, refine the content to align with the feedback while maintaining a professional CV tone. Incorporate the JLPT information and previous suggestion only to the extent that they align with the user feedback.  
 
         【Requirements】
-        - Generate 3 refined variations (long, medium, concise).  
-        - Each must remain in **da/de aru** style until the user specifies otherwise.
-        - If the user says to change the language do so.  
+        - Generate 3 refined variations (long, medium, concise) based on the user feedback.  
+        - Each variation must follow the user’s feedback as closely as possible, including changes to tone, language, or content, unless it violates the output format.
+        - Use **da/de aru** style unless the user feedback specifies a different tone or language.
+        - If the user feedback specifies a different language, write the sentences in that language but maintain the exam month and year structure.
         - Always start each paragraph with:
-          「${currentYear}年${examMonth}にJLPTの${validatedJapaneseLevel}を受験し、合格。」 until the user says to change the language in that case keep the exam month and year and then write the sentence in the language of choice.  
-          (If JLPT level is “Not certified”, instead write: 「私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。」)  
-        - Do not include scores in the text.  
-        - Smoothly describe **reading**, **vocabulary/grammar**, and **listening** skills.  
-        - Reflect the **user feedback** while maintaining correctness and conciseness.  
-        - Do not change the output structure or markers.  
+          「${currentYear}年${examMonth}にJLPTの${validatedJapaneseLevel}を受験し、合格。」 unless the user feedback specifies a different language or phrasing, in which case adapt the sentence to the requested language while keeping the exam month and year.
+          (If JLPT level is “Not certified”, start with: 「私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。」 or the equivalent in the user-specified language.)
+        - Do not include scores in the text unless explicitly requested in the user feedback.
+        - Smoothly describe **reading**, **vocabulary/grammar**, and **listening** skills, adjusted to reflect the user feedback.
+        - Ensure the output remains within the specified FORM1, FORM2, FORM3 structure to prevent system errors.
 
         ---
 
@@ -653,22 +657,26 @@ export default function Prompt(data, whatFor) {
 
         <Examples>
         ===FORM1-START===
-        ${currentYear}年${examMonth}にJLPTのN4を受験し、合格。私は専門的な文書を正確に理解し、適切に対応できる。ビジネス語彙を幅広く活用でき、会議での発言や指示を聞き取り、適切に反応できる。or similar sentence in language of choice.
+        ${currentYear}年${examMonth}にJLPTのN4を受験し、合格。私は専門的な文書を正確に理解し、適切に対応できる。ビジネス語彙を幅広く活用でき、会議での発言や指示を聞き取り、適切に反応できる。
         ===FORM1-END===
 
         ===FORM2-START===
-        ${currentYear}年${examMonth}にJLPTのN4を受験し、合格。私は専門文書をスムーズに読解し、ビジネス語彙を効果的に使用でき、会議内容を正確に理解できる。or similar sentence in language of choice.
+        ${currentYear}年${examMonth}にJLPTのN4を受験し、合格。私は専門文書をスムーズに読解し、ビジネス語彙を効果的に使用でき、会議内容を正確に理解できる。
         ===FORM2-END===
 
         ===FORM3-START===
-        ${currentYear}年${examMonth}にJLPTのN4を受験し、合格。私は文書を読解し、ビジネス語彙を活用し、会議を理解できる。or similar sentence in language of choice.
+        ${currentYear}年${examMonth}にJLPTのN4を受験し、合格。私は文書を読解し、ビジネス語彙を活用し、会議を理解できる。
         ===FORM3-END===
 
         【Not certified example】
         ===FORM1-START===
-        私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。私は簡単な文書を理解し、日常的な語彙を適切に使用し、基本的な会話内容を聞き取れる。or similar sentence in language of choice.
+        私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。私は簡単な文書を理解し、日常的な語彙を適切に使用し、基本的な会話内容を聞き取れる。
         ===FORM1-END===
 
+        【Example with user feedback requesting English】
+        ===FORM1-START===
+        In ${currentYear} ${examMonth}, I passed the JLPT ${validatedJapaneseLevel}. I can accurately understand professional documents, effectively use business vocabulary, and appropriately respond to discussions in meetings.
+        ===FORM1-END===
         `;
     return prompt;
   }
