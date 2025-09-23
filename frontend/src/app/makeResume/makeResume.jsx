@@ -93,6 +93,7 @@ const pDetails={
 const defaultPrompt={ //Here the userPrompt will be there.
   japaneseCompany:'',
   CareerDevelopment:'',
+  JLPTExperience:'',
 };
 //This object will hold the new details after fetching before assigning to the state by the user.
 export default function MakeResume() {
@@ -694,16 +695,23 @@ export default function MakeResume() {
         }
        { 
           // #region JLPTExperience
+//           details, setDetails, isLoading, setIsLoading, fetchJLPTSuggestions, newDetails, setNewDetails,
+// prevDetails, setPrevDetails, userPrompt, setUserPrompt, error, setError
         <JLPTExperience
           details={details}
-          handleInputChange={handleInputChange}
           setDetails={setDetails}
-          prevDetails={prevDetails}
-          setPrevDetails={setPrevDetails}
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+          fetchJLPTSuggestions={fetchJLPTSuggestions}
           newDetails={newDetails}
           setNewDetails={setNewDetails}
-          isLoading={isLoading}
-          fetchJLPTSuggestions={fetchJLPTSuggestions}
+          handleInputChange={handleInputChange}
+          prevDetails={prevDetails}
+          setPrevDetails={setPrevDetails}
+          userPrompt={userPrompt}
+          setUserPrompt={setUserPrompt}
+          error={error}
+          setError={setError}
         />
         // #endregion
         }

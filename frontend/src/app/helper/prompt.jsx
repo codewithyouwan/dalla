@@ -4,7 +4,7 @@
 */
 const whatForTypes = ['jlptExperience', 'careerAspirations', 'languagesAndTools',
 'internshipExperience', 'japaneseCompanies', 'workValues', 'fieldsOfInterest',
-'productDevelopment', 'katakanaConversion', 'hobbyConversion','placeConversion','rethinkJapaneseCompany','rethinkWorkValues'];
+'productDevelopment', 'katakanaConversion', 'hobbyConversion','placeConversion','rethinkJapaneseCompany','rethinkWorkValues','rethinkJLPTExperience'];
 export default function Prompt(data, whatFor) {
   if (whatFor === whatForTypes[0]) {// For jlpt
   const { marks, japaneseLevel, examMonth } = data;
@@ -46,15 +46,15 @@ export default function Prompt(data, whatFor) {
       【Output format example】
 
       ===FORM1-START===
-      ${currentYear}年${examMonth}月にJLPTのN4を受験し、合格。私は専門的な文書を正確に理解し、適切に対応できます。また、ビジネスシーンで使用される語彙や文法を幅広く活用でき、会議での発言や指示を聞き取り、適切に反応できます。
+      ${currentYear}年${examMonth}にJLPTのN4を受験し、合格。私は専門的な文書を正確に理解し、適切に対応できます。また、ビジネスシーンで使用される語彙や文法を幅広く活用でき、会議での発言や指示を聞き取り、適切に反応できます。
       ===FORM1-END===
 
       ===FORM2-START===
-      ${currentYear}年${examMonth}月にJLPTのN4を受験し、合格。私は専門文書をスムーズに読解し、ビジネス語彙を効果的に使用でき、会議内容を正確に理解できます。
+      ${currentYear}年${examMonth}にJLPTのN4を受験し、合格。私は専門文書をスムーズに読解し、ビジネス語彙を効果的に使用でき、会議内容を正確に理解できます。
       ===FORM2-END===
 
       ===FORM3-START===
-      ${currentYear}年${examMonth}月にJLPTのN4を受験し、合格。私は文書を読解し、ビジネス語彙を活用し、会議を理解できます。
+      ${currentYear}年${examMonth}にJLPTのN4を受験し、合格。私は文書を読解し、ビジネス語彙を活用し、会議を理解できます。
       ===FORM3-END===
 
       【Not certified example】
@@ -452,7 +452,7 @@ export default function Prompt(data, whatFor) {
       - Finish the sentence with a full stop (。) at the end of the line.
     `;
     return prompt;
-  } else if(whatFor === whatForTypes[10]){ //place conversion from english to katakana.
+  } else if (whatFor === whatForTypes[10]){ //place conversion from english to katakana.
     const { place_of_belonging } = data;
     const prompt = `
       <System Instructions>  
@@ -520,7 +520,7 @@ export default function Prompt(data, whatFor) {
 
     `;
     return prompt;
-  }else if(whatFor === whatForTypes[11]){ //For rethinking japanese companies.
+  } else if (whatFor === whatForTypes[11]){ //For rethinking japanese companies.
     const{
       interest_in_japanese_companies,
       aspects_to_learn,
@@ -561,7 +561,7 @@ export default function Prompt(data, whatFor) {
     - **Strictly** follow the format; any deviation will break the system.
     `
     return prompt;
-}else if(whatFor === whatForTypes[12]){
+  } else if (whatFor === whatForTypes[12]){
     const {previous_work_value,work_value,user_prompt}=data;
     const prompt=
     `
@@ -595,6 +595,81 @@ export default function Prompt(data, whatFor) {
       - Strictly follow the User Prompt strict requirement.
       - There's no strict limit on the size of the paragraph.
     `;
+    return prompt;
+  } else if (whatFor === whatForTypes[13]){ //For rethinking JLPT experience.
+      const { marks,japaneseLevel,examMonth,userFeedback,previousSuggestion } = data;
+    console.log(marks, "In prompt");
+    const {total, vocabulary, reading, listening,language_and_reading} = marks;
+    const validatedJapaneseLevel = japaneseLevel || 'Not certified';
+    const currentYear = new Date().getFullYear(); // Get the current year dynamically
+    const prompt = `
+        <System Instructions>
+        Respond **only** with the exact format specified below.  
+        Do **not** include any other text, headers, blank lines, or markers.  
+        The output format must remain exactly as defined (FORM1, FORM2, FORM3 blocks).  
+        Follow the User Feedback seriously until it violates the output format.
+        ---
+
+        <Reference Information>
+        JLPT Level: ${validatedJapaneseLevel}
+        Total Score: ${total || '未入力'}
+        Vocabulary Score: ${vocabulary || '未入力'}
+        ${validatedJapaneseLevel=='N5'||validatedJapaneseLevel=='N4'
+          ?('Language and Reading Score: '+(language_and_reading || '未入力'))
+          :'Reading Score: '+ (reading || '未入力')+' Listening Score: '+(listening || '未入力')}
+
+        <Previous Suggestion>
+        ${previousSuggestion}
+
+        <User Feedback>
+        - Follow the user's feedback until unless it violates the output format.
+        ${userFeedback}
+
+        ---
+
+        <Prompt>
+        Based on the JLPT information, the previous suggestion, and the user’s feedback, please refine the content so it better matches the feedback while keeping the professional CV tone.  
+
+        【Requirements】
+        - Generate 3 refined variations (long, medium, concise).  
+        - Each must remain in **da/de aru** style until the user specifies otherwise.
+        - If the user says to change the language do so.  
+        - Always start each paragraph with:
+          「${currentYear}年${examMonth}にJLPTの${validatedJapaneseLevel}を受験し、合格。」 until the user says to change the language in that case keep the exam month and year and then write the sentence in the language of choice.  
+          (If JLPT level is “Not certified”, instead write: 「私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。」)  
+        - Do not include scores in the text.  
+        - Smoothly describe **reading**, **vocabulary/grammar**, and **listening** skills.  
+        - Reflect the **user feedback** while maintaining correctness and conciseness.  
+        - Do not change the output structure or markers.  
+
+        ---
+
+        <Output Format>
+        - For the longer paragraph pattern, enclose in ===FORM1-START=== and ===FORM1-END===.  
+        - For the medium-length paragraph pattern, enclose in ===FORM2-START=== and ===FORM2-END===.  
+        - For the concise paragraph pattern, enclose in ===FORM3-START=== and ===FORM3-END===.  
+
+        ---
+
+        <Examples>
+        ===FORM1-START===
+        ${currentYear}年${examMonth}にJLPTのN4を受験し、合格。私は専門的な文書を正確に理解し、適切に対応できる。ビジネス語彙を幅広く活用でき、会議での発言や指示を聞き取り、適切に反応できる。or similar sentence in language of choice.
+        ===FORM1-END===
+
+        ===FORM2-START===
+        ${currentYear}年${examMonth}にJLPTのN4を受験し、合格。私は専門文書をスムーズに読解し、ビジネス語彙を効果的に使用でき、会議内容を正確に理解できる。or similar sentence in language of choice.
+        ===FORM2-END===
+
+        ===FORM3-START===
+        ${currentYear}年${examMonth}にJLPTのN4を受験し、合格。私は文書を読解し、ビジネス語彙を活用し、会議を理解できる。or similar sentence in language of choice.
+        ===FORM3-END===
+
+        【Not certified example】
+        ===FORM1-START===
+        私は日本語能力試験を受験していないが、日常会話レベルを目標に学習中。私は簡単な文書を理解し、日常的な語彙を適切に使用し、基本的な会話内容を聞き取れる。or similar sentence in language of choice.
+        ===FORM1-END===
+
+        `;
     return prompt;
   }
   else {

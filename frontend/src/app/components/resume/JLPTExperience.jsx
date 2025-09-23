@@ -1,9 +1,48 @@
 import UndoButton from '../buttons/UndoButton';
-import DeleteButton from '../buttons/DeleteButton';
+import Split from '../../helper/split'
 export default function JLPTExperience({ 
-details, setDetails, isLoading, fetchJLPTSuggestions, newDetails, setNewDetails,
-prevDetails, setPrevDetails
+details, setDetails, isLoading, setIsLoading, fetchJLPTSuggestions, newDetails, setNewDetails,
+prevDetails, setPrevDetails, userPrompt, setUserPrompt, error, setError
 }) {
+    const fetchRethinkJLPTSuggestions = async ()=> {
+      //now setLoading to true..
+        setIsLoading(true)
+        setError(null);
+        console.log(userPrompt.JLPTExperience); //this is the feedback provided by the user..
+        // {marks, japaneseLevel, examMonth, userFeedback, previousSuggestion} this is the data given to the api in request. 
+        try{
+          const response = await fetch('/api/rethink/rethinkJLPTExperience', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              marks:details.marks,
+              japaneseLevel: details.japaneseLevel,
+              examMonth: details.examMonth,
+              userFeedback: userPrompt.JLPTExperience,
+              previousSuggestion: details.selectedSuggestion
+            }),
+          });
+          if (!response.ok) {
+            const data = await response.json();
+            setError(data.error || 'Failed to generate JLPT suggestions');
+          }
+          const data = await response.json();
+          const content = data.suggestions;
+          console.log(content);
+          const forms = Split(content);
+          const finalForms = forms.length > 0 ? forms.slice(0, 3) : [content];
+          const trimmedForms = finalForms.map((form) => form.trim());
+          setDetails((prev) => ({
+            ...prev,
+            suggestions: trimmedForms,
+          }));
+        }catch (err){
+          setError("Failed to rethink jlpt experience ${err.message}")
+        }finally{
+          setIsLoading(false);
+        }
+
+    }
   const isN5orN4 = details.japaneseLevel==='N5' || details.japaneseLevel==='N4';
   console.log("IS N5 or N4:", isN5orN4);
 
@@ -156,6 +195,29 @@ prevDetails, setPrevDetails
             </div>
           )
         }
+        <div>
+          <div>
+            <label className="block text-sm font-semibold text-green-700">User Prompt</label>
+            <textarea
+              value={userPrompt.JLPTExperience}
+              onChange={(e)=>
+                {
+                  setUserPrompt(
+                  (prev)=>({...prev, JLPTExperience: e.target.value})
+                )}
+              }
+              className="block text-black w-full bg-green-100 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              rows="2"
+            />
+          </div>
+          <button
+            onClick={fetchRethinkJLPTSuggestions}
+            disabled={isLoading || userPrompt.JLPTExperience.trim()===''}
+            className={`px-4 py-2 bg-green-600 text-white rounded-md hover:bg-red-700 whitespace-pre-line ${isLoading||userPrompt.JLPTExperience==='' ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {isLoading ? 'Thinking...' : 'Rethink'}
+          </button>
+        </div>
         {details.suggestions && details.suggestions.length > 0 && (
           <div className="mt-4">
             <h3 className="text-sm font-medium text-black">提案 / Suggestions</h3>
@@ -165,20 +227,38 @@ prevDetails, setPrevDetails
                   key={index}
                   className={`p-2 cursor-pointer border rounded-lg ${details.selectedIndex === index ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
                   onClick={() => {
-                    //selected suggestion and index.
-                    if(details.selectedIndex!==null&&details.selectedSuggestion!==''){
-                        setPrevDetails((prev)=>({
+                    if (details.selectedSuggestion !== '') {
+                      // Prompt user to confirm the change
+                      const confirmChange = window.confirm(
+                        'Are you sure you want to change the current suggestion to a new one?\n' +
+                        '現在の選択を新しい提案に変更してもよろしいですか？'+
+                        `Old suggestion ${details.suggestion}\n`+
+                        `New suggestion ${suggestion}`
+                      );
+
+                      // Proceed only if user confirms
+                      if (confirmChange) {
+                        setPrevDetails((prev) => ({
+                          ...prev,
+                          selectedSuggestion: details.selectedSuggestion,
+                          selectedIndex: details.selectedIndex,
+                        }));
+                        setDetails((prev) => ({
+                          ...prev,
+                          selectedSuggestion: suggestion,
+                          selectedIndex: index,
+                        }));
+                      }
+                    } else {
+                      // No previous suggestion, update directly
+                      setDetails((prev) => ({
                         ...prev,
-                        selectedSuggestion:details.selectedSuggestion,
-                        selectedIndex:details.selectedIndex,
+                        selectedSuggestion: suggestion,
+                        selectedIndex: index,
                       }));
                     }
-                    setDetails((prev)=>({
-                      ...prev,
-                      selectedSuggestion:suggestion,
-                      selectedIndex:index
-                    }));
-                  }}
+                  }
+                }
                 >
                   {suggestion}
                 </li>

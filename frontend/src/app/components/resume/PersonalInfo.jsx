@@ -158,8 +158,7 @@ export default function PersonalInfo({
           >
             {nameOptions.map((option) => (
               <option key={option.value} >
-                <div>{option.name}</div>
-                <div>{option.value}</div>
+                {option.value}
               </option>
             ))}
           </select>
@@ -177,7 +176,7 @@ export default function PersonalInfo({
         </div>
         <div className='relative border p-2 rounded-md justify-between items-center'>
           <label className="block text-sm font-medium text-gray-700">趣味 / Hobby</label>
-          <input
+          <textarea
             type="text"
             name="hobby"
             value={details.hobby}
