@@ -71,9 +71,9 @@ export async function POST(request) {
       apiKey: token,
       baseURL: "https://integrate.api.nvidia.com/v1",
     });
-
+    // nvidia/llama-3.1-nemotron-ultra-253b-v1
     const response = await openai.chat.completions.create({
-      model: "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+      model: "qwen/qwen3-coder-480b-a35b-instruct",
       messages: [
         {
           role: "system",
