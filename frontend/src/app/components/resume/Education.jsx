@@ -45,6 +45,9 @@ export default function Education({ education, handleArrayInputChange, addEducat
             <label className="block text-sm font-medium text-gray-700">機関 / Institution and Major</label>
             <div
               className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm p-2"
+              contentEditable
+              suppressContentEditableWarning
+              onInput={(e) => handleInstitutionChange(e.currentTarget.innerHTML)}
               dangerouslySetInnerHTML={{ __html: displayInstitution(edu.institution) }}
             />
           </div>

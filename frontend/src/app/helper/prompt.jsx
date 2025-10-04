@@ -353,7 +353,7 @@ export default function Prompt(data, whatFor) {
       - Use standard Japanese Katakana conventions (e.g., "Tokyo University" → "トウキョウダイガク").
       - For complex names, provide a phonetically accurate Katakana representation, keeping it concise.
     - **Major**: If a major (${major}) is provided and not empty or 'なし', convert it to Katakana and append it in bold brackets (e.g., **[土木工学]**) to the institution name.
-      - Convert the major to Katakana using Japanese phonetic conventions (e.g., "Civil Engineering" → "土木工学").
+      - Convert the major to Japanese words (Kanji version if available) (e.g., "Civil Engineering" → "土木工学").
       - If the major is empty or 'なし', do not append anything.
       - Also there won't be any major for highschools or schools.
     - **Date String**: Convert the date string (${date_string}) to a Japanese date range in the format "YYYY年MM月 – YYYY年MM月", ensuring:
