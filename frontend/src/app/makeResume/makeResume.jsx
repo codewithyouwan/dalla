@@ -134,7 +134,7 @@ export default function MakeResume() {
         if (!id_number) throw new Error('Invalid employee ID');
         else{
           setDetails((prev) => ({ ...prev, id_number:id_number }));
-          console.log('Decrypted id_number:', id_number);
+          // console.log('Decrypted id_number:', id_number);
         }
       try {
         
