@@ -148,7 +148,7 @@ app.post('/api/resume', upload.fields([{ name: 'details' }, { name: 'photo' }, {
 
     res.status(200).json({
       message: 'Resume preview generated',
-      previewUrl: `https://dalla-production.up.railway.app/temp/resume-${sessionId}.pdf`,
+      previewUrl: `https://dalla-production-1b00.up.railway.app/temp/resume-${sessionId}.pdf`,
       tempPdfPath: pdfPath,
       sessionId,
     });
