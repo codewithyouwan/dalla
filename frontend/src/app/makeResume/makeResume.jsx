@@ -434,7 +434,7 @@ export default function MakeResume() {
       }
       formData.append('sessionId', sessionId);
       // https://dalla-production.up.railway.app/api/resume
-      const response = await fetch('https://dalla-production.up.railway.app/api/resume', {
+      const response = await fetch('https://dalla-production-1b00.up.railway.app/api/resume', {
         method: 'POST',
         body: formData,
       });
