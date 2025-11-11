@@ -19,30 +19,54 @@ export default function PersonalInfo({
   const fileInputRef = useRef(null);
   const previewCanvasRef = useRef(null);
 
-  useEffect(() => {
-    if (details.photo) {
-      const objectUrl = URL.createObjectURL(details.photo);
-      setPhotoPreview(objectUrl);
-      console.log('Photo preview set:', objectUrl);
-      return () => URL.revokeObjectURL(objectUrl);
-    } else {
-      setPhotoPreview(null);
-      console.log('Photo preview cleared');
-    }
-  }, [details.photo]);
+// In PersonalInfo.jsx
+useEffect(() => {
+  console.log('Photo State:', {
+    hasFile: !!details.photo,
+    photo_url: details.photo_url,
+    fallbackPhoto: details.fallbackPhoto,
+    preview: photoPreview
+  });
+}, [details.photo, details.photo_url, details.fallbackPhoto, photoPreview]);
+// In PersonalInfo.jsx – useEffect
+useEffect(() => {
+  let previewUrl = null;
 
-  const handleRemovePhoto = () => {
-    console.log('Remove photo clicked');
-    setDetails(prev => ({ ...prev, photo: null })); // Directly clear photo in state
-    setPhotoPreview(null);
-    setImageToCrop(null);
-    setDragActive(false);
-    setShowCropper(false);
-    // Do not set dragActive to true to avoid interfering with new uploads
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''; // Reset file input
-    }
-  };
+  if (details.photo) {
+    const objectUrl = URL.createObjectURL(details.photo);
+    previewUrl = objectUrl;
+    setPhotoPreview(previewUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  } else if (details.photo_url) {
+    // Add cache-busting
+    const url = new URL(details.photo_url);
+    url.searchParams.set('t', Date.now());
+    previewUrl = url.toString();
+  } else if (details.fallbackPhoto) {
+    const url = new URL(details.fallbackPhoto, window.location.origin);
+    url.searchParams.set('t', Date.now());
+    previewUrl = url.toString();
+  }
+
+  setPhotoPreview(previewUrl);
+}, [details.photo, details.photo_url, details.fallbackPhoto]);
+
+const handleRemovePhoto = () => {
+  console.log('Remove photo clicked');
+  setDetails(prev => ({
+    ...prev,
+    photo: null,
+    photo_url: null,     // Clear Supabase URL
+    fallbackPhoto: null  // Clear fallback
+  }));
+  setPhotoPreview(null);
+  setImageToCrop(null);
+  setDragActive(false);
+  setShowCropper(false);
+  if (fileInputRef.current) {
+    fileInputRef.current.value = '';
+  }
+};
 
   const onCropComplete = (croppedArea, croppedAreaPixels) => {
     console.log('Crop complete:', croppedAreaPixels);
@@ -53,7 +77,7 @@ export default function PersonalInfo({
     console.log('Crop button clicked');
     try {
       const croppedImage = await getCroppedImg(imageToCrop, croppedAreaPixels, 'jpeg');
-      const croppedFile = new File([croppedImage], 'cropped-photo.jpg', { type: 'image/jpeg' });
+      const croppedFile = new File([croppedImage], 'cropped-photo.jpeg', { type: 'image/jpeg' });
       const img = new Image();
       img.src = URL.createObjectURL(croppedFile);
       await new Promise((resolve) => (img.onload = resolve));
@@ -240,7 +264,18 @@ export default function PersonalInfo({
           </div>
           {photoPreview && !showCropper && (
             <div className="mt-2 flex items-center gap-2">
-              <img src={photoPreview} alt="Photo Preview" className="max-w-[140px] h-auto border" />
+              <img
+                key={photoPreview}  // This forces re-render
+                src={photoPreview}
+                alt="Profile"
+                className="max-w-[140px] h-auto border rounded"
+                crossOrigin="anonymous"
+                onLoad={() => console.log('Image loaded:', photoPreview)}
+                onError={(e) => {
+                  console.error('Image failed to load:', photoPreview);
+                  e.currentTarget.src = '/placeholder-photo.jpg';
+                }}
+              />
               <button
                 onClick={handleRemovePhoto}
                 className="px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"

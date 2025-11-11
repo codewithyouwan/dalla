@@ -99,7 +99,7 @@ export async function POST(req) {
 
       // Handle photo
       if (photo) {
-        photoPath = path.join(tempDir, `profile-${sessionId}.jpg`);
+        photoPath = path.join(tempDir, `profile-${sessionId}.jpeg`);
         const photoBuffer = Buffer.from(await photo.arrayBuffer());
         if (!photoBuffer.slice(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff]))) {
           throw new Error('Invalid JPEG image provided');

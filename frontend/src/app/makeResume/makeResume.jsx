@@ -63,6 +63,7 @@ const defaultDetails = {
   suggestions:[],
   selectedIndex:null,
   photo: null,
+  fallbackPhoto: null,
 };
 //selectedSuggestion, 
 const nextDetails={
@@ -120,82 +121,89 @@ export default function MakeResume() {
   }, [error]);
 
   //Fetching the saved data here.
-  useEffect(() => {
-    const fetchData = async () => {
-      if (hasFetchedResume.current) return;
-      hasFetchedResume.current = true;
-      const encryptedId = searchParams.get('encrypted_id');
-      let id_number = details.id_number || sessionId;
+// Inside useEffect in makeResume.jsx
+useEffect(() => {
+  const fetchData = async () => {
+    if (hasFetchedResume.current) return;
+    hasFetchedResume.current = true;
+    const encryptedId = searchParams.get('encrypted_id');
+    let id_number = details.id_number || sessionId;
 
-      if (encryptedId) {
-        const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET || 'default-secure-key-32chars1234567';
-        const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedId), secretKey);
-        id_number = bytes.toString(CryptoJS.enc.Utf8) || id_number;
-        if (!id_number) throw new Error('Invalid employee ID');
-        else{
-          setDetails((prev) => ({ ...prev, id_number:id_number }));
-          // console.log('Decrypted id_number:', id_number);
+    if (encryptedId) {
+      const secretKey = process.env.NEXT_PUBLIC_ENCRYPTION_SECRET;
+      const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedId), secretKey);
+      id_number = bytes.toString(CryptoJS.enc.Utf8) || id_number;
+      if (!id_number) throw new Error('Invalid employee ID');
+      setDetails((prev) => ({ ...prev, id_number }));
+    }
+
+    try {
+      const response = await fetch(`/api/fetchSavedData?id_number=${id_number}`);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 404) {
+          console.log('No existing resume data found, using defaults + fallback photo');
+          setDetails(prev => ({
+            ...prev,
+            id_number,
+            fallbackPhoto: `/thug-life.jpeg` // Only fallback when no DB
+          }));
+          return;
         }
-      try {
-        
-        const response = await fetch(`/api/fetchSavedData?id_number=${id_number}`);
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          if (response.status === 404) {
-            console.log('No existing resume data found, using defaults');
-            return;
-          }
-          throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
-        }
-
-        const { data } = await response.json();
-        if(!data) return;
-        setDetails((prev) => ({
-          ...prev,
-          employeeNumber: data.employee_number?.toString() || '',
-          name: data.name || prev.name,
-          selectedName : data.name || prev.name,
-          katakana: data.katakana || '',
-          initials: data.initials || '',
-          hometown: data.hometown || '',
-          hobby: data.hobby || '',
-          desiredIndustry: data.desired_industry || '',
-          desiredJobType: data.desired_job_type || '',
-          targetRole: data.target_role || '',
-          workStyle: data.work_style || '',
-          education: data.education || prev.education,
-          languages: data.languages || prev.languages,
-          devTools: data.dev_tools || prev.devTools,
-          internships: data.internships || prev.internships,
-          projects: data.projects || prev.projects,
-          japanCompanyInterest: data.japan_company_interest || '',
-          japanCompanySkills: data.japan_company_skills || '',
-          careerPriorities: data.career_priorities || prev.careerPriorities,
-          careerRoles: data.career_roles || prev.careerRoles,
-          japaneseLevel: data.japanese_level || prev.japaneseLevel,
-          marks: {
-            total:data.total_score || prev.marks.total, 
-            vocabulary:data.vocabulary_score || prev.marks.vocabulary, 
-            reading:data.reading_score || prev.marks.reading, 
-            listening:data.listening_score || prev.marks.listening, 
-            language_and_reading:data.language_and_reading || prev.marks.language_and_reading
-          },
-          examMonth: data.exam_month || '7月',
-          WorkValues: data.work_values,
-          interestFields: data.interest_fields||prev.interestFields,
-          selectedSuggestion: data.jlpt_description || prev.jlpt_description,
-        }));
-        console.log(data.marks,'After fetching');
-        console.log(data.jlpt_description);
-      } catch (err) {
-        setError(`Failed to load data: ${err.message}`);
-        console.error('Load resume error:', err);
+        throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
       }
-    }};
-    fetchWithToast('Saved Data', fetchData);
-    // fetchResume();
-  }, []);
+
+      const { data } = await response.json();
+      if (!data) return;
+
+      setDetails((prev) => ({
+        ...prev,
+        id_number,
+        employeeNumber: data.employee_number?.toString() || '',
+        name: data.name || prev.name,
+        selectedName: data.name || prev.name,
+        katakana: data.katakana || '',
+        initials: data.initials || '',
+        hometown: data.hometown || '',
+        hobby: data.hobby || '',
+        desiredIndustry: data.desired_industry || '',
+        desiredJobType: data.desired_job_type || '',
+        targetRole: data.target_role || '',
+        workStyle: data.work_style || '',
+        education: data.education || prev.education,
+        languages: data.languages || prev.languages,
+        devTools: data.dev_tools || prev.devTools,
+        internships: data.internships || prev.internships,
+        projects: data.projects || prev.projects,
+        japanCompanyInterest: data.japan_company_interest || '',
+        japanCompanySkills: data.japan_company_skills || '',
+        careerPriorities: data.career_priorities || prev.careerPriorities,
+        careerRoles: data.career_roles || prev.careerRoles,
+        japaneseLevel: data.japanese_level || prev.japaneseLevel,
+        marks: {
+          total: data.total_score || prev.marks.total,
+          vocabulary: data.vocabulary_score || prev.marks.vocabulary,
+          reading: data.reading_score || prev.marks.reading,
+          listening: data.listening_score || prev.marks.listening,
+          language_and_reading: data.language_and_reading || prev.marks.language_and_reading
+        },
+        examMonth: data.exam_month || '7月',
+        WorkValues: data.work_values,
+        interestFields: data.interest_fields || prev.interestFields,
+        selectedSuggestion: data.jlpt_description || prev.jlpt_description,
+        photo_url: data.photo_url || null,
+        fallbackPhoto: data.photo_url ? null : `/thug-life.jpeg`, // Only if no photo_url
+      }));
+
+    } catch (err) {
+      setError(`Failed to load data: ${err.message}`);
+      console.error('Load resume error:', err);
+    }
+  };
+
+  fetchWithToast('Saved Data', fetchData);
+}, [searchParams, sessionId, details.id_number]);
 
   const fetchWithToast = async (componentName, fetchFn) => {
     setLoadingComponent(componentName);
@@ -456,22 +464,30 @@ export default function MakeResume() {
     });
   };
   const saveResume = async () => {
-    return fetchWithToast('Resume Save', async () => {
-      const formData = new FormData();
-      formData.append('details', JSON.stringify(details));
-      formData.append('id_number', details.id_number || sessionId);
-      const response = await fetch('/api/saveResume', {
-        method: 'POST',
-        body: formData,
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
-      }
-      const data = await response.json();
-      return data;
+  return fetchWithToast('Resume Save', async () => {
+    const formData = new FormData();
+    // Exclude photo from JSON
+    const { photo, ...detailsWithoutPhoto } = details;
+    formData.append('details', JSON.stringify(detailsWithoutPhoto));
+    formData.append('id_number', details.id_number || sessionId);
+    
+    // Append photo as File
+    if (photo instanceof File) {
+      formData.append('photo', photo);
+    }
+    
+    const response = await fetch('/api/saveResume', {
+      method: 'POST',
+      body: formData,
     });
-  };
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
+    }
+    const data = await response.json();
+    return data;
+  });
+};
 
   const handleInputChange = (e) => {
   const { name, value, type, files } = e.target;
