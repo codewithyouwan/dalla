@@ -117,8 +117,15 @@ app.post('/api/resume', upload.fields([{ name: 'details' }, { name: 'photo' }, {
     const template = handlebars.compile(templateContent);
 
     let photoBase64 = '';
+    // Replace this block:
     if (photo && photo.size > 0) {
       const photoBuffer = Buffer.from(await photo.arrayBuffer());
+      // ...
+    }
+
+    // With this:
+    if (photo && photo.buffer) {
+      const photoBuffer = photo.buffer; // Already a Buffer in Node.js
       const metadata = await sharp(photoBuffer).metadata();
       if (metadata.format !== 'jpeg') {
         throw new Error('Only JPEG supported.');
@@ -131,7 +138,6 @@ app.post('/api/resume', upload.fields([{ name: 'details' }, { name: 'photo' }, {
       }
       photoBase64 = `data:image/jpeg;base64,${photoBuffer.toString('base64')}`;
     }
-
     const htmlContent = template({ ...escapedDetails, photo: photoBase64 });
 
     // const htmlContent = template({ ...escapedDetails, photo: photoBase64 });
