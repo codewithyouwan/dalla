@@ -54,7 +54,7 @@ app.post('/api/resume', upload.fields([{ name: 'details' }, { name: 'photo' }, {
   let pdfPath;
   try {
     const { details: detailsRaw, sessionId = uuidv4() } = req.body;
-    const photo = req.files?.photo?.[0];
+    const photoFile = req.files?.photo?.[0];
 
     let details;
     try {
