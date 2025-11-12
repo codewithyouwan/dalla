@@ -436,13 +436,18 @@ useEffect(() => {
     const compileResume = async () => {
     return fetchWithToast('Resume Compilation', async () => {
       const formData = new FormData();
-      formData.append('details', JSON.stringify(details));
-      if (details.photo && details.photo instanceof File && details.photo.size > 0) {
-        console.log('Sending photo to backend:', details.photo.name, details.photo.size);
-        formData.append('photo', details.photo);
+        // 1. Clone details WITHOUT the photo file
+      const { photo, ...detailsWithoutPhoto } = details;
+      formData.append('details', JSON.stringify(detailsWithoutPhoto));
+
+      // 2. Send photo SEPARATELY
+      if (photo && photo instanceof File && photo.size > 0) {
+        console.log('Sending photo:', photo.name, photo.size, 'bytes');
+        formData.append('photo', photo, photo.name); // name is important!
       } else {
-        console.warn('No valid photo to send:', details.photo);
+        console.warn('No photo to send:', photo);
       }
+
       formData.append('sessionId', sessionId);
       // https://dalla-production.up.railway.app/api/resume
       const response = await fetch('https://dalla-production.up.railway.app/api/resume', {
