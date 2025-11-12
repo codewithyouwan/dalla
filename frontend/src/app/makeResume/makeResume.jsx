@@ -437,8 +437,11 @@ useEffect(() => {
     return fetchWithToast('Resume Compilation', async () => {
       const formData = new FormData();
       formData.append('details', JSON.stringify(details));
-      if (details.photo) {
+      if (details.photo && details.photo instanceof File && details.photo.size > 0) {
+        console.log('Sending photo to backend:', details.photo.name, details.photo.size);
         formData.append('photo', details.photo);
+      } else {
+        console.warn('No valid photo to send:', details.photo);
       }
       formData.append('sessionId', sessionId);
       // https://dalla-production.up.railway.app/api/resume
