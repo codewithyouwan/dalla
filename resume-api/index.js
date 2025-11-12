@@ -55,7 +55,12 @@ app.post('/api/resume', upload.fields([{ name: 'details' }, { name: 'photo' }, {
   try {
     const { details: detailsRaw, sessionId = uuidv4() } = req.body;
     const photoFile = req.files?.photo?.[0];
-
+    console.log('Photo file received:', {
+      hasFile: !!photoFile,
+      name: photoFile?.originalname,
+      size: photoFile?.buffer?.length,
+      hasBuffer: !!photoFile?.buffer,
+    });
     let details;
     try {
       details = JSON.parse(detailsRaw || '{}');
