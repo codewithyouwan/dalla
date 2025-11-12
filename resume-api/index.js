@@ -116,23 +116,46 @@ app.post('/api/resume', upload.fields([{ name: 'details' }, { name: 'photo' }, {
     const templateContent = await fs.readFile(templatePath, 'utf-8');
     const template = handlebars.compile(templateContent);
 
-    let photoBase64 = '';
+    let photoBase64 = '';                                   // <-- will be passed to HBS
 
-    // With this:
-    if (photo && photo.buffer) {
-      const photoBuffer = photo.buffer; // Already a Buffer in Node.js
-      const metadata = await sharp(photoBuffer).metadata();
-      if (metadata.format !== 'jpeg') {
-        throw new Error('Only JPEG supported.');
+      if (photoFile?.buffer) {
+        console.log(
+          'Photo received →',
+          photoFile.originalname,
+          photoFile.buffer.length,
+          'bytes'
+        );
+
+        const photoBuffer = photoFile.buffer;                 // <-- **Node Buffer**
+        const metadata = await sharp(photoBuffer).metadata();
+
+        // ---- validation ----
+        if (metadata.format !== 'jpeg') throw new Error('Only JPEG supported.');
+        if (metadata.width !== 280 || metadata.height !== 360)
+          throw new Error(`Photo must be 280×360 px (got ${metadata.width}×${metadata.height})`);
+        if (photoBuffer.length > 5 * 1024 * 1024) throw new Error('Photo >5 MB');
+
+        // ---- convert to data-URL ----
+        photoBase64 = `data:image/jpeg;base64,${photoBuffer.toString('base64')}`;
+      } else {
+        console.log('No photo uploaded – will try fallback from details.photo_url');
       }
-      if (metadata.width !== 280 || metadata.height !== 360) {
-        throw new Error('Image must be 280x360 pixels.');
+
+      // ---------- 4. OPTIONAL: fallback from Supabase photo_url ----------
+      if (!photoBase64 && details.photo_url) {
+        try {
+          const resp = await fetch(details.photo_url);
+          if (!resp.ok) throw new Error('Supabase fetch failed');
+          const arrayBuf = await resp.arrayBuffer();
+          const buf = Buffer.from(arrayBuf);
+          const meta = await sharp(buf).metadata();
+          if (meta.format === 'jpeg') {
+            photoBase64 = `data:image/jpeg;base64,${buf.toString('base64')}`;
+          }
+        } catch (e) {
+          console.warn('Fallback photo failed:', e.message);
+        }
       }
-      if (photoBuffer.length > 5 * 1024 * 1024) {
-        throw new Error('Photo exceeds 5MB.');
-      }
-      photoBase64 = `data:image/jpeg;base64,${photoBuffer.toString('base64')}`;
-    }
     const htmlContent = template({ ...escapedDetails, photo: photoBase64 });
 
     // const htmlContent = template({ ...escapedDetails, photo: photoBase64 });
