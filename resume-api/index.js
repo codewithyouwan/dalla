@@ -118,15 +118,23 @@ app.post('/api/resume', upload.fields([{ name: 'details' }, { name: 'photo' }, {
 
     let photoBase64 = '';
     if (photo && photo.size > 0) {
-      const photoBuffer = photo.buffer;
+      const photoBuffer = Buffer.from(await photo.arrayBuffer());
       const metadata = await sharp(photoBuffer).metadata();
-      if (metadata.format !== 'jpeg') throw new Error('Only JPEG supported.');
-      if (metadata.width !== 280 || metadata.height !== 360) throw new Error('Image must be 280x360 pixels.');
-      if (photoBuffer.length > 5 * 1024 * 1024) throw new Error('Photo exceeds 5MB.');
+      if (metadata.format !== 'jpeg') {
+        throw new Error('Only JPEG supported.');
+      }
+      if (metadata.width !== 280 || metadata.height !== 360) {
+        throw new Error('Image must be 280x360 pixels.');
+      }
+      if (photoBuffer.length > 5 * 1024 * 1024) {
+        throw new Error('Photo exceeds 5MB.');
+      }
       photoBase64 = `data:image/jpeg;base64,${photoBuffer.toString('base64')}`;
     }
 
     const htmlContent = template({ ...escapedDetails, photo: photoBase64 });
+
+    // const htmlContent = template({ ...escapedDetails, photo: photoBase64 });
 
     // executablePath: `chrome/mac_arm-140.0.7339.80/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing`,
     const browser = await puppeteer.launch({
