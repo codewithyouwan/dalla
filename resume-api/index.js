@@ -117,11 +117,6 @@ app.post('/api/resume', upload.fields([{ name: 'details' }, { name: 'photo' }, {
     const template = handlebars.compile(templateContent);
 
     let photoBase64 = '';
-    // Replace this block:
-    if (photo && photo.size > 0) {
-      const photoBuffer = Buffer.from(await photo.arrayBuffer());
-      // ...
-    }
 
     // With this:
     if (photo && photo.buffer) {
