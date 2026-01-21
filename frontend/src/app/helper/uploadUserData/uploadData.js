@@ -21,7 +21,7 @@ console.log('Supabase Key:', supabaseKey ? '[REDACTED]' : 'Not set');
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Path to your Excel file
-const excelFilePath = path.resolve(__dirname, './xlsxxx.xlsx');
+const excelFilePath = path.resolve(__dirname, './xlsxnew.xlsx');
 console.log('Excel File Path:', excelFilePath);
 
 // Verify the Excel file exists
@@ -248,7 +248,7 @@ async function uploadData() {
         continue;
       }
       const { data, error } = await supabase
-        .from('data')
+        .from('dup_data')
         .insert(batch)
         .select('id_number'); // Return id_number for logging
 

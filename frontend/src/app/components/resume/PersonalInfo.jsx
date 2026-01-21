@@ -270,7 +270,7 @@ const handleRemovePhoto = () => {
                 alt="Profile"
                 className="max-w-[140px] h-auto border rounded"
                 crossOrigin="anonymous"
-                onLoad={() => console.log('Image loaded:', photoPreview)}
+                onLoad={() => console.log('Image loaded')}
                 onError={(e) => {
                   console.error('Image failed to load:', photoPreview);
                   e.currentTarget.src = '/placeholder-photo.jpg';
