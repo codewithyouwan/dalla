@@ -1,0 +1,96 @@
+To build a reliable AI agentic crawler for this task—starting from the `main` function in the main file (e.g., assuming it's something like `main.c`), recursively tracing function calls, identifying invocations of `mpf_mfs_open`, and determining the value of its third argument (the file number)—you need to address the hallucinations and inconsistent adherence to the recursive, main-reachable approach. The current tools are a solid foundation, but the issues likely stem from inadequate prompting, lack of state management in the agent's reasoning loop, or insufficient constraints on tool usage. Below, I'll outline a structured approach to refine this system, focusing on agent design, prompting, tool enhancements, and workflow.
+
+### 1. **Clarify the Core Objective and Constraints**
+   - **Objective**: Perform static call graph traversal starting strictly from `main()`. Only consider paths that could execute at runtime (i.e., reachable from `main`). For each `mpf_mfs_open` call found along these paths, extract the third argument's value (e.g., a constant like `3`, a variable resolved to a value, or a macro).
+   - **Constraints**:
+     - Ignore dead code (functions not called from `main` or its descendants).
+     - Handle inter-file dependencies (functions defined in other .c/.h files).
+     - Resolve arguments accurately: If the third arg is a variable or macro, trace its value (e.g., using `find_definition` for macros).
+     - Avoid hallucinations: The agent should only report based on actual code traces, not inferred or invented details.
+   - **Assumptions**: The codebase is C, so deal with function prototypes in .h files, macros, and possible conditional calls (e.g., in if-statements—but for simplicity, assume all branches are possible unless you add control flow analysis later).
+
+### 2. **Enhance the Agent's Architecture**
+   - **Use a Reasoning Loop with State Management**: Implement the agent as a loop (e.g., using LangChain, Auto-GPT, or a custom ReAct-style framework) where it maintains explicit state:
+     - A call stack or graph: Track visited functions (e.g., a list or dict like `{"function_name": {"file": "path", "line": 123, "called_from": "parent_func", "calls": ["child_func1", "child_func2"]}}`).
+     - A set of discovered `mpf_mfs_open` calls: Store tuples like `(call_site_file, call_site_line, third_arg_value)`.
+     - Visited files/functions to avoid cycles (C can have recursion, but limit depth if needed).
+     - This state persists across tool calls and reasoning steps, preventing the LLM from "forgetting" the traversal path.
+   - **LLM Selection**: Use a model good at code reasoning (e.g., GPT-4o, Claude 3.5 Sonnet, or Grok if integrated). Fine-tune if possible on C code traversal examples.
+   - **Workflow Pattern**: Enforce a ReAct (Reason-Act-Observe-Think) loop:
+     - **Reason**: Analyze current state and plan next step (e.g., "From main, I see calls to funcA and funcB. Next, inspect funcA.").
+     - **Act**: Call a tool.
+     - **Observe**: Update state with tool output.
+     - **Think**: Decide if done or continue.
+
+### 3. **Refine Prompting Strategy**
+   - The root issue is likely vague prompts leading to hallucinations or skipping the recursive main-starting approach. Craft a system prompt that enforces structure:
+     ```
+     You are an AI code crawler analyzing a C codebase. Your goal: Start from the main() function in the main file (assume it's main.c unless specified). Recursively trace all function calls reachable from main(). For each call to mpf_mfs_open(), determine the value of the 3rd argument (file number).
+
+     Rules:
+     - ALWAYS start from main(). Do not analyze unrelated functions.
+     - Traverse recursively: For each function call in the current function, find its definition and repeat.
+     - Only consider code paths reachable from main (ignore dead code).
+     - To resolve arguments: If the 3rd arg is a literal, note it. If a variable/macro, trace its definition/value using tools.
+     - No hallucinations: Base EVERY claim on tool outputs. If unsure, use tools to verify.
+     - Output format: List of (file, line, 3rd_arg_value) for each mpf_mfs_open call. If none found, say "No calls found."
+
+     Tools: [Describe the 4 tools here, with examples].
+
+     Step-by-step reasoning:
+     1. List project files to find main.c.
+     2. Read main() from main.c.
+     3. Parse function calls in main().
+     4. For each call, find definition (file/line).
+     5. Read that function, repeat recursion.
+     6. When seeing mpf_mfs_open, check prototype via lookup_function_reference, then extract 3rd arg.
+     7. Stop at depth limit (e.g., 10) or when no new calls.
+     ```
+   - **Chain of Thought (CoT) Enforcement**: In each loop, prompt the LLM to output reasoning in a structured format (e.g., YAML or JSON) like:
+     ```
+     Current State: [summary of call graph]
+     Next Action: [tool to call + args]
+     Reason: [why]
+     ```
+     This reduces deviations.
+   - **Few-Shot Examples**: Include 2-3 examples in the prompt showing correct traversal (e.g., a simple codebase with main calling funcA, which calls mpf_mfs_open(..., ..., 5)).
+
+### 4. **Improve and Expand Tools**
+   - **Existing Tools Tweaks**:
+     - **read_file_content(file_path, function_name=None)**: Enhance to optionally extract a specific function's body (to avoid loading entire files). For .c files, enforce that it only returns content if the function is requested (aligning with your "limit to functions" intent). If no function_name, return the whole file (for .h or initial scans).
+     - **find_definition(symbol)**: Good for functions/macros. Add support for variables if needed (e.g., to trace arg values).
+     - **lookup_function_reference(function_name)**: Use this early for `mpf_mfs_open` to confirm its prototype (e.g., `int mpf_mfs_open(char* path, int mode, int file_num)`).
+     - **list_project_files(filter_keyword=None)**: Fine, but suggest using it sparingly (e.g., only at start or for broad searches).
+   - **New Tools to Add (If Feasible)**:
+     - **parse_function_calls(code_snippet)**: A tool that takes a function body (from read_file_content) and returns a list of called functions (using regex or a simple AST parser like pycparser for C). This reduces LLM burden on parsing.
+     - **resolve_argument_value(file_path, line, arg_position, context_code)**: For the 3rd arg, a tool to trace back variables/macros (e.g., if arg is `FILE_NUM`, find its #define).
+     - **build_call_graph(start_func="main", max_depth=10)**: If you can implement a lightweight static analyzer (e.g., using ctags or clang-query), wrap it as a tool to get the full graph upfront, then let the agent query it.
+     - **check_reachability(func_name)**: Verify if a function is in the current call graph state.
+
+### 5. **Implementation Workflow**
+   - **Step 0: Initialization**
+     - Use list_project_files() to find main.c (filter_keyword="main").
+     - Use find_definition("main") to confirm location.
+   - **Step 1: Traverse from Main**
+     - Read main()'s content.
+     - Extract called functions (manually via LLM or new parse tool).
+     - For each called func:
+       - Use find_definition to get its file/line.
+       - Read its content.
+       - Recurse: Add to state, repeat.
+   - **Step 2: Detect mpf_mfs_open**
+     - In each function's content, scan for "mpf_mfs_open(" (regex or LLM).
+     - If found, use lookup_function_reference to confirm args.
+     - Extract 3rd arg: If literal, done. If not, trace with find_definition (for macros) or analyze local vars.
+   - **Step 3: Termination**
+     - Stop when no new functions or depth exceeded.
+     - Compile results: Deduplicate, report only main-reachable calls.
+   - **Error Handling**: If tool fails (e.g., symbol not found), log and skip branch.
+
+### 6. **Testing and Iteration**
+   - **Test Cases**: Create synthetic codebases (e.g., main.c calling funcA in another.c, which calls mpf_mfs_open with arg 3; add dead code to ignore).
+   - **Metrics**: Measure accuracy (correct args found), completeness (all reachable calls), and hallucination rate (invented details).
+   - **Debug Hallucinations**: Log full reasoning chains. If LLM invents code, tighten prompts with "Quote exact code from tools" rules.
+   - **Scalability**: For large codebases, chunk file reads or use caching.
+
+This approach shifts from a loose agent to a guided, stateful traverser, minimizing deviations. If you share more details (e.g., sample code or current prompts), I can refine further!
