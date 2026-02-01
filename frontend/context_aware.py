@@ -128,3 +128,257 @@ class CodeCrawlerAgent:
 agent = CodeCrawlerAgent(model_endpoint="your_local_endpoint", model_name="gpt-oss:20b")
 results = agent.run()
 print("Final results:", results)
+
+
+
+
+
+
+import os
+import re
+import json
+import ollama  # Assuming ollama Python client is installed: pip install ollama
+from typing import Dict, List, Any
+
+# Configuration
+OLLAMA_MODEL = 'gpt-oss:20b'  # Your local model
+PROJECT_DIR = '/path/to/your/c/project'  # TODO: Set this to your actual project directory
+MAX_DEPTH = 10
+MAX_STEPS = 100
+TARGET_FUNC = 'mpf_mfs_open'  # TODO: Customize
+TARGET_ARG_POS = 3  # 1-based index for the required_argument
+
+# Helper to shorten text
+def shorten(text: str, max_len: int = 1000) -> str:
+    return text[:max_len] + '...' if len(text) > max_len else text
+
+# Tool implementations
+def tool_list_project_files(filter_keyword: str = '') -> List[str]:
+    """List .c and .h files in PROJECT_DIR matching filter_keyword."""
+    files = []
+    for root, _, filenames in os.walk(PROJECT_DIR):
+        for fname in filenames:
+            if fname.endswith(('.c', '.h')) and filter_keyword in fname:
+                files.append(os.path.relpath(os.path.join(root, fname), PROJECT_DIR))
+    return files
+
+def tool_find_definition(symbol_name: str) -> Dict[str, Any]:
+    """Search for symbol definition across files. Returns {'file': str, 'is_c': bool, 'function_name': str or None, 'line': int or None}"""
+    # Simple grep-based search; assumes definition like 'type symbol(...) {' or '#define symbol'
+    for root, _, filenames in os.walk(PROJECT_DIR):
+        for fname in filenames:
+            if not fname.endswith(('.c', '.h')): continue
+            full_path = os.path.join(root, fname)
+            with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
+                lines = f.readlines()
+                for i, line in enumerate(lines, 1):
+                    if re.search(r'\b' + re.escape(symbol_name) + r'\s*\(', line):  # Rough function def/decl
+                        is_c = fname.endswith('.c')
+                        return {
+                            'file': os.path.relpath(full_path, PROJECT_DIR),
+                            'is_c': is_c,
+                            'function_name': symbol_name if is_c else None,
+                            'line': i if not is_c else None
+                        }
+    return {'error': f'Symbol {symbol_name} not found'}
+
+def tool_read_file_content(file_name: str, function_name: str = None, line_number: int = None) -> str:
+    """Read content: for .c, extract function body; for .h, 20 lines around line_number."""
+    full_path = os.path.join(PROJECT_DIR, file_name)
+    if not os.path.exists(full_path):
+        return f'Error: File {file_name} not found'
+    
+    with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
+        lines = f.readlines()
+    
+    if file_name.endswith('.c'):
+        if not function_name:
+            return 'Error: function_name required for .c files'
+        # Extract function body roughly
+        in_func = False
+        body = []
+        brace_count = 0
+        for line in lines:
+            if not in_func and re.search(r'\b' + re.escape(function_name) + r'\s*\(', line):
+                in_func = True
+                body.append(line)
+            if in_func:
+                body.append(line)
+                brace_count += line.count('{') - line.count('}')
+                if brace_count == 0 and '{' in ''.join(body):
+                    break
+        return ''.join(body) if body else 'Error: Function not found'
+    
+    elif file_name.endswith('.h'):
+        if not line_number:
+            return 'Error: line_number required for .h files'
+        start = max(0, line_number - 11)  # 10 lines before + line + 10 after = ~20
+        end = min(len(lines), line_number + 10)
+        return ''.join(lines[start:end])
+    
+    return 'Error: Unsupported file type'
+
+# Helper to extract callees from code text (rough regex)
+def extract_callees(code: str) -> List[str]:
+    """Find potential function calls."""
+    calls = re.findall(r'\b(\w+)\s*\(', code)
+    return list(set(c for c in calls if c not in ['if', 'while', 'for', 'switch', 'return']))  # Filter keywords
+
+# Helper to find target calls and extract arg (rough)
+def find_target_hits(code: str, target_func: str, arg_pos: int) -> List[Dict]:
+    """Scan for calls to target_func and extract arg at pos."""
+    hits = []
+    lines = code.splitlines()
+    for i, line in enumerate(lines, 1):
+        if re.search(r'\b' + re.escape(target_func) + r'\s*\(', line):
+            # Extract args roughly: split by , outside quotes/parens
+            arg_str = re.search(r'\(\s*(.*?)\s*\)', line)
+            if arg_str:
+                args = re.split(r'\s*,\s*', arg_str.group(1))
+                if len(args) >= arg_pos:
+                    hits.append({'line': i, 'arg_expr': args[arg_pos - 1]})
+    return hits
+
+# Parse LLM response (assuming structured tags)
+def parse_response(response: str) -> Dict:
+    """Parse <reasoning>, <action>, etc."""
+    parsed = {'has_tool_call': False}
+    try:
+        reasoning = re.search(r'<reasoning>(.*?)</reasoning>', response, re.DOTALL).group(1).strip()
+        action = re.search(r'<action>(.*?)</action>', response, re.DOTALL).group(1).strip()
+        if action == 'tool':
+            parsed['has_tool_call'] = True
+            tool_name = re.search(r'<tool_name>(.*?)</tool_name>', response, re.DOTALL).group(1).strip()
+            args_json = re.search(r'<tool_args_json>(.*?)</tool_args_json>', response, re.DOTALL).group(1).strip()
+            parsed['tool'] = (tool_name, json.loads(args_json))
+        parsed['callees'] = json.loads(re.search(r'<discovered_callees>(.*?)</discovered_callees>', response, re.DOTALL).group(1).strip())
+        parsed['target_hits'] = json.loads(re.search(r'<target_hits>(.*?)</target_hits>', response, re.DOTALL).group(1).strip())
+        parsed['state_update'] = re.search(r'<state_update>(.*?)</state_update>', response, re.DOTALL).group(1).strip()
+    except AttributeError:
+        parsed['error'] = 'Invalid response format'
+    return parsed
+
+# Main state
+state: Dict[str, Any] = {
+    'target_func': TARGET_FUNC,
+    'target_arg_pos': TARGET_ARG_POS,
+    'file_index': {},  # symbol -> tool_find_definition result
+    'function_bodies': {},  # func -> cached body
+    'call_graph': {},  # func -> [callees]
+    'target_occurrences': [],  # [{'path': list, 'file': str, 'line': int, 'arg_expr': str}]
+    'work_stack': [],  # [{'func': str, 'path': list[str], 'depth': int}]
+    'known_functions': set(),
+    'summary': 'Starting trace from main. No target hits yet.',
+    'recent_tool_output': None
+}
+
+# Bootstrap: Assume we know files, find main
+files = tool_list_project_files()
+main_def = tool_find_definition('main')
+if 'error' in main_def:
+    raise ValueError('Main not found')
+state['file_index']['main'] = main_def
+state['work_stack'].append({'func': 'main', 'path': [], 'depth': 0})
+
+# Agent loop
+steps = 0
+while state['work_stack'] and steps < MAX_STEPS:
+    current = state['work_stack'].pop()  # DFS
+    func = current['func']
+    path = current['path']
+    depth = current['depth']
+
+    if func in state['known_functions'] or depth > MAX_DEPTH:
+        continue
+
+    # Build prompt
+    prompt = f"""You are tracing calls from 'main' toward '{state["target_func"]}' in a C project.
+Current function to analyze: {func}
+Call path so far: {' -> '.join(path + [func])}
+Progress summary: {state["summary"]}
+Recent tool output: {shorten(str(state["recent_tool_output"]) if state["recent_tool_output"] else "None")}
+
+Goal: Find calls from this function, especially to '{state["target_func"]}'. If found, extract exact argument expression at position {state["target_arg_pos"]} (1-based, raw as in code).
+
+You have only 3 tools:
+- list_project_files(filter_keyword?: str) -> list[str]
+- find_definition(symbol_name: str) -> dict with file, etc.
+- read_file_content(file_name: str, function_name?: str, line_number?: int) -> str
+
+Rules:
+- ALWAYS use find_definition before read_file_content.
+- For read_file_content: Use function_name for .c, line_number for .h.
+- Never guess files/locations.
+- From function body, list discovered callees (function names called).
+- For target calls, list hits with line and arg_expr.
+
+Output ONLY in tags:
+<reasoning>Short plan</reasoning>
+<action>tool | none</action>
+<tool_name>if tool</tool_name>
+<tool_args_json>{{"symbol_name": "foo"}} example</tool_args_json>
+<discovered_callees>["foo", "bar"]</discovered_callees>
+<target_hits>[{{"line": 42, "arg_expr": "value"}}]</target_hits>
+<state_update>One sentence update</state_update>
+"""
+
+    # Call LLM
+    response = ollama.generate(model=OLLAMA_MODEL, prompt=prompt)['response']  # Adjust if ollama API differs
+
+    # Parse
+    parsed = parse_response(response)
+    if 'error' in parsed:
+        print(f'Parse error: {parsed["error"]}')
+        continue
+
+    if parsed['has_tool_call']:
+        tool_name, args = parsed['tool']
+        if tool_name == 'list_project_files':
+            result = tool_list_project_files(args.get('filter_keyword', ''))
+        elif tool_name == 'find_definition':
+            result = tool_find_definition(args['symbol_name'])
+            state['file_index'][args['symbol_name']] = result
+        elif tool_name == 'read_file_content':
+            result = tool_read_file_content(
+                args['file_name'],
+                args.get('function_name'),
+                args.get('line_number')
+            )
+            # Cache body if .c
+            if args.get('function_name'):
+                state['function_bodies'][func] = result
+                # Wrapper-assisted extraction
+                callees = extract_callees(result)
+                state['call_graph'].setdefault(func, []).extend(callees)
+                hits = find_target_hits(result, state['target_func'], state['target_arg_pos'])
+                for hit in hits:
+                    state['target_occurrences'].append({
+                        'path': path + [func],
+                        'file': args['file_name'],
+                        'line': hit['line'],
+                        'arg_expr': hit['arg_expr']
+                    })
+        else:
+            result = 'Unknown tool'
+        state['recent_tool_output'] = result
+    else:
+        # No tool: Use LLM's discovered
+        for callee in parsed['callees']:
+            if callee not in state['known_functions']:
+                state['work_stack'].append({
+                    'func': callee,
+                    'path': path + [func],
+                    'depth': depth + 1
+                })
+
+    state['summary'] += '\n' + parsed['state_update']
+    state['known_functions'].add(func)
+    steps += 1
+
+# Final report
+print('Tracing complete.')
+print('Target occurrences:')
+for occ in state['target_occurrences']:
+    print(f"Path: {' -> '.join(occ['path'])} -> {state['target_func']}")
+    print(f"File: {occ['file']}, Line: {occ['line']}, Arg: {occ['arg_expr']}")
+    print('---')
