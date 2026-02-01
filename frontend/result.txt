@@ -118,3 +118,96 @@ STRICT RULES:
 <state_update>One sentence what changed</state_update>
 
 Do NOT write free text outside tags.
+
+state = {
+    "target_func": "mpf_mfs_open",
+    "target_arg_pos": 3,           # 1-based
+    "entry_point": "main",
+
+    "file_index": {},              # symbol → {file, is_c_file, line_or_func}
+    "known_functions": set(),      # functions we already analyzed body
+
+    "call_graph": {},              # func → list[callee_funcs]
+    "target_occurrences": [],      # list of {path: ["main","db_init",...], file, line, arg_expr_raw: str}
+
+    "work_stack": [                # DFS stack: deepest path first
+        {"func": "main", "path": [], "depth": 0}
+    ],
+
+    "summary": "Starting trace from main. No target hits yet.",
+    "recent_tool_output": None     # last 1–2 raw tool results (shortened if huge)
+}
+
+MAX_DEPTH = 12
+MAX_STEPS = 80   # safety
+
+while state["work_stack"] and len(steps) < MAX_STEPS:
+    current = state["work_stack"].pop()   # DFS: take deepest
+    func = current["func"]
+
+    if func in state["known_functions"]:
+        continue
+
+    prompt = f"""You are tracing calls from 'main' toward '{state["target_func"]}'.
+Current function: {func}
+Call path so far: {' → '.join(current["path"] + [func])}
+Progress summary: {state["summary"]}
+
+Recent tool output (if any): {state.get("recent_tool_output", "None")}
+
+Goal right now: Understand what this function calls. Look especially for '{state["target_func"]}'.
+If you see it, extract the **exact** argument expression at position {state["target_arg_pos"]} (including variables/macros as written).
+
+Rules:
+- Use find_definition **before** trying to read anything.
+- Only read_file_content when you know the file **and** have the function_name (for .c) or line_number (for .h).
+- Never guess file names or locations — always ask find_definition first.
+- If target call found → record line number + raw argument expression.
+- Output in strict format (see below).
+
+Plan one focused step.
+"""
+
+    response = call_ollama(prompt)   # gpt-oss:20b
+
+    # Parse response (force structured output in system prompt)
+    parsed = parse_response(response)   # e.g. look for <tool>, <reasoning>, <discovered>
+
+    if parsed.has_tool_call:
+        tool_name, args = parsed.tool
+        result = execute_tool(tool_name, args)
+        state["recent_tool_output"] = shorten(result, max=1200 chars)
+        
+        if tool_name == "find_definition":
+            # update file_index
+            state["file_index"][args["symbol_name"]] = result
+        
+        elif tool_name == "read_file_content":
+            # LLM should have asked for specific function_name or line_number
+            # → extract calls from body, update call_graph
+            callees = extract_callees_from_text(result)   # regex or simple pattern in wrapper
+            state["call_graph"].setdefault(func, []).extend(callees)
+            
+            target_hits_here = find_target_calls(result, state["target_func"], state["target_arg_pos"])
+            if target_hits_here:
+                for hit in target_hits_here:
+                    state["target_occurrences"].append({
+                        "path": current["path"] + [func],
+                        "file": ..., "line": hit.line,
+                        "arg_expr": hit.arg_expr_str
+                    })
+                state["summary"] += f"\nHit in {func} → {state['target_func']} at line {hit.line}, arg = {hit.arg_expr_str}"
+
+    else:
+        # No tool → pure reasoning / reporting
+        new_callees = parsed.get("callees", [])
+        for callee in new_callees:
+            if callee not in state["known_functions"]:
+                state["work_stack"].append({
+                    "func": callee,
+                    "path": current["path"] + [func],
+                    "depth": current["depth"] + 1
+                })
+
+    state["known_functions"].add(func)
+    steps += 1
