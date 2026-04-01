@@ -22,7 +22,7 @@
     "fs": "0.0.1-security",
     "googleapis": "^149.0.0",
     "handlebars": "^4.7.9",
-    "next": "16.2.2",
+    "next": "14.2.35",
     "openai": "^5.23.2",
     "path": "^0.12.7",
     "pdf-parse": "^1.1.4",
