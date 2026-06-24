@@ -3,7 +3,6 @@ import Cropper from 'react-easy-crop';
 import { getCroppedImg } from '../../helper/ImageCrop/cropUtils';
 import DeleteButton from '../buttons/DeleteButton';
 import UndoButton from '../buttons/UndoButton';
-import { set } from 'date-fns';
 
 export default function PersonalInfo({ 
   details, handleInputChange, fetchPersonalDetails, isLoading, 
@@ -16,57 +15,81 @@ export default function PersonalInfo({
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [dragActive, setDragActive] = useState(false);
+  const [isManualName, setIsManualName] = useState(false);
+  const [manualName, setManualName] = useState('');
   const fileInputRef = useRef(null);
   const previewCanvasRef = useRef(null);
 
-// In PersonalInfo.jsx
-useEffect(() => {
-  console.log('Photo State:', {
-    hasFile: !!details.photo,
-    photo_url: details.photo_url,
-    fallbackPhoto: details.fallbackPhoto,
-    preview: photoPreview
-  });
-}, [details.photo, details.photo_url, details.fallbackPhoto, photoPreview]);
-// In PersonalInfo.jsx – useEffect
-useEffect(() => {
-  let previewUrl = null;
+  useEffect(() => {
+    console.log('Photo State:', {
+      hasFile: !!details.photo,
+      photo_url: details.photo_url,
+      fallbackPhoto: details.fallbackPhoto,
+      preview: photoPreview
+    });
+  }, [details.photo, details.photo_url, details.fallbackPhoto, photoPreview]);
 
-  if (details.photo) {
-    const objectUrl = URL.createObjectURL(details.photo);
-    previewUrl = objectUrl;
+  useEffect(() => {
+    let previewUrl = null;
+
+    if (details.photo) {
+      const objectUrl = URL.createObjectURL(details.photo);
+      previewUrl = objectUrl;
+      setPhotoPreview(previewUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    } else if (details.photo_url) {
+      const url = new URL(details.photo_url);
+      url.searchParams.set('t', Date.now());
+      previewUrl = url.toString();
+    } else if (details.fallbackPhoto) {
+      const url = new URL(details.fallbackPhoto, window.location.origin);
+      url.searchParams.set('t', Date.now());
+      previewUrl = url.toString();
+    }
+
     setPhotoPreview(previewUrl);
-    return () => URL.revokeObjectURL(objectUrl);
-  } else if (details.photo_url) {
-    // Add cache-busting
-    const url = new URL(details.photo_url);
-    url.searchParams.set('t', Date.now());
-    previewUrl = url.toString();
-  } else if (details.fallbackPhoto) {
-    const url = new URL(details.fallbackPhoto, window.location.origin);
-    url.searchParams.set('t', Date.now());
-    previewUrl = url.toString();
-  }
+  }, [details.photo, details.photo_url, details.fallbackPhoto]);
 
-  setPhotoPreview(previewUrl);
-}, [details.photo, details.photo_url, details.fallbackPhoto]);
+  // Sync manualName with details.selectedName when switching to manual mode
+  useEffect(() => {
+    if (isManualName) {
+      setManualName(details.selectedName || '');
+    }
+  }, [isManualName]);
 
-const handleRemovePhoto = () => {
-  console.log('Remove photo clicked');
-  setDetails(prev => ({
-    ...prev,
-    photo: null,
-    photo_url: null,     // Clear Supabase URL
-    fallbackPhoto: null  // Clear fallback
-  }));
-  setPhotoPreview(null);
-  setImageToCrop(null);
-  setDragActive(false);
-  setShowCropper(false);
-  if (fileInputRef.current) {
-    fileInputRef.current.value = '';
-  }
-};
+  const handleManualNameChange = (e) => {
+    const value = e.target.value;
+    setManualName(value);
+    handleInputChange({ target: { name: 'selectedName', value } });
+  };
+
+  const handleToggleManualName = () => {
+    if (isManualName) {
+      // Switching back to dropdown — reset to first nameOption if current value isn't in list
+      const isValueInOptions = nameOptions.some(opt => opt.value === details.selectedName);
+      if (!isValueInOptions && nameOptions.length > 0) {
+        handleInputChange({ target: { name: 'selectedName', value: nameOptions[0].value } });
+      }
+    }
+    setIsManualName(prev => !prev);
+  };
+
+  const handleRemovePhoto = () => {
+    console.log('Remove photo clicked');
+    setDetails(prev => ({
+      ...prev,
+      photo: null,
+      photo_url: null,
+      fallbackPhoto: null
+    }));
+    setPhotoPreview(null);
+    setImageToCrop(null);
+    setDragActive(false);
+    setShowCropper(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const onCropComplete = (croppedArea, croppedAreaPixels) => {
     console.log('Crop complete:', croppedAreaPixels);
@@ -100,7 +123,7 @@ const handleRemovePhoto = () => {
     setImageToCrop(null);
     setZoom(1);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''; // Reset file input
+      fileInputRef.current.value = '';
     }
   };
 
@@ -143,7 +166,7 @@ const handleRemovePhoto = () => {
   };
 
   const nameOptions = [
-    { value: `${details.name} / ${details.katakana}`, label: `English/Katkana: ` },
+    { value: `${details.name} / ${details.katakana}`, label: `English/Katakana: ` },
     details.katakana && { value: `${details.katakana} / ${details.name}`, label: `カタカナ/英語: ` },
     details.initials && { value: details.initials, label: `Initials(イニシャル): ` },
   ].filter(Boolean);
@@ -172,21 +195,65 @@ const handleRemovePhoto = () => {
             placeholder="例: 123456"
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">名前 / Name</label>
-          <select
-            name="selectedName"
-            value={details.selectedName}
-            onChange={handleInputChange}
-            className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
-          >
-            {nameOptions.map((option) => (
-              <option key={option.value} >
-                {option.value}
-              </option>
-            ))}
-          </select>
+
+        {/* Name Section */}
+        <div className="relative border p-2 rounded-md">
+          <div className="flex justify-between items-center mb-1">
+            <label className="block text-sm font-medium text-gray-700">名前 / Name</label>
+            <button
+              type="button"
+              onClick={handleToggleManualName}
+              className="text-xs px-2 py-1 rounded-md bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors"
+            >
+              {isManualName ? '📋 Select from List' : '✏️ Enter Manually'}
+            </button>
+          </div>
+
+          {isManualName ? (
+            <div className="flex gap-2 items-center">
+              <input
+                type="text"
+                name="selectedName"
+                value={manualName}
+                onChange={handleManualNameChange}
+                className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                placeholder="例: John Doe / ジョン・ドウ"
+              />
+              {/* Show undo if manualName differs from any known option value */}
+              {nameOptions.some(opt => opt.value === prevDetails.selectedName) &&
+                prevDetails.selectedName !== details.selectedName && (
+                <UndoButton
+                  clickFunction={() => {
+                    setManualName(prevDetails.selectedName);
+                    handleInputChange({ target: { name: 'selectedName', value: prevDetails.selectedName } });
+                    setPrevDetails(prev => ({ ...prev, selectedName: '' }));
+                  }}
+                />
+              )}
+            </div>
+          ) : (
+            <select
+              name="selectedName"
+              value={details.selectedName}
+              onChange={handleInputChange}
+              className="mt-1 block text-black w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            >
+              {nameOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}{option.value}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* Current selected name preview when in manual mode */}
+          {isManualName && manualName && (
+            <p className="mt-1 text-xs text-gray-500">
+              プレビュー / Preview: <span className="font-medium text-gray-800">{manualName}</span>
+            </p>
+          )}
         </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700">出身地 / Hometown</label>
           <input
@@ -265,7 +332,7 @@ const handleRemovePhoto = () => {
           {photoPreview && !showCropper && (
             <div className="mt-2 flex items-center gap-2">
               <img
-                key={photoPreview}  // This forces re-render
+                key={photoPreview}
                 src={photoPreview}
                 alt="Profile"
                 className="max-w-[140px] h-auto border rounded"
